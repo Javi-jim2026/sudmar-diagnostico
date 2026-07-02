@@ -514,7 +514,19 @@ const STEPS = {
     </div>
     <div class="field"><label class="label">Cliente / Solicitante</label><input class="input" placeholder="Nombre" value="${S.cliente}" oninput="S.cliente=this.value"></div>
     <div class="field"><label class="label">Empresa</label><input class="input" placeholder="Nombre de la empresa" value="${S.empresa}" oninput="S.empresa=this.value"></div>
-    <div class="field"><label class="label">Ubicación</label><input class="input" placeholder="Dirección o referencia" value="${S.ubicacion}" oninput="S.ubicacion=this.value"></div>
+    <div class="field" style="position:relative">
+      <label class="label">Ubicación</label>
+      <div style="position:relative">
+        <input class="input" id="ubicacion-input" placeholder="Escribe la dirección o lugar..." 
+          value="${S.ubicacion}" 
+          oninput="S.ubicacion=this.value;buscarUbicacion(this.value)"
+          autocomplete="off"
+          style="padding-right:36px">
+        <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">📍</span>
+      </div>
+      <div id="ubicacion-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:220px;overflow-y:auto"></div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:4px">💡 Escribe para buscar dirección — requiere internet</div>
+    </div>
     <div class="field"><label class="label">Responsable del diagnóstico</label><input class="input" placeholder="Nombre" value="${S.responsable}" oninput="S.responsable=this.value"></div>
     <div class="field"><label class="label">Técnico(s)</label><input class="input" placeholder="Nombres separados por coma" value="${S.tecnicos}" oninput="S.tecnicos=this.value"></div>`,
 
@@ -1146,7 +1158,51 @@ function generarReporte(tipo) {
 
 render();
 
-// Inyectar logos en header
+// ─── Autocompletado de ubicación (OpenStreetMap Nominatim) ──────
+let ubicTimer = null;
+
+function buscarUbicacion(query) {
+  const sug = document.getElementById('ubicacion-sugs');
+  if (!sug) return;
+  if (!query || query.length < 4) { sug.style.display='none'; return; }
+  clearTimeout(ubicTimer);
+  ubicTimer = setTimeout(async () => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&countrycodes=mx&addressdetails=1`;
+      const res = await fetch(url, {headers:{'Accept-Language':'es'}});
+      const data = await res.json();
+      if (!data.length) { sug.style.display='none'; return; }
+      sug.innerHTML = data.map((r,i) => {
+        const nombre = r.display_name;
+        return `<div onclick="selUbicacion('${nombre.replace(/'/g,"\'")}','ubicacion-input')" 
+          style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6;font-size:13px;color:#1a1a1a;transition:background .1s"
+          onmouseover="this.style.background='#f0f5ff'" onmouseout="this.style.background=''"
+          ><span style="margin-right:6px">📍</span>${nombre}</div>`;
+      }).join('');
+      sug.style.display = 'block';
+    } catch(e) {
+      sug.style.display = 'none';
+    }
+  }, 400);
+}
+
+function selUbicacion(val, inputId) {
+  S.ubicacion = val;
+  const inp = document.getElementById(inputId);
+  if (inp) inp.value = val;
+  const sug = document.getElementById('ubicacion-sugs');
+  if (sug) sug.style.display = 'none';
+}
+
+// Cerrar sugerencias al tocar fuera
+document.addEventListener('click', function(e) {
+  const sug = document.getElementById('ubicacion-sugs');
+  if (sug && !sug.contains(e.target) && e.target.id !== 'ubicacion-input') {
+    sug.style.display = 'none';
+  }
+});
+
+// ─── Inyectar logos en header
 (function setLogos(){
   const el = (id, src) => { const e = document.getElementById(id); if(e) e.src = src; };
   el('logo-sudmar-hdr', LOGO_SUDMAR);
