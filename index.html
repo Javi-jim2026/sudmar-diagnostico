@@ -130,9 +130,10 @@ input[type=file]{display:none}
     <div class="steps-label">
       <span class="sd active" id="sl1">Datos</span>
       <span class="sd" id="sl2">Equipo</span>
-      <span class="sd" id="sl3">Checklist</span>
-      <span class="sd" id="sl4">Pruebas</span>
-      <span class="sd" id="sl5">Firma</span>
+      <span class="sd" id="sl3">Servicio</span>
+      <span class="sd" id="sl4">Checklist</span>
+      <span class="sd" id="sl5">Pruebas</span>
+      <span class="sd" id="sl6">Firma</span>
     </div>
   </div>
   <div class="content" id="content"></div>
@@ -155,11 +156,13 @@ const LOGO_COMAP = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfEAAACdCAMAAA
 
 // ─── Estado global ───────────────────────────────────────────────
 let step = 1;
+const TOTAL_STEPS = 6;
 const S = {
   ticket:'', fecha: new Date().toISOString().slice(0,10),
   cliente:'', empresa:'', ubicacion:'', responsable:'', tecnicos:'',
   modeloEquipo:'', serieEquipo:'', horometro:'', potencia:'', voltaje:'',
   marcaMotor:'', serieMotor:'',
+  tipoServicio: null,
   tipoEquipo: null, tipoControl: null,
   checks:{}, fG:{}, fF:{},   // fotos generales y de falla (arrays de base64)
   // pruebas vacío
@@ -194,7 +197,8 @@ const CK = {
     'Precalentador',
     'Monoblock',
     'Turbocompresor',
-    'Soportes y montajes (vibración)'
+    'Soportes y montajes (vibración)',
+    'Alternador de carga de baterías — estado y funcionamiento'
   ]},
   alternador:{label:'Alternador', icon:'ti-bolt', items:[
     'Rodamientos',
@@ -365,6 +369,12 @@ function ci(sid, item, idx) {
         <div onclick="openGallery('${k}','falla')" title="Subir de galería" style="border:2px dashed #f0a060;border-left:none;padding:0 14px;display:flex;align-items:center;background:#fff9f4;cursor:pointer;color:#e87a2a;font-size:18px">📁</div>
       </div>
       ${hasFoto ? `<div class="falla-thumbs captured">${arr.map(b=>`<img class="photo-thumb" src="${b}">`).join('')}</div>` : ''}
+      <div style="padding:8px 12px;background:#fff9f4;border:2px dashed #f0a060;border-top:none">
+        <input class="input" placeholder="📝 Describe brevemente la falla observada..." 
+          value="${(S.fallaDesc&&S.fallaDesc[k])||''}" 
+          oninput="if(!S.fallaDesc)S.fallaDesc={};S.fallaDesc['${k}']=this.value"
+          style="border-color:#f0a060;background:#fff;font-size:13px">
+      </div>
     ` : ''}`;
 }
 
@@ -381,6 +391,10 @@ function rSec(sid) {
   return `
     <div class="check-section">
       <div class="check-header"><i class="ti ${icon}"></i>${label}<span class="tag">${items.length} pts</span></div>
+      <div style="background:#fff8e6;border:1.5px solid #f5c842;border-radius:0;padding:10px 13px;display:flex;align-items:center;gap:10px;border-top:none">
+        <span style="font-size:18px">📸</span>
+        <span style="font-size:12px;color:#8a6a00;font-weight:600;line-height:1.4">Antes de continuar — sal a tomar fotos y videos detallados de esta sección, guárdalos en tu galería y regresa aquí.</span>
+      </div>
       <div style="display:flex;gap:0">
         <div class="photo-gen-btn ${hg?'captured':''}" onclick="openCamera('${sid}','gen')" style="flex:1">
           <i class="ti ${hg?'ti-circle-check':'ti-photo'}"></i>
@@ -474,6 +488,26 @@ const STEPS = {
   1: () => `
     <div class="section-title">Datos generales</div>
     <div class="section-sub">Información del servicio y responsables</div>
+
+    <div class="field">
+      <label class="label">Tipo de servicio</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+        ${[
+          {id:'diagnostico', icon:'🔍', name:'Diagnóstico'},
+          {id:'mantenimiento', icon:'🔧', name:'Mantenimiento'},
+          {id:'reparacion', icon:'⚙️', name:'Reparación'},
+          {id:'garantia', icon:'🛡️', name:'Garantía'},
+          {id:'cierre', icon:'🔌', name:'Cierre de conexiones'},
+          {id:'solar', icon:'☀️', name:'Instalación solar'}
+        ].map(t => `
+          <div onclick="S.tipoServicio='${t.id}';render()" style="border:2px solid ${S.tipoServicio===t.id?'#1a5fa8':'#e5e7eb'};border-radius:10px;padding:10px 12px;cursor:pointer;background:${S.tipoServicio===t.id?'#eaf1fb':'#fff'};display:flex;align-items:center;gap:8px;transition:all .15s">
+            <span style="font-size:18px">${t.icon}</span>
+            <span style="font-size:13px;font-weight:${S.tipoServicio===t.id?'700':'500'};color:${S.tipoServicio===t.id?'#1a3a6a':'#374151'}">${t.name}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    ${!S.tipoServicio ? '<div style="background:#fff8f2;border:1.5px solid #f0c090;border-radius:9px;padding:11px 13px;font-size:13px;color:#a06010;margin-bottom:14px;display:flex;gap:9px;align-items:center"><span style="font-size:17px">⚠️</span><b>Selecciona el tipo de servicio para continuar</b></div>' : ''}
+
     <div class="input-row">
       <div class="field"><label class="label">Ticket / Folio</label><input class="input" placeholder="#2320" value="${S.ticket}" oninput="S.ticket=this.value"></div>
       <div class="field"><label class="label">Fecha</label><input class="input" type="date" value="${S.fecha}" oninput="S.fecha=this.value"></div>
@@ -541,6 +575,124 @@ const STEPS = {
     </div>` : ''}`,
 
   3: () => {
+    const ts = S.tipoServicio;
+
+    // MANTENIMIENTO — insumos
+    if (ts === 'mantenimiento') return `
+      <div class="section-title">Insumos utilizados</div>
+      <div class="section-sub">Registra los materiales y refacciones usados en este mantenimiento</div>
+
+      <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">🛢️ Aceites y líquidos</div>
+        <div class="input-row">
+          <div class="field"><label class="label">Aceite de motor — litros</label><input class="input" placeholder="Ej. 24 L" value="${S.ins_aceite_lt||''}" oninput="S.ins_aceite_lt=this.value"></div>
+          <div class="field"><label class="label">Especificación</label><input class="input" placeholder="Ej. 15W-40 API CI-4" value="${S.ins_aceite_esp||''}" oninput="S.ins_aceite_esp=this.value"></div>
+        </div>
+        <div class="input-row">
+          <div class="field"><label class="label">Anticongelante — litros</label><input class="input" placeholder="Ej. 10 L" value="${S.ins_anti_lt||''}" oninput="S.ins_anti_lt=this.value"></div>
+          <div class="field"><label class="label">Especificación</label><input class="input" placeholder="Ej. OAT Verde" value="${S.ins_anti_esp||''}" oninput="S.ins_anti_esp=this.value"></div>
+        </div>
+      </div>
+
+      <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">🔩 Filtros</div>
+        ${[
+          {key:'f_aceite', label:'Filtro de aceite'},
+          {key:'f_combustible', label:'Filtro de combustible'},
+          {key:'f_separador', label:'Separador de agua / Racord'},
+          {key:'f_anticongelante', label:'Filtro de anticongelante'},
+          {key:'f_aire', label:'Filtro de aire'}
+        ].map(f => `
+          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#fff">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${S['use_'+f.key]?'8px':'0'}">
+              <span style="font-size:13px;font-weight:600;color:#374151">${f.label}</span>
+              <div onclick="S['use_'+f.key]=!S['use_'+f.key];render()" style="width:44px;height:24px;border-radius:12px;background:${S['use_'+f.key]?'#1a5fa8':'#e5e7eb'};cursor:pointer;position:relative;transition:all .2s">
+                <div style="width:20px;height:20px;border-radius:10px;background:#fff;position:absolute;top:2px;${S['use_'+f.key]?'right:2px':'left:2px'};transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
+              </div>
+            </div>
+            ${S['use_'+f.key] ? `
+            <div class="input-row">
+              <div class="field"><label class="label">No. de parte</label><input class="input" placeholder="Número de parte" value="${S[f.key+'_parte']||''}" oninput="S['${f.key}_parte']=this.value"></div>
+              <div class="field"><label class="label">Cantidad</label><input class="input" type="number" min="1" placeholder="1" value="${S[f.key+'_cant']||''}" oninput="S['${f.key}_cant']=this.value"></div>
+            </div>` : ''}
+          </div>`).join('')}
+      </div>`;
+
+    // REPARACIÓN — componentes reemplazados
+    if (ts === 'reparacion') return `
+      <div class="section-title">Componentes reemplazados</div>
+      <div class="section-sub">Registra qué se reparó o reemplazó en este servicio</div>
+      <div id="comp-list">
+        ${(S.componentes||[]).map((c,i) => `
+        <div style="border:1.5px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:10px;background:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase">Componente ${i+1}</span>
+            <span onclick="S.componentes.splice(${i},1);render()" style="color:#e87a2a;font-size:12px;cursor:pointer;font-weight:700">✕ Quitar</span>
+          </div>
+          <div class="field"><label class="label">Equipo</label>
+            <select class="input select" onchange="S.componentes[${i}].equipo=this.value">
+              <option value="">Seleccionar...</option>
+              <option ${c.equipo==='generador'?'selected':''} value="generador">Generador</option>
+              <option ${c.equipo==='tta'?'selected':''} value="tta">Tablero de transferencia</option>
+              <option ${c.equipo==='motor'?'selected':''} value="motor">Motor</option>
+              <option ${c.equipo==='alternador'?'selected':''} value="alternador">Alternador</option>
+              <option ${c.equipo==='tablero'?'selected':''} value="tablero">Tablero de control</option>
+              <option ${c.equipo==='otro'?'selected':''} value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="field"><label class="label">Componente reemplazado</label>
+            <input class="input" placeholder="Ej. Módulo de control HIMOINSA" value="${c.nombre||''}" oninput="S.componentes[${i}].nombre=this.value">
+          </div>
+          <div class="field"><label class="label">No. de parte (opcional)</label>
+            <input class="input" placeholder="Número de parte" value="${c.parte||''}" oninput="S.componentes[${i}].parte=this.value">
+          </div>
+        </div>`).join('')}
+      </div>
+      <div onclick="if(!S.componentes)S.componentes=[];S.componentes.push({equipo:'',nombre:'',parte:''});render()" 
+        style="border:2px dashed #1a5fa8;border-radius:10px;padding:14px;text-align:center;cursor:pointer;color:#1a5fa8;font-weight:700;font-size:14px;background:#f0f5ff">
+        + Agregar componente reemplazado
+      </div>
+      <div class="field" style="margin-top:14px"><label class="label">Resolución final de la reparación</label>
+        <textarea class="input" rows="4" placeholder="Describe el resultado final de la reparación y si el equipo quedó operativo..." oninput="S.resolucion=this.value">${S.resolucion||''}</textarea>
+      </div>`;
+
+    // GARANTÍA
+    if (ts === 'garantia') return `
+      <div class="section-title">Datos de garantía</div>
+      <div class="section-sub">Registra la información relevante para la validación de garantía</div>
+      <div class="field"><label class="label">Número de garantía / referencia</label>
+        <input class="input" placeholder="Número de caso o referencia" value="${S.numGarantia||''}" oninput="S.numGarantia=this.value">
+      </div>
+      <div class="field"><label class="label">Descripción del problema reportado por el cliente</label>
+        <textarea class="input" rows="3" placeholder="¿Qué reportó el cliente?" oninput="S.probGarantia=this.value">${S.probGarantia||''}</textarea>
+      </div>
+      <div class="field"><label class="label">Dictamen de garantía</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
+          ${[
+            {id:'aprobado', icon:'✅', label:'Aprobado', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
+            {id:'no_aprobado', icon:'❌', label:'No aprobado', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
+            {id:'por_validar', icon:'⏳', label:'Por validar', color:'#6b7280', bg:'#f3f4f6', border:'#9ca3af'}
+          ].map(d => `
+            <div onclick="S.dictamen='${d.id}';render()" style="border:2px solid ${S.dictamen===d.id?d.border:'#e5e7eb'};border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;background:${S.dictamen===d.id?d.bg:'#fff'};transition:all .15s">
+              <div style="font-size:22px;margin-bottom:4px">${d.icon}</div>
+              <div style="font-size:12px;font-weight:700;color:${S.dictamen===d.id?d.color:'#6b7280'}">${d.label}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+
+    // CIERRE DE CONEXIONES / SOLAR / DEFAULT
+    return `
+      <div class="section-title">Detalles del servicio</div>
+      <div class="section-sub">Registra los detalles específicos de este servicio</div>
+      <div class="field"><label class="label">Descripción del trabajo realizado</label>
+        <textarea class="input" rows="5" placeholder="Describe detalladamente el trabajo realizado..." oninput="S.detalleServicio=this.value">${S.detalleServicio||''}</textarea>
+      </div>`;
+  },
+  4: () => STEPS.REAL3(),
+  5: () => STEPS.REAL4(),
+  6: () => STEPS.REAL5(),
+
+  REAL_PASO3: () => {
     const secs = getSecs();
     if (!secs.length) return '<div class="alert-box"><i class="ti ti-info-circle"></i>Regresa al paso anterior y selecciona el tipo de equipo.</div>';
     const mal = Object.values(S.checks).filter(v=>v==='mal').length;
@@ -552,7 +704,7 @@ const STEPS = {
       ${secs.map(s=>rSec(s)).join('')}`;
   },
 
-  4: () => `
+  REAL4: () => `
     <div class="section-title">Pruebas técnicas</div>
     <div class="section-sub">Registra los parámetros medidos durante el servicio</div>
 
@@ -610,7 +762,7 @@ const STEPS = {
     <div class="field"><label class="label">Conclusión y recomendaciones</label>
       <textarea class="input" rows="4" placeholder="Conclusión técnica y próximos pasos recomendados..." oninput="S.conclusion=this.value">${S.conclusion}</textarea></div>`,
 
-  5: () => `
+  REAL5: () => `
     <div class="section-title">Firmas de conformidad</div>
     <div class="section-sub">Firma con el dedo directamente en la pantalla</div>
 
@@ -659,15 +811,15 @@ function uH() {
 
 function render() {
   document.getElementById('content').innerHTML = STEPS[step]();
-  document.getElementById('prog').style.width = (step/5*100)+'%';
-  for (let i=1;i<=5;i++) {
+  document.getElementById('prog').style.width = (step/TOTAL_STEPS*100)+'%';
+  for (let i=1;i<=TOTAL_STEPS;i++) {
     const el = document.getElementById('sl'+i);
     el.className = 'sd'+(i===step?' active':i<step?' done':'');
   }
   document.getElementById('btn-back').style.display = step>1?'flex':'none';
-  document.getElementById('btn-next').textContent = step===5?'Finalizar ✓':'Continuar →';
+  document.getElementById('btn-next').textContent = step===TOTAL_STEPS?'Finalizar ✓':'Continuar →';
   uH();
-  if (step===5) {
+  if (step===6) {
     setTimeout(()=>{
       initCanvas('canvasTec','sigTec');
       initCanvas('canvasCli','sigCli');
@@ -676,11 +828,45 @@ function render() {
 }
 
 function nav(d) {
+  if (d > 0) {
+    // Validaciones por paso
+    if (step===1) {
+      if (!S.tipoServicio) return showAlert('⚠️ Selecciona el tipo de servicio para continuar');
+      if (!S.cliente) return showAlert('⚠️ El nombre del cliente es obligatorio');
+      if (!S.empresa) return showAlert('⚠️ El nombre de la empresa es obligatorio');
+      if (!S.responsable) return showAlert('⚠️ Indica el responsable del diagnóstico');
+    }
+    if (step===2) {
+      if (!S.tipoEquipo) return showAlert('⚠️ Selecciona el tipo de equipo');
+      if ((S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') && !S.tipoControl) return showAlert('⚠️ Selecciona el tipo de control del motor');
+    }
+    if (step===4) {
+      const secs = getSecs();
+      const malSinFoto = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fF[k]&&S.fF[k].length));
+      const malSinDesc = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fallaDesc&&S.fallaDesc[k]));
+      if (malSinFoto.length > 0) return showAlert(`📸 Tienes ${malSinFoto.length} punto(s) con falla sin foto de evidencia — es obligatoria`);
+      if (malSinDesc.length > 0) return showAlert(`📝 Tienes ${malSinDesc.length} punto(s) con falla sin descripción — describe qué encontraste`);
+    }
+  }
   const n = step+d;
-  if (n<1||n>5) return;
+  if (n<1||n>TOTAL_STEPS) return;
   step=n; render();
   document.getElementById('content').scrollTop=0;
   window.scrollTo(0,0);
+}
+
+function showAlert(msg) {
+  const existing = document.getElementById('nav-alert');
+  if (existing) existing.remove();
+  const div = document.createElement('div');
+  div.id = 'nav-alert';
+  div.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+  div.innerHTML = `<div style="background:#fff;border-radius:16px;padding:24px;max-width:340px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="font-size:40px;margin-bottom:12px">${msg.slice(0,2)}</div>
+    <div style="font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:20px;line-height:1.4">${msg.slice(2).trim()}</div>
+    <button onclick="document.getElementById('nav-alert').remove()" style="background:#1a5fa8;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-size:15px;font-weight:700;cursor:pointer;width:100%">Entendido</button>
+  </div>`;
+  document.body.appendChild(div);
 }
 
 
@@ -724,11 +910,12 @@ function seccionChecklist(sid) {
     const k = sid+'_'+i, v = S.checks[k]||'';
     const color = v==='ok'?'#dcf5e4':v==='mal'?'#ffe4d0':v==='na'?'#f3f4f6':'#fff';
     const badge = v==='ok'?'<span style="color:#1a7a3a;font-weight:700">✓ Bien</span>':v==='mal'?'<span style="color:#b85a10;font-weight:700">✗ Mal</span>':v==='na'?'<span style="color:#6b7280">— N/A</span>':'<span style="color:#9ca3af">—</span>';
+    const desc = (S.fallaDesc&&S.fallaDesc[k]) ? `<div style="font-size:11px;color:#b85a10;margin-top:3px;font-style:italic">↳ ${S.fallaDesc[k]}</div>` : '';
     // Fotos de falla
     const fArr = S.fF[k]||[];
     const fotosTd = fArr.length ? `<td style="padding:6px 8px;background:${color}">${fArr.map(b=>`<img src="${b}" style="width:48px;height:48px;object-fit:cover;border-radius:5px;border:1px solid #ddd;margin-right:3px">`).join('')}</td>` : `<td style="background:${color}"></td>`;
     return `<tr style="border-bottom:1px solid #f3f4f6">
-      <td style="padding:7px 10px;font-size:12px;background:${color}">${item}</td>
+      <td style="padding:7px 10px;font-size:12px;background:${color}">${item}${desc}</td>
       <td style="padding:7px 10px;text-align:center;font-size:12px;background:${color}">${badge}</td>
       ${fotosTd}
     </tr>`;
@@ -797,7 +984,13 @@ function generarReporte(tipo) {
   win.document.write(headerHtml());
 
   // Título
-  win.document.write(`<div class="titulo">REPORTE DE SERVICIO DE DIAGNÓSTICO</div>`);
+  const tipoServicioLabel = {
+    diagnostico:'Diagnóstico', mantenimiento:'Mantenimiento preventivo',
+    reparacion:'Reparación', garantia:'Atención a garantía',
+    cierre:'Cierre de conexiones TTA-Generador', solar:'Instalación de paneles solares'
+  }[S.tipoServicio]||S.tipoServicio||'—';
+
+  win.document.write(`<div class="titulo">REPORTE DE SERVICIO — ${tipoServicioLabel.toUpperCase()}</div>`);
 
   // Sección 1: Datos generales
   win.document.write(`<div class="seccion-body">
@@ -883,6 +1076,42 @@ function generarReporte(tipo) {
     <div class="dato"><span class="dato-label">V L1-L3 (red normal)</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
     <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
     ${S.pv_bat ? `<div class="dato"><span class="dato-label">V batería control</span><span class="dato-val">${S.pv_bat} VCC</span></div>` : ''}
+  </div>` : ''}
+
+  ${S.tipoServicio==='mantenimiento' ? `
+  <h2>4b. Insumos utilizados</h2>
+  <div class="datos-grid">
+    ${S.ins_aceite_lt ? `<div class="dato"><span class="dato-label">Aceite motor</span><span class="dato-val">${S.ins_aceite_lt} L — ${S.ins_aceite_esp||'—'}</span></div>` : ''}
+    ${S.ins_anti_lt ? `<div class="dato"><span class="dato-label">Anticongelante</span><span class="dato-val">${S.ins_anti_lt} L — ${S.ins_anti_esp||'—'}</span></div>` : ''}
+    ${S.use_f_aceite ? `<div class="dato"><span class="dato-label">Filtro de aceite</span><span class="dato-val">Parte: ${S.f_aceite_parte||'—'} · Cant: ${S.f_aceite_cant||'—'}</span></div>` : ''}
+    ${S.use_f_combustible ? `<div class="dato"><span class="dato-label">Filtro combustible</span><span class="dato-val">Parte: ${S.f_combustible_parte||'—'} · Cant: ${S.f_combustible_cant||'—'}</span></div>` : ''}
+    ${S.use_f_separador ? `<div class="dato"><span class="dato-label">Separador agua</span><span class="dato-val">Parte: ${S.f_separador_parte||'—'} · Cant: ${S.f_separador_cant||'—'}</span></div>` : ''}
+    ${S.use_f_anticongelante ? `<div class="dato"><span class="dato-label">Filtro anticongelante</span><span class="dato-val">Parte: ${S.f_anticongelante_parte||'—'} · Cant: ${S.f_anticongelante_cant||'—'}</span></div>` : ''}
+    ${S.use_f_aire ? `<div class="dato"><span class="dato-label">Filtro de aire</span><span class="dato-val">Parte: ${S.f_aire_parte||'—'} · Cant: ${S.f_aire_cant||'—'}</span></div>` : ''}
+  </div>` : ''}
+
+  ${S.tipoServicio==='reparacion' && S.componentes && S.componentes.length ? `
+  <h2>4b. Componentes reemplazados</h2>
+  <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:14px">
+    <thead><tr style="background:#0a2240;color:#fff">
+      <th style="padding:8px 12px;text-align:left;font-size:12px">Equipo</th>
+      <th style="padding:8px 12px;text-align:left;font-size:12px">Componente</th>
+      <th style="padding:8px 12px;text-align:left;font-size:12px">No. de parte</th>
+    </tr></thead>
+    <tbody>${(S.componentes||[]).map((c,i)=>`<tr style="background:${i%2?'#f8f9fa':'#fff'};border-bottom:1px solid #f3f4f6">
+      <td style="padding:8px 12px;font-size:12px">${c.equipo||'—'}</td>
+      <td style="padding:8px 12px;font-size:12px">${c.nombre||'—'}</td>
+      <td style="padding:8px 12px;font-size:12px">${c.parte||'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table>
+  <h3>Resolución final</h3>
+  <div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7">${S.resolucion||'—'}</div>` : ''}
+
+  ${S.tipoServicio==='garantia' ? `
+  <h2>4b. Dictamen de garantía</h2>
+  <div style="text-align:center;padding:20px;border:2px solid ${S.dictamen==='aprobado'?'#4caf70':S.dictamen==='no_aprobado'?'#e87a2a':'#9ca3af'};border-radius:12px;background:${S.dictamen==='aprobado'?'#dcf5e4':S.dictamen==='no_aprobado'?'#ffe4d0':'#f3f4f6'};margin-bottom:14px">
+    <div style="font-size:40px;margin-bottom:8px">${S.dictamen==='aprobado'?'✅':S.dictamen==='no_aprobado'?'❌':'⏳'}</div>
+    <div style="font-size:20px;font-weight:700;color:${S.dictamen==='aprobado'?'#1a7a3a':S.dictamen==='no_aprobado'?'#b85a10':'#6b7280'}">${S.dictamen==='aprobado'?'GARANTÍA APROBADA':S.dictamen==='no_aprobado'?'GARANTÍA NO APROBADA':'GARANTÍA POR VALIDAR'}</div>
   </div>` : ''}
 
   <h2>5. Hallazgos y conclusión</h2>
