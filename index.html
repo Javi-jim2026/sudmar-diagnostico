@@ -531,8 +531,56 @@ const STEPS = {
       <div id="ubicacion-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:220px;overflow-y:auto"></div>
       <div style="font-size:11px;color:#9ca3af;margin-top:4px">💡 Escribe para buscar dirección — requiere internet</div>
     </div>
-    <div class="field"><label class="label">Responsable del diagnóstico</label><input class="input" placeholder="Nombre" value="${S.responsable}" oninput="S.responsable=this.value"></div>
-    <div class="field"><label class="label">Técnico(s)</label><input class="input" placeholder="Nombres separados por coma" value="${S.tecnicos}" oninput="S.tecnicos=this.value"></div>`,
+    <div class="field">
+      <label class="label">Responsable del diagnóstico</label>
+      <select class="input select" onchange="S.responsable=this.value">
+        <option value="">Seleccionar responsable...</option>
+        <option ${S.responsable==="Ing. Javier Jiménez"?'selected':''} value="Ing. Javier Jiménez">Ing. Javier Jiménez</option>
+<option ${S.responsable==="Ing. Daniel Hernández"?'selected':''} value="Ing. Daniel Hernández">Ing. Daniel Hernández</option>
+<option ${S.responsable==="Ing. Enrique González"?'selected':''} value="Ing. Enrique González">Ing. Enrique González</option>
+<option ${S.responsable==="Ing. Saúl González"?'selected':''} value="Ing. Saúl González">Ing. Saúl González</option>
+<option ${S.responsable==="Ing. Hernán Reyes"?'selected':''} value="Ing. Hernán Reyes">Ing. Hernán Reyes</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="label">Técnico(s) que realizó el servicio</label>
+      <div style="border:1.5px solid #e5e7eb;border-radius:9px;overflow:hidden;background:#fff">
+                <label style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid #f3f4f6;cursor:pointer">
+          <input type="checkbox" ${(S.tecnicosArr||[]).includes("Ing. Javier Jiménez")?'checked':''} 
+            onchange="if(!S.tecnicosArr)S.tecnicosArr=[];if(this.checked){S.tecnicosArr.push('Ing. Javier Jiménez')}else{S.tecnicosArr=S.tecnicosArr.filter(x=>x!=='Ing. Javier Jiménez')};S.tecnicos=S.tecnicosArr.join(', ')"
+            style="width:16px;height:16px;accent-color:#1a5fa8;flex-shrink:0">
+          <span style="font-size:13px;color:#374151">Ing. Javier Jiménez</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid #f3f4f6;cursor:pointer">
+          <input type="checkbox" ${(S.tecnicosArr||[]).includes("Ing. Daniel Hernández")?'checked':''} 
+            onchange="if(!S.tecnicosArr)S.tecnicosArr=[];if(this.checked){S.tecnicosArr.push('Ing. Daniel Hernández')}else{S.tecnicosArr=S.tecnicosArr.filter(x=>x!=='Ing. Daniel Hernández')};S.tecnicos=S.tecnicosArr.join(', ')"
+            style="width:16px;height:16px;accent-color:#1a5fa8;flex-shrink:0">
+          <span style="font-size:13px;color:#374151">Ing. Daniel Hernández</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid #f3f4f6;cursor:pointer">
+          <input type="checkbox" ${(S.tecnicosArr||[]).includes("Ing. Enrique González")?'checked':''} 
+            onchange="if(!S.tecnicosArr)S.tecnicosArr=[];if(this.checked){S.tecnicosArr.push('Ing. Enrique González')}else{S.tecnicosArr=S.tecnicosArr.filter(x=>x!=='Ing. Enrique González')};S.tecnicos=S.tecnicosArr.join(', ')"
+            style="width:16px;height:16px;accent-color:#1a5fa8;flex-shrink:0">
+          <span style="font-size:13px;color:#374151">Ing. Enrique González</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid #f3f4f6;cursor:pointer">
+          <input type="checkbox" ${(S.tecnicosArr||[]).includes("Ing. Saúl González")?'checked':''} 
+            onchange="if(!S.tecnicosArr)S.tecnicosArr=[];if(this.checked){S.tecnicosArr.push('Ing. Saúl González')}else{S.tecnicosArr=S.tecnicosArr.filter(x=>x!=='Ing. Saúl González')};S.tecnicos=S.tecnicosArr.join(', ')"
+            style="width:16px;height:16px;accent-color:#1a5fa8;flex-shrink:0">
+          <span style="font-size:13px;color:#374151">Ing. Saúl González</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid #f3f4f6;cursor:pointer">
+          <input type="checkbox" ${(S.tecnicosArr||[]).includes("Ing. Hernán Reyes")?'checked':''} 
+            onchange="if(!S.tecnicosArr)S.tecnicosArr=[];if(this.checked){S.tecnicosArr.push('Ing. Hernán Reyes')}else{S.tecnicosArr=S.tecnicosArr.filter(x=>x!=='Ing. Hernán Reyes')};S.tecnicos=S.tecnicosArr.join(', ')"
+            style="width:16px;height:16px;accent-color:#1a5fa8;flex-shrink:0">
+          <span style="font-size:13px;color:#374151">Ing. Hernán Reyes</span>
+        </label>
+        <div style="padding:9px 13px">
+          <label style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px">Técnico externo / adicional (opcional)</label>
+          <input class="input" placeholder="Nombre del técnico externo o adicional" value="${S.tecnicoExterno||''}" oninput="S.tecnicoExterno=this.value;S.tecnicos=(S.tecnicosArr||[]).concat(this.value?[this.value]:[]).join(', ')" style="margin:0">
+        </div>
+      </div>
+    </div>`,
 
   2: () => `
     <div class="section-title">Tipo de equipo</div>
