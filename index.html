@@ -574,7 +574,30 @@ const STEPS = {
     </div>
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Datos de alternador (placa OEM)</div>
-      <div class="field"><label class="label">Marca y modelo de alternador</label><input class="input" placeholder="Ej. Endress EGK 220" value="${S.marcaAlt||''}" oninput="S.marcaAlt=this.value"></div>
+      <div class="field">
+        <label class="label">Marca de alternador</label>
+        <select class="input select" onchange="S.marcaAlt=this.value;S.marcaAltOtra='';render()">
+          <option value="">Seleccionar marca...</option>
+          <option ${S.marcaAlt==="Stamford"?'selected':''} value="Stamford">Stamford</option>
+<option ${S.marcaAlt==="Leroy-Somer"?'selected':''} value="Leroy-Somer">Leroy-Somer</option>
+<option ${S.marcaAlt==="Mecc Alte"?'selected':''} value="Mecc Alte">Mecc Alte</option>
+<option ${S.marcaAlt==="Marathon Electric"?'selected':''} value="Marathon Electric">Marathon Electric</option>
+<option ${S.marcaAlt==="Engga"?'selected':''} value="Engga">Engga</option>
+<option ${S.marcaAlt==="Sincro"?'selected':''} value="Sincro">Sincro</option>
+<option ${S.marcaAlt==="Linz Electric"?'selected':''} value="Linz Electric">Linz Electric</option>
+<option ${S.marcaAlt==="Faraday"?'selected':''} value="Faraday">Faraday</option>
+<option ${S.marcaAlt==="EvoTec"?'selected':''} value="EvoTec">EvoTec</option>
+<option ${S.marcaAlt==="Kaijieli"?'selected':''} value="Kaijieli">Kaijieli</option>
+<option ${S.marcaAlt==="JDG"?'selected':''} value="JDG">JDG</option>
+<option ${S.marcaAlt==="Potencia"?'selected':''} value="Potencia">Potencia</option>
+          <option ${S.marcaAlt==='otra'?'selected':''} value="otra">Otra marca...</option>
+        </select>
+      </div>
+      ${S.marcaAlt==='otra' ? `
+      <div class="field"><label class="label">Especifica la marca</label>
+        <input class="input" placeholder="Escribe la marca del alternador" value="${S.marcaAltOtra||''}" oninput="S.marcaAltOtra=this.value">
+      </div>` : ''}
+      <div class="field"><label class="label">Modelo de alternador</label><input class="input" placeholder="Ej. HCK4-844F" value="${S.modeloAlt||''}" oninput="S.modeloAlt=this.value"></div>
       <div class="field"><label class="label">Serie de alternador</label><input class="input" placeholder="Número de serie" value="${S.serieAlt||''}" oninput="S.serieAlt=this.value"></div>
     </div>` : ''}
 
@@ -1147,9 +1170,11 @@ ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
   <div class="dato"><span class="dato-label">Horómetro</span><span class="dato-val">${S.horometro||'—'} hrs</span></div>
   <div class="dato"><span class="dato-label">Potencia</span><span class="dato-val">${S.potencia||'—'} kW</span></div>
   <div class="dato"><span class="dato-label">Voltaje</span><span class="dato-val">${S.voltaje||'—'}</span></div>
-  <div class="dato"><span class="dato-label">Motor</span><span class="dato-val">${S.marcaMotor||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Marca motor</span><span class="dato-val">${S.marcaMotor==='otra'?S.marcaMotorOtra:S.marcaMotor||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Modelo motor</span><span class="dato-val">${S.modeloMotor||'—'}</span></div>
   <div class="dato"><span class="dato-label">Serie motor</span><span class="dato-val">${S.serieMotor||'—'}</span></div>
-  <div class="dato"><span class="dato-label">Alternador</span><span class="dato-val">${S.marcaAlt||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Marca alternador</span><span class="dato-val">${S.marcaAlt==='otra'?S.marcaAltOtra:S.marcaAlt||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Modelo alternador</span><span class="dato-val">${S.modeloAlt||'—'}</span></div>
   <div class="dato"><span class="dato-label">Serie alternador</span><span class="dato-val">${S.serieAlt||'—'}</span></div>
   <div class="dato"><span class="dato-label">Tipo control</span><span class="dato-val">${S.tipoControl==='ecu'?'ECU / CAN':S.tipoControl==='gobernador'?'Gobernador electrónico':S.tipoControl==='mecanico'?'Mecánico':'—'}</span></div>
 </div>` : ''}
