@@ -517,7 +517,115 @@ const STEPS = {
       <div class="field"><label class="label">Fecha</label><input class="input" type="date" value="${S.fecha}" oninput="S.fecha=this.value"></div>
     </div>
     <div class="field"><label class="label">Cliente / Solicitante</label><input class="input" placeholder="Nombre" value="${S.cliente}" oninput="S.cliente=this.value"></div>
-    <div class="field"><label class="label">Empresa</label><input class="input" placeholder="Nombre de la empresa" value="${S.empresa}" oninput="S.empresa=this.value"></div>
+    <div class="field"><label class="label">Empresa / Cliente</label>
+      <select class="input select" onchange="S.empresa=this.value;render()">
+        <option value="">Seleccionar empresa...</option>
+        <option value="ACSA">ACSA</option>
+<option value="ADNR MAQUINARIA">ADNR MAQUINARIA</option>
+<option value="ADRIAN SANDOVAL">ADRIAN SANDOVAL</option>
+<option value="ALCO">ALCO</option>
+<option value="ALMACEN">ALMACEN</option>
+<option value="AMEXDER">AMEXDER</option>
+<option value="ANA GABRIELA LOPEZ MONTIEL">ANA GABRIELA LOPEZ MONTIEL</option>
+<option value="ANA LILIA">ANA LILIA</option>
+<option value="ANTONIO L">ANTONIO L</option>
+<option value="ATLAS POWER RENT">ATLAS POWER RENT</option>
+<option value="AVICOLA 4 HERMANOS">AVICOLA 4 HERMANOS</option>
+<option value="BIMBO MUSEO">BIMBO MUSEO</option>
+<option value="BRESEC IT">BRESEC IT</option>
+<option value="BULMATICK">BULMATICK</option>
+<option value="C LOGISTIC">C LOGISTIC</option>
+<option value="CAJA INMACULADA">CAJA INMACULADA</option>
+<option value="CARGO EM">CARGO EM</option>
+<option value="CARLOS MERAZ">CARLOS MERAZ</option>
+<option value="CASINO">CASINO</option>
+<option value="CENTRO DE ESTUDIOS FELIPE VILLANUEVA">CENTRO DE ESTUDIOS FELIPE VILLANUEVA</option>
+<option value="COMPAÑIA MINERA ZILAR MENDI">COMPAÑIA MINERA ZILAR MENDI</option>
+<option value="COMPRESORES Y MAQUINARIA">COMPRESORES Y MAQUINARIA</option>
+<option value="CORAL GROUP">CORAL GROUP</option>
+<option value="DAVID ROMERO">DAVID ROMERO</option>
+<option value="DESARROLLO INMOBILIARIO EWOK">DESARROLLO INMOBILIARIO EWOK</option>
+<option value="EDER">EDER</option>
+<option value="EEBSA">EEBSA</option>
+<option value="EEBSA BACKUP POWER">EEBSA BACKUP POWER</option>
+<option value="ENERGIA ADAPTABLE">ENERGIA ADAPTABLE</option>
+<option value="ENERGIA FARI">ENERGIA FARI</option>
+<option value="EPBS">EPBS</option>
+<option value="ESTRELLA MORA">ESTRELLA MORA</option>
+<option value="FIIX">FIIX</option>
+<option value="FISCALIA GENERAL DE QUERETARO">FISCALIA GENERAL DE QUERETARO</option>
+<option value="FLAVIO LIZARDO">FLAVIO LIZARDO</option>
+<option value="FRANCISCO ORDAZ">FRANCISCO ORDAZ</option>
+<option value="G Y E CONSTRUCTORA E INSTALACIONES ELECTROMECANICAS">G Y E CONSTRUCTORA E INSTALACIONES ELECTROMECANICAS</option>
+<option value="GASOLINERO">GASOLINERO</option>
+<option value="GENERA OIL & GAS">GENERA OIL & GAS</option>
+<option value="GENERAC">GENERAC</option>
+<option value="GH POWER">GH POWER</option>
+<option value="GIKSA">GIKSA</option>
+<option value="GILBERTO">GILBERTO</option>
+<option value="GIMESA">GIMESA</option>
+<option value="GMAQ">GMAQ</option>
+<option value="GRUPO BELLEI">GRUPO BELLEI</option>
+<option value="GRUPO TORRESA">GRUPO TORRESA</option>
+<option value="GUILLERMO CHINCHILLAS">GUILLERMO CHINCHILLAS</option>
+<option value="GYP">GYP</option>
+<option value="HUMBERTO / JASSCA">HUMBERTO / JASSCA</option>
+<option value="ICMAQ">ICMAQ</option>
+<option value="INDUSTRIAL ALDAKE">INDUSTRIAL ALDAKE</option>
+<option value="ITISA">ITISA</option>
+<option value="JAGUAR">JAGUAR</option>
+<option value="JASSCA">JASSCA</option>
+<option value="JESUS GARCIA">JESUS GARCIA</option>
+<option value="JORGE REA">JORGE REA</option>
+<option value="JOSE LUIS ARIAS">JOSE LUIS ARIAS</option>
+<option value="JOSE MANUEL HUERTA">JOSE MANUEL HUERTA</option>
+<option value="JUAN JOSE">JUAN JOSE</option>
+<option value="KAESER">KAESER</option>
+<option value="KARENTAL">KARENTAL</option>
+<option value="LA ENERGY">LA ENERGY</option>
+<option value="LA TEXTILERA">LA TEXTILERA</option>
+<option value="LIZARDO">LIZARDO</option>
+<option value="LUMA EQUIPOS INDUSTRIALES">LUMA EQUIPOS INDUSTRIALES</option>
+<option value="MARTE PRODUCCIONES">MARTE PRODUCCIONES</option>
+<option value="MIGUEL">MIGUEL</option>
+<option value="ML">ML</option>
+<option value="NUCITEC">NUCITEC</option>
+<option value="NW ENERGY RENT">NW ENERGY RENT</option>
+<option value="OFICINAS">OFICINAS</option>
+<option value="PAS APPLIANCE">PAS APPLIANCE</option>
+<option value="PASTES KIKOS">PASTES KIKOS</option>
+<option value="PINOTECNIA">PINOTECNIA</option>
+<option value="PINTROTECHOS">PINTROTECHOS</option>
+<option value="PLANTI RENT">PLANTI RENT</option>
+<option value="PLAZA MIRAVAL">PLAZA MIRAVAL</option>
+<option value="PMA">PMA</option>
+<option value="PODER EN RENTA">PODER EN RENTA</option>
+<option value="PRETTL">PRETTL</option>
+<option value="RABI">RABI</option>
+<option value="RANCHO LA JOAQUINA">RANCHO LA JOAQUINA</option>
+<option value="RELESUR">RELESUR</option>
+<option value="RENTA DE PLANTAS">RENTA DE PLANTAS</option>
+<option value="RENTA MAQ RIVAS">RENTA MAQ RIVAS</option>
+<option value="SALON DE ELEANOR">SALON DE ELEANOR</option>
+<option value="SAUL ARELLANO">SAUL ARELLANO</option>
+<option value="SAUL GONZALEZ">SAUL GONZALEZ</option>
+<option value="SOCCCMA">SOCCCMA</option>
+<option value="TEXTILERA">TEXTILERA</option>
+<option value="TIGESA">TIGESA</option>
+<option value="TOKYO">TOKYO</option>
+<option value="TORRESA">TORRESA</option>
+<option value="UNISER">UNISER</option>
+<option value="VEGETALES ATLIXCO">VEGETALES ATLIXCO</option>
+<option value="VILALPE">VILALPE</option>
+<option value="VLADIMIR VILLAGOMEZ">VLADIMIR VILLAGOMEZ</option>
+<option value="VOLTAX">VOLTAX</option>
+<option value="YELLOW EQUIPMENT">YELLOW EQUIPMENT</option>
+<option value="YOSAFAT JOEL JUAREZ LOZANO">YOSAFAT JOEL JUAREZ LOZANO</option>
+        <option value="otro">Otro cliente (nuevo)...</option>
+      </select>
+    </div>
+    ${S.empresa==='otro' ? `<div class="field"><label class="label">Nombre del cliente nuevo</label><input class="input" placeholder="Escribe el nombre" value="${S.empresaOtra||''}" oninput="S.empresaOtra=this.value"></div>` : ''}
+    
     <div class="field" style="position:relative">
       <label class="label">Ubicación</label>
       <div style="position:relative">
@@ -535,11 +643,12 @@ const STEPS = {
       <label class="label">Responsable del diagnóstico</label>
       <select class="input select" onchange="S.responsable=this.value">
         <option value="">Seleccionar responsable...</option>
-        <option ${S.responsable==="Ing. Javier Jiménez"?'selected':''} value="Ing. Javier Jiménez">Ing. Javier Jiménez</option>
-<option ${S.responsable==="Ing. Daniel Hernández"?'selected':''} value="Ing. Daniel Hernández">Ing. Daniel Hernández</option>
-<option ${S.responsable==="Ing. Enrique González"?'selected':''} value="Ing. Enrique González">Ing. Enrique González</option>
-<option ${S.responsable==="Ing. Saúl González"?'selected':''} value="Ing. Saúl González">Ing. Saúl González</option>
-<option ${S.responsable==="Ing. Hernán Reyes"?'selected':''} value="Ing. Hernán Reyes">Ing. Hernán Reyes</option>
+        <option value="Ing. Javier Jiménez">Ing. Javier Jiménez</option>
+<option value="Ing. Daniel Hernández">Ing. Daniel Hernández</option>
+<option value="Ing. Enrique González">Ing. Enrique González</option>
+<option value="Ing. Saúl González">Ing. Saúl González</option>
+<option value="Ing. Hernán Reyes">Ing. Hernán Reyes</option>
+<option value="Ing. Rodolfo Martínez">Ing. Rodolfo Martínez</option>
       </select>
     </div>
     <div class="field">
@@ -574,6 +683,12 @@ const STEPS = {
             onchange="if(!S.tecnicosArr)S.tecnicosArr=[];if(this.checked){S.tecnicosArr.push('Ing. Hernán Reyes')}else{S.tecnicosArr=S.tecnicosArr.filter(x=>x!=='Ing. Hernán Reyes')};S.tecnicos=S.tecnicosArr.join(', ')"
             style="width:16px;height:16px;accent-color:#1a5fa8;flex-shrink:0">
           <span style="font-size:13px;color:#374151">Ing. Hernán Reyes</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid #f3f4f6;cursor:pointer">
+          <input type="checkbox" ${(S.tecnicosArr||[]).includes("Ing. Rodolfo Martínez")?'checked':''} 
+            onchange="if(!S.tecnicosArr)S.tecnicosArr=[];if(this.checked){S.tecnicosArr.push('Ing. Rodolfo Martínez')}else{S.tecnicosArr=S.tecnicosArr.filter(x=>x!=='Ing. Rodolfo Martínez')};S.tecnicos=S.tecnicosArr.join(', ')"
+            style="width:16px;height:16px;accent-color:#1a5fa8;flex-shrink:0">
+          <span style="font-size:13px;color:#374151">Ing. Rodolfo Martínez</span>
         </label>
         <div style="padding:9px 13px">
           <label style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px">Técnico externo / adicional (opcional)</label>
