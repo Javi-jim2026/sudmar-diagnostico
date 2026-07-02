@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Diagnóstico — Sudmar Energy</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;color:#1a1a1a;-webkit-tap-highlight-color:transparent}
@@ -107,6 +108,9 @@ canvas.sign-canvas{display:block;width:100%;touch-action:none;background:#fff;cu
 .btn-p{background:#1a5fa8;color:#fff}
 .btn-s{background:#f3f4f6;color:#374151;border:1.5px solid #e5e7eb}
 input[type=file]{display:none}
+.btn-drive{background:#fff;color:#374151;border:1.5px solid #e5e7eb;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600}
+.btn-wa{background:#25D366;color:#fff;border:none;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:600}
+.drive-status{padding:12px 16px;background:#f0f9ff;border:1.5px solid #bae0fd;border-radius:10px;font-size:13px;color:#0369a1;margin-bottom:10px;display:none;align-items:center;gap:10px}
 </style>
 </head>
 <body>
@@ -862,6 +866,18 @@ const STEPS = {
           <div class="out-card-desc">Checklist + miniaturas<br>Con firma del cliente</div>
         </div>
       </div>
+      <div id="drive-status" class="drive-status"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <button class="btn btn-drive" onclick="generarReporte('documental','drive')">
+          <img src="https://www.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" style="width:20px;height:20px">
+          Guardar en Google Drive
+        </button>
+        <button id="btn-whatsapp" class="btn btn-wa" style="display:none">
+          <span style="font-size:18px">💬</span> Compartir por WhatsApp
+        </button>
+      </div>
+      <div style="display:none">
+      </div>
     </div>`
 };
 
@@ -1021,7 +1037,7 @@ function estatusLabel(e) {
   return {operativo:'Operativo', operativo_obs:'Operativo con observaciones', requiere_servicio:'Requiere servicio', fuera_servicio:'Fuera de servicio'}[e]||e;
 }
 
-function generarReporte(tipo) {
+function generarReporte(tipo, destino) {
   const secs = getSecs();
   const tipoLabel = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'}[S.tipoEquipo]||'';
   const tsLabel = {diagnostico:'Diagnóstico',mantenimiento:'Mantenimiento preventivo',reparacion:'Reparación',garantia:'Atención a garantía',cierre:'Cierre de conexiones',solar:'Instalación solar'}[S.tipoServicio]||'Servicio';
@@ -1248,9 +1264,113 @@ ${footerHtml()}
 </body></html>`;
 
   // Abrir en nueva pestaña usando blob URL — funciona en Safari y Chrome sin bloqueos
-  const blob = new Blob([reporteHTML], {type:'text/html;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  window.location.href = url;
+  if (destino === 'drive') {
+    guardarYCompartir(reporteHTML, tipo);
+  } else {
+    const blob = new Blob([reporteHTML], {type:'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    window.location.href = url;
+  }
+}
+
+// ─── Google Drive Integration ────────────────────────────────────
+const GDRIVE_CLIENT_ID = "485612588626-a42ha5g5l9h80hngu8f9q4gc4nbmd0jr.apps.googleusercontent.com";
+const GDRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+let gdriveToken = null;
+let driveFileUrl = null;
+
+function loginGDrive(callback) {
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: GDRIVE_CLIENT_ID,
+    scope: GDRIVE_SCOPE,
+    callback: (resp) => {
+      if (resp.access_token) {
+        gdriveToken = resp.access_token;
+        if (callback) callback();
+      }
+    }
+  });
+  client.requestAccessToken();
+}
+
+async function subirADrive(htmlContent, nombreArchivo) {
+  // Crear carpeta Sudmar-Reportes si no existe
+  const carpetaResp = await fetch(
+    "https://www.googleapis.com/drive/v3/files?q=name%3D'Sudmar-Reportes'+and+mimeType%3D'application%2Fvnd.google-apps.folder'+and+trashed%3Dfalse",
+    {headers: {Authorization: `Bearer ${gdriveToken}`}}
+  );
+  const carpetaData = await carpetaResp.json();
+  let carpetaId;
+  if (carpetaData.files && carpetaData.files.length > 0) {
+    carpetaId = carpetaData.files[0].id;
+  } else {
+    const nuevaCarpeta = await fetch("https://www.googleapis.com/drive/v3/files", {
+      method: 'POST',
+      headers: {Authorization: `Bearer ${gdriveToken}`, 'Content-Type': 'application/json'},
+      body: JSON.stringify({name: 'Sudmar-Reportes', mimeType: 'application/vnd.google-apps.folder'})
+    });
+    const nc = await nuevaCarpeta.json();
+    carpetaId = nc.id;
+  }
+
+  // Subir archivo HTML
+  const metadata = {name: nombreArchivo, mimeType: 'text/html', parents: [carpetaId]};
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
+  form.append('file', new Blob([htmlContent], {type:'text/html'}));
+
+  const uploadResp = await fetch(
+    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+    {method:'POST', headers:{Authorization:`Bearer ${gdriveToken}`}, body: form}
+  );
+  const uploadData = await uploadResp.json();
+  const fileId = uploadData.id;
+
+  // Hacer público con link
+  await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+    method:'POST',
+    headers:{Authorization:`Bearer ${gdriveToken}`, 'Content-Type':'application/json'},
+    body: JSON.stringify({role:'reader', type:'anyone'})
+  });
+
+  // Obtener link compartible
+  const linkResp = await fetch(
+    `https://www.googleapis.com/drive/v3/files/${fileId}?fields=webViewLink`,
+    {headers:{Authorization:`Bearer ${gdriveToken}`}}
+  );
+  const linkData = await linkResp.json();
+  return linkData.webViewLink;
+}
+
+async function guardarYCompartir(reporteHTML, tipo) {
+  const statusEl = document.getElementById('drive-status');
+  const ticket = S.ticket||'SN';
+  const cliente = (S.empresa||S.cliente||'cliente').replace(/[^a-zA-Z0-9]/g,'-').slice(0,20);
+  const fecha = S.fecha||new Date().toISOString().slice(0,10);
+  const nombreArchivo = `${ticket}-${cliente}-${fecha}.html`;
+
+  const guardar = async () => {
+    try {
+      if (statusEl) { statusEl.style.display='flex'; statusEl.innerHTML='<span>⏳</span><span>Guardando en Google Drive...</span>'; }
+      const url = await subirADrive(reporteHTML, nombreArchivo);
+      driveFileUrl = url;
+      if (statusEl) { statusEl.innerHTML=`<span>✅</span><span>Guardado en Drive — <a href="${url}" target="_blank" style="color:#1a5fa8;font-weight:700">Ver archivo</a></span>`; }
+      // Mostrar botón de WhatsApp
+      const waBtn = document.getElementById('btn-whatsapp');
+      if (waBtn) { waBtn.style.display='flex'; waBtn.onclick = () => {
+        const msg = encodeURIComponent(`Reporte de servicio Sudmar Energy\nTicket: #${S.ticket||'—'}\nCliente: ${S.empresa||S.cliente||'—'}\nFecha: ${S.fecha||'—'}\n\n${url}`);
+        window.open(`https://wa.me/?text=${msg}`,'_blank');
+      };}
+    } catch(e) {
+      if (statusEl) { statusEl.innerHTML='<span>❌</span><span>Error al guardar en Drive — revisa tu conexión</span>'; statusEl.style.background='#fff0f0'; statusEl.style.borderColor='#fca5a5'; }
+    }
+  };
+
+  if (!gdriveToken) {
+    loginGDrive(guardar);
+  } else {
+    await guardar();
+  }
 }
 
 render();
