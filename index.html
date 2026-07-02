@@ -122,7 +122,7 @@ input[type=file]{display:none}
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
-        <div class="header-title">Reporte de diagnóstico</div>
+        <div class="header-title" id="hdr-titulo">Reporte de servicio</div>
         <div class="header-sub">· <span id="hdr-tipo">—</span></div>
       </div>
     </div>
@@ -817,8 +817,15 @@ const STEPS = {
 
 // ─── Motor ────────────────────────────────────────────────────────
 function uH() {
-  const t={gen:'Generador',tta:'TTA',ambos:'Generador + TTA'};
-  document.getElementById('hdr-tipo').textContent = S.tipoEquipo ? t[S.tipoEquipo] : '—';
+  const te = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'};
+  const ts = {
+    diagnostico:'Diagnóstico', mantenimiento:'Mantenimiento',
+    reparacion:'Reparación', garantia:'Garantía',
+    cierre:'Cierre de conexiones', solar:'Instalación solar'
+  };
+  document.getElementById('hdr-tipo').textContent = S.tipoEquipo ? te[S.tipoEquipo] : '—';
+  const titulo = document.getElementById('hdr-titulo');
+  if (titulo) titulo.textContent = S.tipoServicio ? 'Reporte de ' + (ts[S.tipoServicio]||S.tipoServicio) : 'Reporte de servicio';
 }
 
 function render() {
