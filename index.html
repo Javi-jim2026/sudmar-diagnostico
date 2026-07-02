@@ -590,47 +590,97 @@ const STEPS = {
     const ts = S.tipoServicio;
 
     // MANTENIMIENTO — insumos
-    if (ts === 'mantenimiento') return `
-      <div class="section-title">Insumos utilizados</div>
-      <div class="section-sub">Registra los materiales y refacciones usados en este mantenimiento</div>
+    if (ts === 'mantenimiento') {
+      const esGen = S.tipoEquipo === 'gen' || S.tipoEquipo === 'ambos';
+      const esTTA = S.tipoEquipo === 'tta';
+      return `
+      <div class="section-title">Lista de materiales</div>
+      <div class="section-sub">Registra los insumos y refacciones utilizados en este mantenimiento</div>
 
+      ${esGen ? `
       <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
-        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">🛢️ Aceites y líquidos</div>
+        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px">🛢️ Aceites y líquidos</div>
         <div class="input-row">
-          <div class="field"><label class="label">Aceite de motor — litros</label><input class="input" placeholder="Ej. 24 L" value="${S.ins_aceite_lt||''}" oninput="S.ins_aceite_lt=this.value"></div>
+          <div class="field"><label class="label">Aceite de motor — Litros</label><input class="input" type="number" min="0" placeholder="0" value="${S.ins_aceite_lt||''}" oninput="S.ins_aceite_lt=this.value"></div>
           <div class="field"><label class="label">Especificación</label><input class="input" placeholder="Ej. 15W-40 API CI-4" value="${S.ins_aceite_esp||''}" oninput="S.ins_aceite_esp=this.value"></div>
         </div>
         <div class="input-row">
-          <div class="field"><label class="label">Anticongelante — litros</label><input class="input" placeholder="Ej. 10 L" value="${S.ins_anti_lt||''}" oninput="S.ins_anti_lt=this.value"></div>
+          <div class="field"><label class="label">Anticongelante — Litros</label><input class="input" type="number" min="0" placeholder="0" value="${S.ins_anti_lt||''}" oninput="S.ins_anti_lt=this.value"></div>
           <div class="field"><label class="label">Especificación</label><input class="input" placeholder="Ej. OAT Verde" value="${S.ins_anti_esp||''}" oninput="S.ins_anti_esp=this.value"></div>
         </div>
       </div>
 
       <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
-        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">🔩 Filtros</div>
-        ${[
-          {key:'f_aceite', label:'Filtro de aceite'},
-          {key:'f_combustible', label:'Filtro de combustible'},
-          {key:'f_separador', label:'Separador de agua / Racord'},
-          {key:'f_anticongelante', label:'Filtro de anticongelante'},
-          {key:'f_aire', label:'Filtro de aire'}
-        ].map(f => `
-          <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#fff">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${S['use_'+f.key]?'8px':'0'}">
-              <span style="font-size:13px;font-weight:600;color:#374151">${f.label}</span>
-              <div onclick="S['use_'+f.key]=!S['use_'+f.key];render()" style="width:44px;height:24px;border-radius:12px;background:${S['use_'+f.key]?'#1a5fa8':'#e5e7eb'};cursor:pointer;position:relative;transition:all .2s">
-                <div style="width:20px;height:20px;border-radius:10px;background:#fff;position:absolute;top:2px;${S['use_'+f.key]?'right:2px':'left:2px'};transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></div>
-              </div>
-            </div>
-            ${S['use_'+f.key] ? `
-            <div class="input-row">
-              <div class="field"><label class="label">No. de parte</label><input class="input" placeholder="Número de parte" value="${S[f.key+'_parte']||''}" oninput="S['${f.key}_parte']=this.value"></div>
-              <div class="field"><label class="label">Cantidad</label><input class="input" type="number" min="1" placeholder="1" value="${S[f.key+'_cant']||''}" oninput="S['${f.key}_cant']=this.value"></div>
-            </div>` : ''}
-          </div>`).join('')}
-      </div>`;
+        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px">🔩 Filtros y refacciones</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="background:#e8f0fb">
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:#1a3a6a;border-radius:6px 0 0 0">Insumo</th>
+              <th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:#1a3a6a;width:70px">Cantidad</th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:#1a3a6a;border-radius:0 6px 0 0">No. de parte</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${[
+              {key:'f_aceite', label:'Filtro de aceite'},
+              {key:'f_combustible', label:'Filtro de combustible'},
+              {key:'f_separador', label:'Separador de agua / Racord'},
+              {key:'f_anticongelante', label:'Filtro de anticongelante'},
+              {key:'f_aire', label:'Filtro de aire'},
+              {key:'f_otro', label:'Otro / Adicional'}
+            ].map((f,i) => `
+            <tr style="background:${i%2===0?'#fff':'#f8f9fa'};border-bottom:1px solid #e5e7eb">
+              <td style="padding:8px 10px;font-size:13px;color:#374151">${f.label}</td>
+              <td style="padding:6px 8px;text-align:center">
+                <input class="input" type="number" min="0" placeholder="0" value="${S[f.key+'_cant']||''}" oninput="S['${f.key}_cant']=this.value" style="text-align:center;padding:6px 4px;font-size:13px">
+              </td>
+              <td style="padding:6px 8px">
+                <input class="input" placeholder="No. de parte" value="${S[f.key+'_parte']||''}" oninput="S['${f.key}_parte']=this.value" style="padding:6px 10px;font-size:13px">
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>` : ''}
 
-    // REPARACIÓN — componentes reemplazados
+      ${esTTA ? `
+      <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px">🔩 Componentes y refacciones TTA</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="background:#e8f0fb">
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:#1a3a6a">Componente</th>
+              <th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:#1a3a6a;width:70px">Cantidad</th>
+              <th style="padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:#1a3a6a">No. de parte</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${[
+              {key:'tta_fusibles', label:'Fusibles'},
+              {key:'tta_relevadores', label:'Relevadores'},
+              {key:'tta_contactores', label:'Contactores'},
+              {key:'tta_termomag', label:'Interruptores termomagnéticos'},
+              {key:'tta_otro', label:'Otro / Adicional'}
+            ].map((f,i) => `
+            <tr style="background:${i%2===0?'#fff':'#f8f9fa'};border-bottom:1px solid #e5e7eb">
+              <td style="padding:8px 10px;font-size:13px;color:#374151">${f.label}</td>
+              <td style="padding:6px 8px;text-align:center">
+                <input class="input" type="number" min="0" placeholder="0" value="${S[f.key+'_cant']||''}" oninput="S['${f.key}_cant']=this.value" style="text-align:center;padding:6px 4px;font-size:13px">
+              </td>
+              <td style="padding:6px 8px">
+                <input class="input" placeholder="No. de parte" value="${S[f.key+'_parte']||''}" oninput="S['${f.key}_parte']=this.value" style="padding:6px 10px;font-size:13px">
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>` : ''}
+
+      <div class="field">
+        <label class="label">Observaciones del mantenimiento</label>
+        <textarea class="input" rows="3" placeholder="Condición general del equipo, observaciones adicionales..." oninput="S.obsMto=this.value">${S.obsMto||''}</textarea>
+      </div>`;
+    }
+
+        // REPARACIÓN — componentes reemplazados
     if (ts === 'reparacion') return `
       <div class="section-title">Componentes reemplazados</div>
       <div class="section-sub">Registra qué se reparó o reemplazó en este servicio</div>
@@ -1052,15 +1102,62 @@ ${S.tipoEquipo==='tta' ? `
 <div class="sb">${secs.map(s=>seccionChecklist(s)).join('')}</div>
 
 ${S.tipoServicio==='mantenimiento' ? `
-<h2>3b. Insumos utilizados</h2>
-<div class="datos-grid">
-  ${S.ins_aceite_lt?`<div class="dato"><span class="dato-label">Aceite motor</span><span class="dato-val">${S.ins_aceite_lt} L — ${S.ins_aceite_esp||'—'}</span></div>`:''}
-  ${S.ins_anti_lt?`<div class="dato"><span class="dato-label">Anticongelante</span><span class="dato-val">${S.ins_anti_lt} L — ${S.ins_anti_esp||'—'}</span></div>`:''}
-  ${S.use_f_aceite?`<div class="dato"><span class="dato-label">Filtro aceite</span><span class="dato-val">No.parte: ${S.f_aceite_parte||'—'} · Cant: ${S.f_aceite_cant||'—'}</span></div>`:''}
-  ${S.use_f_combustible?`<div class="dato"><span class="dato-label">Filtro combustible</span><span class="dato-val">No.parte: ${S.f_combustible_parte||'—'} · Cant: ${S.f_combustible_cant||'—'}</span></div>`:''}
-  ${S.use_f_separador?`<div class="dato"><span class="dato-label">Separador agua</span><span class="dato-val">No.parte: ${S.f_separador_parte||'—'} · Cant: ${S.f_separador_cant||'—'}</span></div>`:''}
-  ${S.use_f_anticongelante?`<div class="dato"><span class="dato-label">Filtro anticongelante</span><span class="dato-val">No.parte: ${S.f_anticongelante_parte||'—'} · Cant: ${S.f_anticongelante_cant||'—'}</span></div>`:''}
-  ${S.use_f_aire?`<div class="dato"><span class="dato-label">Filtro aire</span><span class="dato-val">No.parte: ${S.f_aire_parte||'—'} · Cant: ${S.f_aire_cant||'—'}</span></div>`:''}
+<h2>3b. Lista de materiales utilizados</h2>
+<div class="sb">
+${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
+  ${(S.ins_aceite_lt||S.ins_anti_lt) ? `
+  <h3>Aceites y líquidos</h3>
+  <div class="datos-grid">
+    ${S.ins_aceite_lt?`<div class="dato"><span class="dato-label">Aceite motor</span><span class="dato-val">${S.ins_aceite_lt} L — ${S.ins_aceite_esp||'—'}</span></div>`:''}
+    ${S.ins_anti_lt?`<div class="dato"><span class="dato-label">Anticongelante</span><span class="dato-val">${S.ins_anti_lt} L — ${S.ins_anti_esp||'—'}</span></div>`:''}
+  </div>` : ''}
+  <h3>Filtros y refacciones</h3>
+  <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:14px">
+    <thead><tr style="background:#0a2240;color:#fff">
+      <th style="padding:8px 12px;text-align:left;font-size:12px">Insumo</th>
+      <th style="padding:8px 12px;text-align:center;font-size:12px;width:80px">Cantidad</th>
+      <th style="padding:8px 12px;text-align:left;font-size:12px">No. de parte</th>
+    </tr></thead>
+    <tbody>
+      ${[
+        {key:'f_aceite',label:'Filtro de aceite'},
+        {key:'f_combustible',label:'Filtro de combustible'},
+        {key:'f_separador',label:'Separador de agua / Racord'},
+        {key:'f_anticongelante',label:'Filtro de anticongelante'},
+        {key:'f_aire',label:'Filtro de aire'},
+        {key:'f_otro',label:'Otro / Adicional'}
+      ].filter(f=>S[f.key+'_cant']&&S[f.key+'_cant']!='0')
+       .map((f,i)=>`<tr style="background:${i%2?'#f8f9fa':'#fff'};border-bottom:1px solid #f3f4f6">
+        <td style="padding:8px 12px;font-size:12px">${f.label}</td>
+        <td style="padding:8px 12px;font-size:12px;text-align:center">${S[f.key+'_cant']||'—'}</td>
+        <td style="padding:8px 12px;font-size:12px">${S[f.key+'_parte']||'—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>` : ''}
+${S.tipoEquipo==='tta' ? `
+  <h3>Componentes y refacciones TTA</h3>
+  <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:14px">
+    <thead><tr style="background:#0a2240;color:#fff">
+      <th style="padding:8px 12px;text-align:left;font-size:12px">Componente</th>
+      <th style="padding:8px 12px;text-align:center;font-size:12px;width:80px">Cantidad</th>
+      <th style="padding:8px 12px;text-align:left;font-size:12px">No. de parte</th>
+    </tr></thead>
+    <tbody>
+      ${[
+        {key:'tta_fusibles',label:'Fusibles'},
+        {key:'tta_relevadores',label:'Relevadores'},
+        {key:'tta_contactores',label:'Contactores'},
+        {key:'tta_termomag',label:'Interruptores termomagnéticos'},
+        {key:'tta_otro',label:'Otro / Adicional'}
+      ].filter(f=>S[f.key+'_cant']&&S[f.key+'_cant']!='0')
+       .map((f,i)=>`<tr style="background:${i%2?'#f8f9fa':'#fff'};border-bottom:1px solid #f3f4f6">
+        <td style="padding:8px 12px;font-size:12px">${f.label}</td>
+        <td style="padding:8px 12px;font-size:12px;text-align:center">${S[f.key+'_cant']||'—'}</td>
+        <td style="padding:8px 12px;font-size:12px">${S[f.key+'_parte']||'—'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>` : ''}
+${S.obsMto?`<h3>Observaciones</h3><div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;font-size:13px;line-height:1.7">${S.obsMto}</div>`:''}
 </div>` : ''}
 
 ${S.tipoServicio==='reparacion'&&S.componentes&&S.componentes.length?`
