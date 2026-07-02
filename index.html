@@ -974,222 +974,186 @@ function estatusLabel(e) {
 function generarReporte(tipo) {
   const secs = getSecs();
   const tipoLabel = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'}[S.tipoEquipo]||'';
+  const tsLabel = {diagnostico:'Diagnóstico',mantenimiento:'Mantenimiento preventivo',reparacion:'Reparación',garantia:'Atención a garantía',cierre:'Cierre de conexiones',solar:'Instalación solar'}[S.tipoServicio]||'Servicio';
 
-  // Crear contenedor del reporte en la misma página
-  const overlay = document.createElement('div');
-  overlay.id = 'reporte-overlay';
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:9999;overflow-y:auto;-webkit-overflow-scrolling:touch';
+  // Construir HTML completo del reporte
+  const reporteHTML = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reporte ${tsLabel} — ${S.ticket||''} — ${S.empresa||''}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1a1a1a;font-size:13px}
+.page{max-width:800px;margin:0 auto;padding-bottom:40px}
+.titulo{font-size:20px;font-weight:700;color:#0a2240;padding:16px 32px 10px;letter-spacing:.3px}
+.datos-grid{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid #e5e7eb;border-radius:8px;overflow:hidden;margin:0 32px 20px}
+.dato{padding:9px 14px;border-bottom:1px solid #f3f4f6;display:flex;gap:8px}
+.dato:nth-child(odd){background:#f8f9fa}
+.dato-label{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;min-width:110px;flex-shrink:0}
+.dato-val{font-size:13px;color:#1a1a1a;font-weight:500}
+.sb{padding:0 32px}
+h2{font-size:15px;font-weight:700;color:#0a2240;margin:20px 32px 10px;padding-bottom:5px;border-bottom:2px solid #1a5fa8}
+h3{font-size:13px;font-weight:700;color:#1a5fa8;margin:14px 32px 6px}
+.estatus-badge{display:inline-block;padding:8px 20px;border-radius:20px;font-size:14px;font-weight:700;margin:4px 0 16px}
+.no-print{background:#0a2240;padding:12px 16px;display:flex;gap:10px;position:sticky;top:0;z-index:10}
+.btn-pdf{background:#1a5fa8;color:#fff;border:none;border-radius:8px;padding:11px 0;font-size:14px;font-weight:700;cursor:pointer;flex:1}
+.btn-cerrar{background:#fff;color:#0a2240;border:none;border-radius:8px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer}
+@media print{.no-print{display:none!important}}
+</style>
+</head>
+<body>
+<div class="no-print">
+  <button class="btn-pdf" onclick="window.print()">🖨️ Guardar como PDF</button>
+  <button class="btn-cerrar" onclick="window.close()">✕ Cerrar</button>
+</div>
+<div class="page">
+${headerHtml()}
+<div class="titulo">REPORTE DE ${tsLabel.toUpperCase()}</div>
 
-  // Botones de acción
-  const toolbar = document.createElement('div');
-  toolbar.style.cssText = 'position:sticky;top:0;background:#0a2240;padding:12px 16px;display:flex;gap:10px;z-index:10;align-items:center';
-  toolbar.innerHTML = `
-    <button onclick="window.print()" style="background:#1a5fa8;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;flex:1">🖨️ Guardar PDF</button>
-    <button onclick="document.getElementById('reporte-overlay').remove()" style="background:#fff;color:#0a2240;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer">✕ Cerrar</button>`;
-  overlay.appendChild(toolbar);
+<h2>1. Datos generales</h2>
+<div class="datos-grid">
+  <div class="dato"><span class="dato-label">Ticket</span><span class="dato-val">#${S.ticket||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Fecha</span><span class="dato-val">${S.fecha||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Cliente</span><span class="dato-val">${S.cliente||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Empresa</span><span class="dato-val">${S.empresa||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Ubicación</span><span class="dato-val">${S.ubicacion||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Responsable</span><span class="dato-val">${S.responsable||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Técnico(s)</span><span class="dato-val">${S.tecnicos||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Tipo de servicio</span><span class="dato-val">${tsLabel}</span></div>
+  <div class="dato"><span class="dato-label">Tipo de equipo</span><span class="dato-val">${tipoLabel||'—'}</span></div>
+</div>
 
-  const contenido = document.createElement('div');
-  contenido.style.cssText = 'max-width:800px;margin:0 auto;padding:0 0 40px;background:#fff';
+<h2>2. Datos del equipo</h2>
+${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
+<div class="datos-grid">
+  <div class="dato"><span class="dato-label">Modelo equipo</span><span class="dato-val">${S.modeloEquipo||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Serie equipo</span><span class="dato-val">${S.serieEquipo||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Horómetro</span><span class="dato-val">${S.horometro||'—'} hrs</span></div>
+  <div class="dato"><span class="dato-label">Potencia</span><span class="dato-val">${S.potencia||'—'} kW</span></div>
+  <div class="dato"><span class="dato-label">Voltaje</span><span class="dato-val">${S.voltaje||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Motor</span><span class="dato-val">${S.marcaMotor||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Serie motor</span><span class="dato-val">${S.serieMotor||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Alternador</span><span class="dato-val">${S.marcaAlt||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Serie alternador</span><span class="dato-val">${S.serieAlt||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Tipo control</span><span class="dato-val">${S.tipoControl==='ecu'?'ECU / CAN':S.tipoControl==='gobernador'?'Gobernador electrónico':S.tipoControl==='mecanico'?'Mecánico':'—'}</span></div>
+</div>` : ''}
+${S.tipoEquipo==='tta' ? `
+<div class="datos-grid">
+  <div class="dato"><span class="dato-label">Marca / OTM</span><span class="dato-val">${S.marcaOtm||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Modelo</span><span class="dato-val">${S.modeloOtm||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Serie</span><span class="dato-val">${S.serieOtm||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Voltaje nominal</span><span class="dato-val">${S.voltajeTta||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Corriente nominal</span><span class="dato-val">${S.corrienteTta||'—'} A</span></div>
+</div>` : ''}
 
-  // Estilos del reporte
-  const style = document.createElement('style');
-  style.textContent = `
-    @media print { #reporte-overlay > div:first-child { display:none !important; } body > *:not(#reporte-overlay) { display:none !important; } }
-    .r-dato{display:flex;gap:8px;padding:9px 14px;border-bottom:1px solid #f3f4f6}
-    .r-dato:nth-child(odd){background:#f8f9fa}
-    .r-dl{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;min-width:120px}
-    .r-dv{font-size:13px;color:#1a1a1a;font-weight:500}
-    .r-grid{border:1.5px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr}
-    h2{font-size:16px;font-weight:700;color:#0a2240;margin:20px 32px 10px;padding-bottom:4px;border-bottom:2px solid #1a5fa8}
-    h3{font-size:13px;font-weight:700;color:#1a5fa8;margin:14px 32px 6px}
-    .sb{padding:0 32px}
-  `;
-  document.head.appendChild(style);
+<h2>3. Inspección y análisis</h2>
+<div class="sb">${secs.map(s=>seccionChecklist(s)).join('')}</div>
 
-  let inner = '';
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Reporte de Diagnóstico — ${S.ticket||'SE'} — ${S.empresa||''}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1a1a1a;font-size:13px}
-    h2{font-size:16px;font-weight:700;color:#0a2240;margin:20px 0 10px;padding-bottom:4px;border-bottom:2px solid #1a5fa8}
-    h3{font-size:13px;font-weight:700;color:#1a5fa8;margin:14px 0 6px}
-    .page{max-width:800px;margin:0 auto;padding:0 0 40px}
-    .titulo{font-size:20px;font-weight:700;color:#0a2240;padding:16px 32px 10px;letter-spacing:.5px}
-    .datos-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid #e5e7eb;border-radius:8px;overflow:hidden;margin:0 32px 20px}
-    .dato{padding:9px 14px;border-bottom:1px solid #f3f4f6;display:flex;gap:8px}
-    .dato:nth-child(odd){background:#f8f9fa}
-    .dato-label{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;min-width:100px}
-    .dato-val{font-size:13px;color:#1a1a1a;font-weight:500}
-    .seccion-body{padding:0 32px}
-    .estatus-badge{display:inline-block;padding:8px 20px;border-radius:20px;font-size:14px;font-weight:700;margin:4px 0 16px}
-    @media print{body{font-size:11px}h2{font-size:14px}}
-  </style>
-  </head><body><div class="page">`);
+${S.tipoServicio==='mantenimiento' ? `
+<h2>3b. Insumos utilizados</h2>
+<div class="datos-grid">
+  ${S.ins_aceite_lt?`<div class="dato"><span class="dato-label">Aceite motor</span><span class="dato-val">${S.ins_aceite_lt} L — ${S.ins_aceite_esp||'—'}</span></div>`:''}
+  ${S.ins_anti_lt?`<div class="dato"><span class="dato-label">Anticongelante</span><span class="dato-val">${S.ins_anti_lt} L — ${S.ins_anti_esp||'—'}</span></div>`:''}
+  ${S.use_f_aceite?`<div class="dato"><span class="dato-label">Filtro aceite</span><span class="dato-val">No.parte: ${S.f_aceite_parte||'—'} · Cant: ${S.f_aceite_cant||'—'}</span></div>`:''}
+  ${S.use_f_combustible?`<div class="dato"><span class="dato-label">Filtro combustible</span><span class="dato-val">No.parte: ${S.f_combustible_parte||'—'} · Cant: ${S.f_combustible_cant||'—'}</span></div>`:''}
+  ${S.use_f_separador?`<div class="dato"><span class="dato-label">Separador agua</span><span class="dato-val">No.parte: ${S.f_separador_parte||'—'} · Cant: ${S.f_separador_cant||'—'}</span></div>`:''}
+  ${S.use_f_anticongelante?`<div class="dato"><span class="dato-label">Filtro anticongelante</span><span class="dato-val">No.parte: ${S.f_anticongelante_parte||'—'} · Cant: ${S.f_anticongelante_cant||'—'}</span></div>`:''}
+  ${S.use_f_aire?`<div class="dato"><span class="dato-label">Filtro aire</span><span class="dato-val">No.parte: ${S.f_aire_parte||'—'} · Cant: ${S.f_aire_cant||'—'}</span></div>`:''}
+</div>` : ''}
 
-  // Header
-  inner += headerHtml());
+${S.tipoServicio==='reparacion'&&S.componentes&&S.componentes.length?`
+<h2>3b. Componentes reemplazados</h2>
+<div class="sb"><table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:14px">
+  <thead><tr style="background:#0a2240;color:#fff">
+    <th style="padding:8px 12px;text-align:left;font-size:12px">Equipo</th>
+    <th style="padding:8px 12px;text-align:left;font-size:12px">Componente</th>
+    <th style="padding:8px 12px;text-align:left;font-size:12px">No. de parte</th>
+  </tr></thead>
+  <tbody>${(S.componentes||[]).map((c,i)=>`<tr style="background:${i%2?'#f8f9fa':'#fff'};border-bottom:1px solid #f3f4f6">
+    <td style="padding:8px 12px;font-size:12px">${c.equipo||'—'}</td>
+    <td style="padding:8px 12px;font-size:12px">${c.nombre||'—'}</td>
+    <td style="padding:8px 12px;font-size:12px">${c.parte||'—'}</td>
+  </tr>`).join('')}</tbody>
+</table>
+<h3>Resolución final</h3>
+<div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7">${S.resolucion||'—'}</div>
+</div>`:``}
 
-  // Título
-  const tipoServicioLabel = {
-    diagnostico:'Diagnóstico', mantenimiento:'Mantenimiento preventivo',
-    reparacion:'Reparación', garantia:'Atención a garantía',
-    cierre:'Cierre de conexiones TTA-Generador', solar:'Instalación de paneles solares'
-  }[S.tipoServicio]||S.tipoServicio||'—';
+${S.tipoServicio==='garantia'?`
+<h2>3b. Dictamen de garantía</h2>
+<div class="sb"><div style="text-align:center;padding:20px;border:2px solid ${S.dictamen==='aprobado'?'#4caf70':S.dictamen==='no_aprobado'?'#e87a2a':'#9ca3af'};border-radius:12px;background:${S.dictamen==='aprobado'?'#dcf5e4':S.dictamen==='no_aprobado'?'#ffe4d0':'#f3f4f6'};margin-bottom:14px">
+  <div style="font-size:40px;margin-bottom:8px">${S.dictamen==='aprobado'?'✅':S.dictamen==='no_aprobado'?'❌':'⏳'}</div>
+  <div style="font-size:20px;font-weight:700;color:${S.dictamen==='aprobado'?'#1a7a3a':S.dictamen==='no_aprobado'?'#b85a10':'#6b7280'}">${S.dictamen==='aprobado'?'GARANTÍA APROBADA':S.dictamen==='no_aprobado'?'GARANTÍA NO APROBADA':'GARANTÍA POR VALIDAR'}</div>
+</div></div>`:``}
 
-  inner += `<div class="titulo">REPORTE DE SERVICIO — ${tipoServicioLabel.toUpperCase()}</div>`);
+<h2>4. Pruebas técnicas</h2>
+${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')?`
+<h3>Pruebas en vacío</h3>
+<div class="datos-grid">
+  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
+  <div class="dato"><span class="dato-label">RPM</span><span class="dato-val">${S.pv_rpm||'—'}</span></div>
+  <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pv_bat||'—'} VCC</span></div>
+  <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pv_temp||'—'} °C</span></div>
+  <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pv_aceite||'—'} PSI</span></div>
+</div>
+<h3>Pruebas con carga</h3>
+<div class="datos-grid">
+  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pc_l1l2||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pc_l2l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pc_l1l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">A L1</span><span class="dato-val">${S.pc_a1||'—'} A</span></div>
+  <div class="dato"><span class="dato-label">A L2</span><span class="dato-val">${S.pc_a2||'—'} A</span></div>
+  <div class="dato"><span class="dato-label">A L3</span><span class="dato-val">${S.pc_a3||'—'} A</span></div>
+  <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pc_bat||'—'} VCC</span></div>
+  <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pc_temp||'—'} °C</span></div>
+  <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pc_aceite||'—'} PSI</span></div>
+</div>`:``}
+${S.tipoEquipo==='tta'?`
+<h3>Mediciones eléctricas</h3>
+<div class="datos-grid">
+  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
+  ${S.pv_bat?`<div class="dato"><span class="dato-label">V batería control</span><span class="dato-val">${S.pv_bat} VCC</span></div>`:''}
+</div>`:``}
 
-  // Sección 1: Datos generales
-  inner += `<div class="seccion-body">
-  <h2>1. Datos generales</h2>
-  <div class="datos-grid">
-    <div class="dato"><span class="dato-label">Ticket</span><span class="dato-val">#${S.ticket||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Fecha</span><span class="dato-val">${S.fecha||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Cliente</span><span class="dato-val">${S.cliente||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Empresa</span><span class="dato-val">${S.empresa||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Ubicación</span><span class="dato-val">${S.ubicacion||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Responsable</span><span class="dato-val">${S.responsable||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Técnico(s)</span><span class="dato-val">${S.tecnicos||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Tipo equipo</span><span class="dato-val">${tipoLabel}</span></div>
+<h2>5. Hallazgos y conclusión</h2>
+<div class="sb">
+<div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">${S.hallazgos||'Sin hallazgos registrados.'}</div>
+<h3>Estatus actual del equipo</h3>
+<div class="estatus-badge" style="background:${estatusColor(S.estatus)}">${estatusLabel(S.estatus)||'—'}</div>
+<h3>Conclusión y recomendaciones</h3>
+<div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.7;white-space:pre-wrap">${S.conclusion||'Sin conclusión registrada.'}</div>
+</div>
+
+<h2>6. Firmas de responsabilidad y conformidad</h2>
+<div class="sb"><div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px">
+  <div style="text-align:center">
+    ${S.sigTec?`<img src="${S.sigTec}" style="width:100%;height:100px;object-fit:contain;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff">`:'<div style="height:100px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff"></div>'}
+    <div style="margin-top:6px;font-size:12px;font-weight:700;border-top:1.5px solid #374151;padding-top:6px">${S.responsable||'Técnico responsable'}</div>
+    <div style="font-size:11px;color:#6b7280">Nombre y firma del técnico</div>
   </div>
-
-  <h2>2. Datos del equipo</h2>
-  ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
-  <div class="datos-grid">
-    <div class="dato"><span class="dato-label">Modelo equipo</span><span class="dato-val">${S.modeloEquipo||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Serie equipo</span><span class="dato-val">${S.serieEquipo||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Horómetro</span><span class="dato-val">${S.horometro||'—'} hrs</span></div>
-    <div class="dato"><span class="dato-label">Potencia</span><span class="dato-val">${S.potencia||'—'} kW</span></div>
-    <div class="dato"><span class="dato-label">Voltaje</span><span class="dato-val">${S.voltaje||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Motor</span><span class="dato-val">${S.marcaMotor||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Serie motor</span><span class="dato-val">${S.serieMotor||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Alternador</span><span class="dato-val">${S.marcaAlt||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Serie alternador</span><span class="dato-val">${S.serieAlt||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Tipo de control</span><span class="dato-val">${S.tipoControl==='ecu'?'ECU / CAN':S.tipoControl==='gobernador'?'Gobernador electrónico':S.tipoControl==='mecanico'?'Mecánico':'—'}</span></div>
-  </div>` : ''}
-  ${S.tipoEquipo==='tta' ? `
-  <div class="datos-grid">
-    <div class="dato"><span class="dato-label">Marca / OTM</span><span class="dato-val">${S.marcaOtm||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Modelo</span><span class="dato-val">${S.modeloOtm||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Serie</span><span class="dato-val">${S.serieOtm||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Voltaje nominal</span><span class="dato-val">${S.voltajeTta||'—'}</span></div>
-    <div class="dato"><span class="dato-label">Corriente nominal</span><span class="dato-val">${S.corrienteTta||'—'} A</span></div>
-  </div>` : ''}
-  ${S.tipoEquipo==='ambos' ? `
-  <div style="margin-top:10px">
-    <h3>Tablero de transferencia</h3>
-    <div class="datos-grid">
-      <div class="dato"><span class="dato-label">Marca / OTM</span><span class="dato-val">${S.marcaOtm||'—'}</span></div>
-      <div class="dato"><span class="dato-label">Modelo</span><span class="dato-val">${S.modeloOtm||'—'}</span></div>
-      <div class="dato"><span class="dato-label">Serie</span><span class="dato-val">${S.serieOtm||'—'}</span></div>
-      <div class="dato"><span class="dato-label">Voltaje nominal</span><span class="dato-val">${S.voltajeTta||'—'}</span></div>
-      <div class="dato"><span class="dato-label">Corriente nominal</span><span class="dato-val">${S.corrienteTta||'—'} A</span></div>
-    </div>
-  </div>` : ''}
-
-  <h2>3. Inspección y análisis</h2>
-  ${secs.map(s=>seccionChecklist(s)).join('')}
-
-  <h2>4. Pruebas técnicas</h2>
-  ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
-  <h3>Pruebas en vacío</h3>
-  <div class="datos-grid">
-    <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
-    <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
-    <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
-    <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
-    <div class="dato"><span class="dato-label">RPM</span><span class="dato-val">${S.pv_rpm||'—'}</span></div>
-    <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pv_bat||'—'} VCC</span></div>
-    <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pv_temp||'—'} °C</span></div>
-    <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pv_aceite||'—'} PSI</span></div>
+  <div style="text-align:center">
+    ${S.sigCli?`<img src="${S.sigCli}" style="width:100%;height:100px;object-fit:contain;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff">`:'<div style="height:100px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff"></div>'}
+    <div style="margin-top:6px;font-size:12px;font-weight:700;border-top:1.5px solid #374151;padding-top:6px">${S.cliente||'Responsable del equipo'}</div>
+    <div style="font-size:11px;color:#6b7280">Nombre y firma del cliente</div>
   </div>
-  <h3>Pruebas con carga</h3>
-  <div class="datos-grid">
-    <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pc_l1l2||'—'} V</span></div>
-    <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pc_l2l3||'—'} V</span></div>
-    <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pc_l1l3||'—'} V</span></div>
-    <div class="dato"><span class="dato-label">A L1</span><span class="dato-val">${S.pc_a1||'—'} A</span></div>
-    <div class="dato"><span class="dato-label">A L2</span><span class="dato-val">${S.pc_a2||'—'} A</span></div>
-    <div class="dato"><span class="dato-label">A L3</span><span class="dato-val">${S.pc_a3||'—'} A</span></div>
-    <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pc_bat||'—'} VCC</span></div>
-    <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pc_temp||'—'} °C</span></div>
-    <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pc_aceite||'—'} PSI</span></div>
-  </div>` : ''}
-  ${S.tipoEquipo==='tta' ? `
-  <h3>Mediciones eléctricas</h3>
-  <div class="datos-grid">
-    <div class="dato"><span class="dato-label">V L1-L2 (red normal)</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
-    <div class="dato"><span class="dato-label">V L2-L3 (red normal)</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
-    <div class="dato"><span class="dato-label">V L1-L3 (red normal)</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
-    <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
-    ${S.pv_bat ? `<div class="dato"><span class="dato-label">V batería control</span><span class="dato-val">${S.pv_bat} VCC</span></div>` : ''}
-  </div>` : ''}
+</div></div>
 
-  ${S.tipoServicio==='mantenimiento' ? `
-  <h2>4b. Insumos utilizados</h2>
-  <div class="datos-grid">
-    ${S.ins_aceite_lt ? `<div class="dato"><span class="dato-label">Aceite motor</span><span class="dato-val">${S.ins_aceite_lt} L — ${S.ins_aceite_esp||'—'}</span></div>` : ''}
-    ${S.ins_anti_lt ? `<div class="dato"><span class="dato-label">Anticongelante</span><span class="dato-val">${S.ins_anti_lt} L — ${S.ins_anti_esp||'—'}</span></div>` : ''}
-    ${S.use_f_aceite ? `<div class="dato"><span class="dato-label">Filtro de aceite</span><span class="dato-val">Parte: ${S.f_aceite_parte||'—'} · Cant: ${S.f_aceite_cant||'—'}</span></div>` : ''}
-    ${S.use_f_combustible ? `<div class="dato"><span class="dato-label">Filtro combustible</span><span class="dato-val">Parte: ${S.f_combustible_parte||'—'} · Cant: ${S.f_combustible_cant||'—'}</span></div>` : ''}
-    ${S.use_f_separador ? `<div class="dato"><span class="dato-label">Separador agua</span><span class="dato-val">Parte: ${S.f_separador_parte||'—'} · Cant: ${S.f_separador_cant||'—'}</span></div>` : ''}
-    ${S.use_f_anticongelante ? `<div class="dato"><span class="dato-label">Filtro anticongelante</span><span class="dato-val">Parte: ${S.f_anticongelante_parte||'—'} · Cant: ${S.f_anticongelante_cant||'—'}</span></div>` : ''}
-    ${S.use_f_aire ? `<div class="dato"><span class="dato-label">Filtro de aire</span><span class="dato-val">Parte: ${S.f_aire_parte||'—'} · Cant: ${S.f_aire_cant||'—'}</span></div>` : ''}
-  </div>` : ''}
+${footerHtml()}
+</div>
+</body></html>`;
 
-  ${S.tipoServicio==='reparacion' && S.componentes && S.componentes.length ? `
-  <h2>4b. Componentes reemplazados</h2>
-  <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:14px">
-    <thead><tr style="background:#0a2240;color:#fff">
-      <th style="padding:8px 12px;text-align:left;font-size:12px">Equipo</th>
-      <th style="padding:8px 12px;text-align:left;font-size:12px">Componente</th>
-      <th style="padding:8px 12px;text-align:left;font-size:12px">No. de parte</th>
-    </tr></thead>
-    <tbody>${(S.componentes||[]).map((c,i)=>`<tr style="background:${i%2?'#f8f9fa':'#fff'};border-bottom:1px solid #f3f4f6">
-      <td style="padding:8px 12px;font-size:12px">${c.equipo||'—'}</td>
-      <td style="padding:8px 12px;font-size:12px">${c.nombre||'—'}</td>
-      <td style="padding:8px 12px;font-size:12px">${c.parte||'—'}</td>
-    </tr>`).join('')}</tbody>
-  </table>
-  <h3>Resolución final</h3>
-  <div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7">${S.resolucion||'—'}</div>` : ''}
-
-  ${S.tipoServicio==='garantia' ? `
-  <h2>4b. Dictamen de garantía</h2>
-  <div style="text-align:center;padding:20px;border:2px solid ${S.dictamen==='aprobado'?'#4caf70':S.dictamen==='no_aprobado'?'#e87a2a':'#9ca3af'};border-radius:12px;background:${S.dictamen==='aprobado'?'#dcf5e4':S.dictamen==='no_aprobado'?'#ffe4d0':'#f3f4f6'};margin-bottom:14px">
-    <div style="font-size:40px;margin-bottom:8px">${S.dictamen==='aprobado'?'✅':S.dictamen==='no_aprobado'?'❌':'⏳'}</div>
-    <div style="font-size:20px;font-weight:700;color:${S.dictamen==='aprobado'?'#1a7a3a':S.dictamen==='no_aprobado'?'#b85a10':'#6b7280'}">${S.dictamen==='aprobado'?'GARANTÍA APROBADA':S.dictamen==='no_aprobado'?'GARANTÍA NO APROBADA':'GARANTÍA POR VALIDAR'}</div>
-  </div>` : ''}
-
-  <h2>5. Hallazgos y conclusión</h2>
-  <div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">${S.hallazgos||'Sin hallazgos registrados.'}</div>
-
-  <h3>Estatus actual del equipo</h3>
-  <div class="estatus-badge" style="background:${estatusColor(S.estatus)}">${estatusLabel(S.estatus)||'—'}</div>
-
-  <h3>Conclusión y recomendaciones</h3>
-  <div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.7;white-space:pre-wrap">${S.conclusion||'Sin conclusión registrada.'}</div>
-
-  <h2>6. Firmas de responsabilidad y conformidad</h2>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px">
-    <div style="text-align:center">
-      ${S.sigTec ? `<img src="${S.sigTec}" style="width:100%;height:100px;object-fit:contain;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff">` : '<div style="height:100px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff"></div>'}
-      <div style="margin-top:6px;font-size:12px;font-weight:700;border-top:1.5px solid #374151;padding-top:6px">${S.responsable||'Técnico responsable'}</div>
-      <div style="font-size:11px;color:#6b7280">Nombre y firma del técnico</div>
-    </div>
-    <div style="text-align:center">
-      ${S.sigCli ? `<img src="${S.sigCli}" style="width:100%;height:100px;object-fit:contain;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff">` : '<div style="height:100px;border:1.5px solid #e5e7eb;border-radius:8px;background:#fff"></div>'}
-      <div style="margin-top:6px;font-size:12px;font-weight:700;border-top:1.5px solid #374151;padding-top:6px">${S.cliente||'Responsable del equipo'}</div>
-      <div style="font-size:11px;color:#6b7280">Nombre y firma del cliente</div>
-    </div>
-  </div>
-  </div>`);
-
-  inner += footerHtml());
-  inner += `</div></body></html>`);
-  win.document.close();
-  setTimeout(()=>win.print(), 600);
+  // Abrir en nueva pestaña usando blob URL — funciona en Safari y Chrome sin bloqueos
+  const blob = new Blob([reporteHTML], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  window.location.href = url;
 }
 
 render();
