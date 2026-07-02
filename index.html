@@ -974,10 +974,39 @@ function estatusLabel(e) {
 function generarReporte(tipo) {
   const secs = getSecs();
   const tipoLabel = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'}[S.tipoEquipo]||'';
-  const esDocumental = tipo === 'documental';
 
-  const win = window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html lang="es"><head>
+  // Crear contenedor del reporte en la misma página
+  const overlay = document.createElement('div');
+  overlay.id = 'reporte-overlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:9999;overflow-y:auto;-webkit-overflow-scrolling:touch';
+
+  // Botones de acción
+  const toolbar = document.createElement('div');
+  toolbar.style.cssText = 'position:sticky;top:0;background:#0a2240;padding:12px 16px;display:flex;gap:10px;z-index:10;align-items:center';
+  toolbar.innerHTML = `
+    <button onclick="window.print()" style="background:#1a5fa8;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;flex:1">🖨️ Guardar PDF</button>
+    <button onclick="document.getElementById('reporte-overlay').remove()" style="background:#fff;color:#0a2240;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer">✕ Cerrar</button>`;
+  overlay.appendChild(toolbar);
+
+  const contenido = document.createElement('div');
+  contenido.style.cssText = 'max-width:800px;margin:0 auto;padding:0 0 40px;background:#fff';
+
+  // Estilos del reporte
+  const style = document.createElement('style');
+  style.textContent = `
+    @media print { #reporte-overlay > div:first-child { display:none !important; } body > *:not(#reporte-overlay) { display:none !important; } }
+    .r-dato{display:flex;gap:8px;padding:9px 14px;border-bottom:1px solid #f3f4f6}
+    .r-dato:nth-child(odd){background:#f8f9fa}
+    .r-dl{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;min-width:120px}
+    .r-dv{font-size:13px;color:#1a1a1a;font-weight:500}
+    .r-grid{border:1.5px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr}
+    h2{font-size:16px;font-weight:700;color:#0a2240;margin:20px 32px 10px;padding-bottom:4px;border-bottom:2px solid #1a5fa8}
+    h3{font-size:13px;font-weight:700;color:#1a5fa8;margin:14px 32px 6px}
+    .sb{padding:0 32px}
+  `;
+  document.head.appendChild(style);
+
+  let inner = '';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Reporte de Diagnóstico — ${S.ticket||'SE'} — ${S.empresa||''}</title>
@@ -1000,7 +1029,7 @@ function generarReporte(tipo) {
   </head><body><div class="page">`);
 
   // Header
-  win.document.write(headerHtml());
+  inner += headerHtml());
 
   // Título
   const tipoServicioLabel = {
@@ -1009,10 +1038,10 @@ function generarReporte(tipo) {
     cierre:'Cierre de conexiones TTA-Generador', solar:'Instalación de paneles solares'
   }[S.tipoServicio]||S.tipoServicio||'—';
 
-  win.document.write(`<div class="titulo">REPORTE DE SERVICIO — ${tipoServicioLabel.toUpperCase()}</div>`);
+  inner += `<div class="titulo">REPORTE DE SERVICIO — ${tipoServicioLabel.toUpperCase()}</div>`);
 
   // Sección 1: Datos generales
-  win.document.write(`<div class="seccion-body">
+  inner += `<div class="seccion-body">
   <h2>1. Datos generales</h2>
   <div class="datos-grid">
     <div class="dato"><span class="dato-label">Ticket</span><span class="dato-val">#${S.ticket||'—'}</span></div>
@@ -1157,8 +1186,8 @@ function generarReporte(tipo) {
   </div>
   </div>`);
 
-  win.document.write(footerHtml());
-  win.document.write(`</div></body></html>`);
+  inner += footerHtml());
+  inner += `</div></body></html>`);
   win.document.close();
   setTimeout(()=>win.print(), 600);
 }
