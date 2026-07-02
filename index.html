@@ -517,114 +517,20 @@ const STEPS = {
       <div class="field"><label class="label">Fecha</label><input class="input" type="date" value="${S.fecha}" oninput="S.fecha=this.value"></div>
     </div>
     <div class="field"><label class="label">Cliente / Solicitante</label><input class="input" placeholder="Nombre" value="${S.cliente}" oninput="S.cliente=this.value"></div>
-    <div class="field"><label class="label">Empresa / Cliente</label>
-      <select class="input select" onchange="S.empresa=this.value;render()">
-        <option value="">Seleccionar empresa...</option>
-        <option value="ACSA">ACSA</option>
-<option value="ADNR MAQUINARIA">ADNR MAQUINARIA</option>
-<option value="ADRIAN SANDOVAL">ADRIAN SANDOVAL</option>
-<option value="ALCO">ALCO</option>
-<option value="ALMACEN">ALMACEN</option>
-<option value="AMEXDER">AMEXDER</option>
-<option value="ANA GABRIELA LOPEZ MONTIEL">ANA GABRIELA LOPEZ MONTIEL</option>
-<option value="ANA LILIA">ANA LILIA</option>
-<option value="ANTONIO L">ANTONIO L</option>
-<option value="ATLAS POWER RENT">ATLAS POWER RENT</option>
-<option value="AVICOLA 4 HERMANOS">AVICOLA 4 HERMANOS</option>
-<option value="BIMBO MUSEO">BIMBO MUSEO</option>
-<option value="BRESEC IT">BRESEC IT</option>
-<option value="BULMATICK">BULMATICK</option>
-<option value="C LOGISTIC">C LOGISTIC</option>
-<option value="CAJA INMACULADA">CAJA INMACULADA</option>
-<option value="CARGO EM">CARGO EM</option>
-<option value="CARLOS MERAZ">CARLOS MERAZ</option>
-<option value="CASINO">CASINO</option>
-<option value="CENTRO DE ESTUDIOS FELIPE VILLANUEVA">CENTRO DE ESTUDIOS FELIPE VILLANUEVA</option>
-<option value="COMPAÑIA MINERA ZILAR MENDI">COMPAÑIA MINERA ZILAR MENDI</option>
-<option value="COMPRESORES Y MAQUINARIA">COMPRESORES Y MAQUINARIA</option>
-<option value="CORAL GROUP">CORAL GROUP</option>
-<option value="DAVID ROMERO">DAVID ROMERO</option>
-<option value="DESARROLLO INMOBILIARIO EWOK">DESARROLLO INMOBILIARIO EWOK</option>
-<option value="EDER">EDER</option>
-<option value="EEBSA">EEBSA</option>
-<option value="EEBSA BACKUP POWER">EEBSA BACKUP POWER</option>
-<option value="ENERGIA ADAPTABLE">ENERGIA ADAPTABLE</option>
-<option value="ENERGIA FARI">ENERGIA FARI</option>
-<option value="EPBS">EPBS</option>
-<option value="ESTRELLA MORA">ESTRELLA MORA</option>
-<option value="FIIX">FIIX</option>
-<option value="FISCALIA GENERAL DE QUERETARO">FISCALIA GENERAL DE QUERETARO</option>
-<option value="FLAVIO LIZARDO">FLAVIO LIZARDO</option>
-<option value="FRANCISCO ORDAZ">FRANCISCO ORDAZ</option>
-<option value="G Y E CONSTRUCTORA E INSTALACIONES ELECTROMECANICAS">G Y E CONSTRUCTORA E INSTALACIONES ELECTROMECANICAS</option>
-<option value="GASOLINERO">GASOLINERO</option>
-<option value="GENERA OIL & GAS">GENERA OIL & GAS</option>
-<option value="GENERAC">GENERAC</option>
-<option value="GH POWER">GH POWER</option>
-<option value="GIKSA">GIKSA</option>
-<option value="GILBERTO">GILBERTO</option>
-<option value="GIMESA">GIMESA</option>
-<option value="GMAQ">GMAQ</option>
-<option value="GRUPO BELLEI">GRUPO BELLEI</option>
-<option value="GRUPO TORRESA">GRUPO TORRESA</option>
-<option value="GUILLERMO CHINCHILLAS">GUILLERMO CHINCHILLAS</option>
-<option value="GYP">GYP</option>
-<option value="HUMBERTO / JASSCA">HUMBERTO / JASSCA</option>
-<option value="ICMAQ">ICMAQ</option>
-<option value="INDUSTRIAL ALDAKE">INDUSTRIAL ALDAKE</option>
-<option value="ITISA">ITISA</option>
-<option value="JAGUAR">JAGUAR</option>
-<option value="JASSCA">JASSCA</option>
-<option value="JESUS GARCIA">JESUS GARCIA</option>
-<option value="JORGE REA">JORGE REA</option>
-<option value="JOSE LUIS ARIAS">JOSE LUIS ARIAS</option>
-<option value="JOSE MANUEL HUERTA">JOSE MANUEL HUERTA</option>
-<option value="JUAN JOSE">JUAN JOSE</option>
-<option value="KAESER">KAESER</option>
-<option value="KARENTAL">KARENTAL</option>
-<option value="LA ENERGY">LA ENERGY</option>
-<option value="LA TEXTILERA">LA TEXTILERA</option>
-<option value="LIZARDO">LIZARDO</option>
-<option value="LUMA EQUIPOS INDUSTRIALES">LUMA EQUIPOS INDUSTRIALES</option>
-<option value="MARTE PRODUCCIONES">MARTE PRODUCCIONES</option>
-<option value="MIGUEL">MIGUEL</option>
-<option value="ML">ML</option>
-<option value="NUCITEC">NUCITEC</option>
-<option value="NW ENERGY RENT">NW ENERGY RENT</option>
-<option value="OFICINAS">OFICINAS</option>
-<option value="PAS APPLIANCE">PAS APPLIANCE</option>
-<option value="PASTES KIKOS">PASTES KIKOS</option>
-<option value="PINOTECNIA">PINOTECNIA</option>
-<option value="PINTROTECHOS">PINTROTECHOS</option>
-<option value="PLANTI RENT">PLANTI RENT</option>
-<option value="PLAZA MIRAVAL">PLAZA MIRAVAL</option>
-<option value="PMA">PMA</option>
-<option value="PODER EN RENTA">PODER EN RENTA</option>
-<option value="PRETTL">PRETTL</option>
-<option value="RABI">RABI</option>
-<option value="RANCHO LA JOAQUINA">RANCHO LA JOAQUINA</option>
-<option value="RELESUR">RELESUR</option>
-<option value="RENTA DE PLANTAS">RENTA DE PLANTAS</option>
-<option value="RENTA MAQ RIVAS">RENTA MAQ RIVAS</option>
-<option value="SALON DE ELEANOR">SALON DE ELEANOR</option>
-<option value="SAUL ARELLANO">SAUL ARELLANO</option>
-<option value="SAUL GONZALEZ">SAUL GONZALEZ</option>
-<option value="SOCCCMA">SOCCCMA</option>
-<option value="TEXTILERA">TEXTILERA</option>
-<option value="TIGESA">TIGESA</option>
-<option value="TOKYO">TOKYO</option>
-<option value="TORRESA">TORRESA</option>
-<option value="UNISER">UNISER</option>
-<option value="VEGETALES ATLIXCO">VEGETALES ATLIXCO</option>
-<option value="VILALPE">VILALPE</option>
-<option value="VLADIMIR VILLAGOMEZ">VLADIMIR VILLAGOMEZ</option>
-<option value="VOLTAX">VOLTAX</option>
-<option value="YELLOW EQUIPMENT">YELLOW EQUIPMENT</option>
-<option value="YOSAFAT JOEL JUAREZ LOZANO">YOSAFAT JOEL JUAREZ LOZANO</option>
-        <option value="otro">Otro cliente (nuevo)...</option>
-      </select>
+    <div class="field" style="position:relative">
+      <label class="label">Empresa / Cliente</label>
+      <div style="position:relative">
+        <input class="input" id="empresa-input"
+          placeholder="Buscar empresa..." 
+          value="${S.empresa==='otro'?S.empresaOtra:S.empresa}"
+          oninput="filtrarEmpresas(this.value)"
+          onfocus="filtrarEmpresas(this.value)"
+          autocomplete="off"
+          style="padding-right:36px">
+        <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">🏢</span>
+      </div>
+      <div id="empresa-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:240px;overflow-y:auto"></div>
     </div>
-    ${S.empresa==='otro' ? `<div class="field"><label class="label">Nombre del cliente nuevo</label><input class="input" placeholder="Escribe el nombre" value="${S.empresaOtra||''}" oninput="S.empresaOtra=this.value"></div>` : ''}
     
     <div class="field" style="position:relative">
       <label class="label">Ubicación</label>
@@ -1608,6 +1514,52 @@ async function guardarYCompartir(reporteHTML, tipo) {
     await guardar();
   }
 }
+
+// ─── Buscador de empresas ────────────────────────────────────────
+const CLIENTES_LIST = ["ACSA", "ADNR MAQUINARIA", "ADRIAN SANDOVAL", "ALCO", "ALMACEN", "AMEXDER", "ANA GABRIELA LOPEZ MONTIEL", "ANA LILIA", "ANTONIO L", "ATLAS POWER RENT", "AVICOLA 4 HERMANOS", "BIMBO MUSEO", "BRESEC IT", "BULMATICK", "C LOGISTIC", "CAJA INMACULADA", "CARGO EM", "CARLOS MERAZ", "CASINO", "CENTRO DE ESTUDIOS FELIPE VILLANUEVA", "COMPA\u00d1IA MINERA ZILAR MENDI", "COMPRESORES Y MAQUINARIA", "CORAL GROUP", "DAVID ROMERO", "DESARROLLO INMOBILIARIO EWOK", "EDER", "EEBSA", "EEBSA BACKUP POWER", "ENERGIA ADAPTABLE", "ENERGIA FARI", "EPBS", "ESTRELLA MORA", "FIIX", "FISCALIA GENERAL DE QUERETARO", "FLAVIO LIZARDO", "FRANCISCO ORDAZ", "G Y E CONSTRUCTORA E INSTALACIONES ELECTROMECANICAS", "GASOLINERO", "GENERA OIL & GAS", "GENERAC", "GH POWER", "GIKSA", "GILBERTO", "GIMESA", "GMAQ", "GRUPO BELLEI", "GRUPO TORRESA", "GUILLERMO CHINCHILLAS", "GYP", "HUMBERTO / JASSCA", "ICMAQ", "INDUSTRIAL ALDAKE", "ITISA", "JAGUAR", "JASSCA", "JESUS GARCIA", "JORGE REA", "JOSE LUIS ARIAS", "JOSE MANUEL HUERTA", "JUAN JOSE", "KAESER", "KARENTAL", "LA ENERGY", "LA TEXTILERA", "LIZARDO", "LUMA EQUIPOS INDUSTRIALES", "MARTE PRODUCCIONES", "MIGUEL", "ML", "NUCITEC", "NW ENERGY RENT", "OFICINAS", "PAS APPLIANCE", "PASTES KIKOS", "PINOTECNIA", "PINTROTECHOS", "PLANTI RENT", "PLAZA MIRAVAL", "PMA", "PODER EN RENTA", "PRETTL", "RABI", "RANCHO LA JOAQUINA", "RELESUR", "RENTA DE PLANTAS", "RENTA MAQ RIVAS", "SALON DE ELEANOR", "SAUL ARELLANO", "SAUL GONZALEZ", "SOCCCMA", "TEXTILERA", "TIGESA", "TOKYO", "TORRESA", "UNISER", "VEGETALES ATLIXCO", "VILALPE", "VLADIMIR VILLAGOMEZ", "VOLTAX", "YELLOW EQUIPMENT", "YOSAFAT JOEL JUAREZ LOZANO"];
+
+function filtrarEmpresas(query) {
+  const sug = document.getElementById('empresa-sugs');
+  if (!sug) return;
+  const q = query.trim().toUpperCase();
+  let resultados = q.length === 0 
+    ? CLIENTES_LIST 
+    : CLIENTES_LIST.filter(c => c.includes(q));
+  
+  if (!resultados.length && q.length > 0) {
+    sug.innerHTML = `<div style="padding:10px 14px;font-size:13px;color:#6b7280">No encontrado — 
+      <span onclick="selEmpresa('${query}', true)" style="color:#1a5fa8;font-weight:700;cursor:pointer">Agregar "${query}" como nuevo cliente</span>
+    </div>`;
+  } else {
+    const items = resultados.slice(0, 30).map(c => 
+      `<div onclick="selEmpresa('${c}')" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#1a1a1a;border-bottom:1px solid #f3f4f6;transition:background .1s" onmouseover="this.style.background='#f0f5ff'" onmouseout="this.style.background=''">${c}</div>`
+    ).join('');
+    const total = resultados.length > 30 ? `<div style="padding:8px 14px;font-size:11px;color:#9ca3af;text-align:center">${resultados.length - 30} más — sigue escribiendo para filtrar</div>` : '';
+    sug.innerHTML = items + total;
+  }
+  sug.style.display = 'block';
+}
+
+function selEmpresa(val, esNuevo) {
+  if (esNuevo) {
+    S.empresa = 'otro';
+    S.empresaOtra = val;
+  } else {
+    S.empresa = val;
+    S.empresaOtra = '';
+  }
+  const inp = document.getElementById('empresa-input');
+  if (inp) inp.value = val;
+  const sug = document.getElementById('empresa-sugs');
+  if (sug) sug.style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+  const sug = document.getElementById('empresa-sugs');
+  if (sug && !sug.contains(e.target) && e.target.id !== 'empresa-input') {
+    sug.style.display = 'none';
+  }
+});
 
 render();
 
