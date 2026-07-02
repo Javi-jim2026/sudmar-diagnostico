@@ -638,34 +638,37 @@ const STEPS = {
     </div>
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Datos de motor (placa OEM)</div>
-      <div class="field"><label class="label">Marca y modelo de motor</label><input class="input" placeholder="Ej. IVECO Cursor 87TED" value="${S.marcaMotor}" oninput="S.marcaMotor=this.value"></div>
+      <div class="field" style="position:relative">
+        <label class="label">Marca de motor</label>
+        <div style="position:relative">
+          <input class="input" id="motor-input"
+            placeholder="Buscar o escribir marca..." 
+            value="${S.marcaMotor}"
+            oninput="S.marcaMotor=this.value;filtrarMotores(this.value)"
+            onfocus="filtrarMotores(this.value)"
+            autocomplete="off">
+        </div>
+        <div id="motor-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:200px;overflow-y:auto"></div>
+      </div>
+      <div class="field"><label class="label">Modelo de motor</label><input class="input" placeholder="Ej. Cursor 87TED, QSB7, 1104D..." value="${S.modeloMotor||''}" oninput="S.modeloMotor=this.value"></div>
       <div class="field"><label class="label">Serie de motor</label><input class="input" placeholder="Número de serie" value="${S.serieMotor}" oninput="S.serieMotor=this.value"></div>
     </div>
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Datos de alternador (placa OEM)</div>
-      <div class="field">
+      <div class="field" style="position:relative">
         <label class="label">Marca de alternador</label>
-        <select class="input select" onchange="S.marcaAlt=this.value;S.marcaAltOtra='';render()">
-          <option value="">Seleccionar marca...</option>
-          <option ${S.marcaAlt==="Stamford"?'selected':''} value="Stamford">Stamford</option>
-<option ${S.marcaAlt==="Leroy-Somer"?'selected':''} value="Leroy-Somer">Leroy-Somer</option>
-<option ${S.marcaAlt==="Mecc Alte"?'selected':''} value="Mecc Alte">Mecc Alte</option>
-<option ${S.marcaAlt==="Marathon Electric"?'selected':''} value="Marathon Electric">Marathon Electric</option>
-<option ${S.marcaAlt==="Engga"?'selected':''} value="Engga">Engga</option>
-<option ${S.marcaAlt==="Sincro"?'selected':''} value="Sincro">Sincro</option>
-<option ${S.marcaAlt==="Linz Electric"?'selected':''} value="Linz Electric">Linz Electric</option>
-<option ${S.marcaAlt==="Faraday"?'selected':''} value="Faraday">Faraday</option>
-<option ${S.marcaAlt==="EvoTec"?'selected':''} value="EvoTec">EvoTec</option>
-<option ${S.marcaAlt==="Kaijieli"?'selected':''} value="Kaijieli">Kaijieli</option>
-<option ${S.marcaAlt==="JDG"?'selected':''} value="JDG">JDG</option>
-<option ${S.marcaAlt==="Potencia"?'selected':''} value="Potencia">Potencia</option>
-          <option ${S.marcaAlt==='otra'?'selected':''} value="otra">Otra marca...</option>
-        </select>
+        <div style="position:relative">
+          <input class="input" id="alt-input"
+            placeholder="Buscar o escribir marca..." 
+            value="${S.marcaAlt==='otra'?S.marcaAltOtra:S.marcaAlt||''}"
+            oninput="S.marcaAlt=this.value;S.marcaAltOtra='';filtrarAlternadores(this.value)"
+            onfocus="filtrarAlternadores(this.value)"
+            autocomplete="off">
+        </div>
+        <div id="alt-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:200px;overflow-y:auto"></div>
       </div>
-      ${S.marcaAlt==='otra' ? `
-      <div class="field"><label class="label">Especifica la marca</label>
-        <input class="input" placeholder="Escribe la marca del alternador" value="${S.marcaAltOtra||''}" oninput="S.marcaAltOtra=this.value">
-      </div>` : ''}
+      </div>
+
       <div class="field"><label class="label">Modelo de alternador</label><input class="input" placeholder="Ej. HCK4-844F" value="${S.modeloAlt||''}" oninput="S.modeloAlt=this.value"></div>
       <div class="field"><label class="label">Serie de alternador</label><input class="input" placeholder="Número de serie" value="${S.serieAlt||''}" oninput="S.serieAlt=this.value"></div>
     </div>` : ''}
@@ -1239,10 +1242,10 @@ ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
   <div class="dato"><span class="dato-label">Horómetro</span><span class="dato-val">${S.horometro||'—'} hrs</span></div>
   <div class="dato"><span class="dato-label">Potencia</span><span class="dato-val">${S.potencia||'—'} kW</span></div>
   <div class="dato"><span class="dato-label">Voltaje</span><span class="dato-val">${S.voltaje||'—'}</span></div>
-  <div class="dato"><span class="dato-label">Marca motor</span><span class="dato-val">${S.marcaMotor==='otra'?S.marcaMotorOtra:S.marcaMotor||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Marca motor</span><span class="dato-val">${S.marcaMotor||'—'}</span></div>
   <div class="dato"><span class="dato-label">Modelo motor</span><span class="dato-val">${S.modeloMotor||'—'}</span></div>
   <div class="dato"><span class="dato-label">Serie motor</span><span class="dato-val">${S.serieMotor||'—'}</span></div>
-  <div class="dato"><span class="dato-label">Marca alternador</span><span class="dato-val">${S.marcaAlt==='otra'?S.marcaAltOtra:S.marcaAlt||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Marca alternador</span><span class="dato-val">${S.marcaAlt||'—'}</span></div>
   <div class="dato"><span class="dato-label">Modelo alternador</span><span class="dato-val">${S.modeloAlt||'—'}</span></div>
   <div class="dato"><span class="dato-label">Serie alternador</span><span class="dato-val">${S.serieAlt||'—'}</span></div>
   <div class="dato"><span class="dato-label">Tipo control</span><span class="dato-val">${S.tipoControl==='ecu'?'ECU / CAN':S.tipoControl==='gobernador'?'Gobernador electrónico':S.tipoControl==='mecanico'?'Mecánico':'—'}</span></div>
@@ -1514,6 +1517,58 @@ async function guardarYCompartir(reporteHTML, tipo) {
     await guardar();
   }
 }
+
+// ─── Buscador de motores ─────────────────────────────────────────
+const MOTORES_LIST = ["Baudouin", "Briggs & Stratton", "Cummins", "Deutz", "Doosan", "FPT Industrial", "Honda", "Isuzu", "Iveco", "John Deere", "Kohler", "Kubota", "Lovol", "MAN", "MTU", "Mitsubishi", "Perkins", "Rolls-Royce", "SDEC", "Scania", "Volvo Penta", "Weichai", "Yamaha", "Yanmar"];
+const ALTERNADORES_LIST = ["Engga", "EvoTec", "Faraday", "JDG", "Kaijieli", "Leroy-Somer", "Linz Electric", "Marathon Electric", "Mecc Alte", "Potencia", "Sincro", "Stamford"];
+
+function filtrarMotores(query) {
+  const sug = document.getElementById('motor-sugs');
+  if (!sug) return;
+  const q = (query||'').trim().toUpperCase();
+  const resultados = q.length === 0 ? MOTORES_LIST : MOTORES_LIST.filter(m => m.toUpperCase().includes(q));
+  if (!resultados.length) { sug.style.display='none'; return; }
+  sug.innerHTML = resultados.map(m =>
+    `<div onclick="selMotor('${m}')" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#1a1a1a;border-bottom:1px solid #f3f4f6" onmouseover="this.style.background='#f0f5ff'" onmouseout="this.style.background=''">${m}</div>`
+  ).join('');
+  sug.style.display = 'block';
+}
+
+function selMotor(val) {
+  S.marcaMotor = val;
+  const inp = document.getElementById('motor-input');
+  if (inp) inp.value = val;
+  const sug = document.getElementById('motor-sugs');
+  if (sug) sug.style.display = 'none';
+}
+
+function filtrarAlternadores(query) {
+  const sug = document.getElementById('alt-sugs');
+  if (!sug) return;
+  const q = (query||'').trim().toUpperCase();
+  const resultados = q.length === 0 ? ALTERNADORES_LIST : ALTERNADORES_LIST.filter(a => a.toUpperCase().includes(q));
+  if (!resultados.length) { sug.style.display='none'; return; }
+  sug.innerHTML = resultados.map(a =>
+    `<div onclick="selAlternador('${a}')" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#1a1a1a;border-bottom:1px solid #f3f4f6" onmouseover="this.style.background='#f0f5ff'" onmouseout="this.style.background=''">${a}</div>`
+  ).join('');
+  sug.style.display = 'block';
+}
+
+function selAlternador(val) {
+  S.marcaAlt = val;
+  const inp = document.getElementById('alt-input');
+  if (inp) inp.value = val;
+  const sug = document.getElementById('alt-sugs');
+  if (sug) sug.style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+  ['motor-sugs','alt-sugs'].forEach(id => {
+    const sug = document.getElementById(id);
+    const inp = document.getElementById(id.replace('-sugs','-input'));
+    if (sug && !sug.contains(e.target) && e.target !== inp) sug.style.display = 'none';
+  });
+});
 
 // ─── Buscador de empresas ────────────────────────────────────────
 const CLIENTES_LIST = ["ACSA", "ADNR MAQUINARIA", "ADRIAN SANDOVAL", "ALCO", "ALMACEN", "AMEXDER", "ANA GABRIELA LOPEZ MONTIEL", "ANA LILIA", "ANTONIO L", "ATLAS POWER RENT", "AVICOLA 4 HERMANOS", "BIMBO MUSEO", "BRESEC IT", "BULMATICK", "C LOGISTIC", "CAJA INMACULADA", "CARGO EM", "CARLOS MERAZ", "CASINO", "CENTRO DE ESTUDIOS FELIPE VILLANUEVA", "COMPA\u00d1IA MINERA ZILAR MENDI", "COMPRESORES Y MAQUINARIA", "CORAL GROUP", "DAVID ROMERO", "DESARROLLO INMOBILIARIO EWOK", "EDER", "EEBSA", "EEBSA BACKUP POWER", "ENERGIA ADAPTABLE", "ENERGIA FARI", "EPBS", "ESTRELLA MORA", "FIIX", "FISCALIA GENERAL DE QUERETARO", "FLAVIO LIZARDO", "FRANCISCO ORDAZ", "G Y E CONSTRUCTORA E INSTALACIONES ELECTROMECANICAS", "GASOLINERO", "GENERA OIL & GAS", "GENERAC", "GH POWER", "GIKSA", "GILBERTO", "GIMESA", "GMAQ", "GRUPO BELLEI", "GRUPO TORRESA", "GUILLERMO CHINCHILLAS", "GYP", "HUMBERTO / JASSCA", "ICMAQ", "INDUSTRIAL ALDAKE", "ITISA", "JAGUAR", "JASSCA", "JESUS GARCIA", "JORGE REA", "JOSE LUIS ARIAS", "JOSE MANUEL HUERTA", "JUAN JOSE", "KAESER", "KARENTAL", "LA ENERGY", "LA TEXTILERA", "LIZARDO", "LUMA EQUIPOS INDUSTRIALES", "MARTE PRODUCCIONES", "MIGUEL", "ML", "NUCITEC", "NW ENERGY RENT", "OFICINAS", "PAS APPLIANCE", "PASTES KIKOS", "PINOTECNIA", "PINTROTECHOS", "PLANTI RENT", "PLAZA MIRAVAL", "PMA", "PODER EN RENTA", "PRETTL", "RABI", "RANCHO LA JOAQUINA", "RELESUR", "RENTA DE PLANTAS", "RENTA MAQ RIVAS", "SALON DE ELEANOR", "SAUL ARELLANO", "SAUL GONZALEZ", "SOCCCMA", "TEXTILERA", "TIGESA", "TOKYO", "TORRESA", "UNISER", "VEGETALES ATLIXCO", "VILALPE", "VLADIMIR VILLAGOMEZ", "VOLTAX", "YELLOW EQUIPMENT", "YOSAFAT JOEL JUAREZ LOZANO"];
