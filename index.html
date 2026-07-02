@@ -1202,7 +1202,7 @@ ${headerHtml()}
   <div class="dato"><span class="dato-label">Ticket</span><span class="dato-val">#${S.ticket||'—'}</span></div>
   <div class="dato"><span class="dato-label">Fecha</span><span class="dato-val">${S.fecha||'—'}</span></div>
   <div class="dato"><span class="dato-label">Cliente</span><span class="dato-val">${S.cliente||'—'}</span></div>
-  <div class="dato"><span class="dato-label">Empresa</span><span class="dato-val">${S.empresa||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Empresa</span><span class="dato-val">${S.empresa==='otra'?S.empresaOtra:S.empresa||'—'}</span></div>
   <div class="dato"><span class="dato-label">Ubicación</span><span class="dato-val">${S.ubicacion||'—'}</span></div>
   <div class="dato"><span class="dato-label">Responsable</span><span class="dato-val">${S.responsable||'—'}</span></div>
   <div class="dato"><span class="dato-label">Técnico(s)</span><span class="dato-val">${S.tecnicos||'—'}</span></div>
