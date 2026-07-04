@@ -865,11 +865,15 @@ const STEPS = {
       ${secs.map(s=>rSec(s)).join('')}`;
   },
 
-  REAL4: () => `
+  REAL4: () => {
+    const esGen = S.tipoEquipo==='gen' || S.tipoEquipo==='ambos';
+    const esTTA = S.tipoEquipo==='tta';
+    return `
     <div class="section-title">Pruebas técnicas</div>
     <div class="section-sub">Registra los parámetros medidos durante el servicio</div>
 
-    <!-- PRUEBAS EN VACÍO -->
+    ${esGen ? `
+    <!-- PRUEBAS EN VACÍO — GENERADOR -->
     <div class="prueba-block">
       <div class="prueba-header"><i class="ti ti-activity"></i>Pruebas en vacío (sin carga)</div>
       <div class="prueba-body">
@@ -882,7 +886,7 @@ const STEPS = {
               {id:'pv_noaut', label:'🚫 Cliente no autorizó', color:'#7c3aed', bg:'#ede9fe', border:'#7c3aed'},
               {id:'pv_nocond', label:'⚠️ No fue posible', color:'#92400e', bg:'#fef3c7', border:'#f59e0b'}
             ].map(o=>`
-              <div onclick="S.pvEstado='${o.id}';render()" 
+              <div onclick="S.pvEstado='${o.id}';render()"
                 style="border:2px solid ${S.pvEstado===o.id?o.border:'#e5e7eb'};border-radius:8px;padding:8px 10px;cursor:pointer;background:${S.pvEstado===o.id?o.bg:'#fff'};font-size:12px;font-weight:${S.pvEstado===o.id?'700':'500'};color:${S.pvEstado===o.id?o.color:'#374151'};text-align:center;transition:all .15s">
                 ${o.label}
               </div>`).join('')}
@@ -894,26 +898,26 @@ const STEPS = {
           <div class="field"><label class="label">V L2-L3</label><input class="input" placeholder="V" value="${S.pv_l2l3}" oninput="S.pv_l2l3=this.value"></div>
           <div class="field"><label class="label">V L1-L3</label><input class="input" placeholder="V" value="${S.pv_l1l3}" oninput="S.pv_l1l3=this.value"></div>
         </div>
-        <div class="input-row">
+        <div class="input-row3">
           <div class="field"><label class="label">Frecuencia (Hz)</label><input class="input" placeholder="Hz" value="${S.pv_freq}" oninput="S.pv_freq=this.value"></div>
           <div class="field"><label class="label">RPM</label><input class="input" placeholder="RPM" value="${S.pv_rpm}" oninput="S.pv_rpm=this.value"></div>
-        </div>
-        <div class="input-row3">
           <div class="field"><label class="label">V batería</label><input class="input" placeholder="VCC" value="${S.pv_bat}" oninput="S.pv_bat=this.value"></div>
+        </div>
+        <div class="input-row">
           <div class="field"><label class="label">Temperatura</label><input class="input" placeholder="°C" value="${S.pv_temp}" oninput="S.pv_temp=this.value"></div>
-          <div class="field"><label class="label">P. aceite</label><input class="input" placeholder="Bar" value="${S.pv_aceite}" oninput="S.pv_aceite=this.value"></div>
+          <div class="field"><label class="label">Presión aceite</label><input class="input" placeholder="Bar" value="${S.pv_aceite}" oninput="S.pv_aceite=this.value"></div>
         </div>` : ''}
         ${(S.pvEstado==='pv_noaut'||S.pvEstado==='pv_nocond'||S.pvEstado==='pv_no') ? `
         <div style="background:${S.pvEstado==='pv_noaut'?'#ede9fe':S.pvEstado==='pv_nocond'?'#fef3c7':'#ffe4d0'};border:2px solid ${S.pvEstado==='pv_noaut'?'#7c3aed':S.pvEstado==='pv_nocond'?'#f59e0b':'#e87a2a'};border-radius:8px;padding:10px 13px">
           <div style="font-size:12px;font-weight:700;color:${S.pvEstado==='pv_noaut'?'#5b21b6':S.pvEstado==='pv_nocond'?'#92400e':'#b85a10'};margin-bottom:6px">
-            ${S.pvEstado==='pv_noaut'?'🚫 Motivo — Cliente no autorizó':S.pvEstado==='pv_nocond'?'⚠️ Motivo — No fue posible realizarlas':'❌ Motivo'}
+            ${S.pvEstado==='pv_noaut'?'🚫 Cliente no autorizó encendido del equipo':S.pvEstado==='pv_nocond'?'⚠️ No fue posible realizarlas':'❌ No se realizaron'}
           </div>
           <input class="input" placeholder="Especifica el motivo o detalle adicional..." value="${S.pvMotivo||''}" oninput="S.pvMotivo=this.value" style="background:#fff">
         </div>` : ''}
       </div>
     </div>
 
-    <!-- PRUEBAS CON CARGA -->
+    <!-- PRUEBAS CON CARGA — GENERADOR -->
     <div class="prueba-block">
       <div class="prueba-header"><i class="ti ti-bolt"></i>Pruebas con carga</div>
       <div class="prueba-body">
@@ -926,7 +930,7 @@ const STEPS = {
               {id:'pc_noaut', label:'🚫 Cliente no autorizó', color:'#7c3aed', bg:'#ede9fe', border:'#7c3aed'},
               {id:'pc_nocond', label:'⚠️ No fue posible', color:'#92400e', bg:'#fef3c7', border:'#f59e0b'}
             ].map(o=>`
-              <div onclick="S.pcEstado='${o.id}';render()" 
+              <div onclick="S.pcEstado='${o.id}';render()"
                 style="border:2px solid ${S.pcEstado===o.id?o.border:'#e5e7eb'};border-radius:8px;padding:8px 10px;cursor:pointer;background:${S.pcEstado===o.id?o.bg:'#fff'};font-size:12px;font-weight:${S.pcEstado===o.id?'700':'500'};color:${S.pcEstado===o.id?o.color:'#374151'};text-align:center;transition:all .15s">
                 ${o.label}
               </div>`).join('')}
@@ -946,32 +950,76 @@ const STEPS = {
         <div class="input-row3">
           <div class="field"><label class="label">V batería</label><input class="input" placeholder="VCC" value="${S.pc_bat}" oninput="S.pc_bat=this.value"></div>
           <div class="field"><label class="label">Temperatura</label><input class="input" placeholder="°C" value="${S.pc_temp}" oninput="S.pc_temp=this.value"></div>
-          <div class="field"><label class="label">P. aceite</label><input class="input" placeholder="Bar" value="${S.pc_aceite}" oninput="S.pc_aceite=this.value"></div>
+          <div class="field"><label class="label">Presión aceite</label><input class="input" placeholder="Bar" value="${S.pc_aceite}" oninput="S.pc_aceite=this.value"></div>
         </div>` : ''}
         ${(S.pcEstado==='pc_noaut'||S.pcEstado==='pc_nocond'||S.pcEstado==='pc_no') ? `
         <div style="background:${S.pcEstado==='pc_noaut'?'#ede9fe':S.pcEstado==='pc_nocond'?'#fef3c7':'#ffe4d0'};border:2px solid ${S.pcEstado==='pc_noaut'?'#7c3aed':S.pcEstado==='pc_nocond'?'#f59e0b':'#e87a2a'};border-radius:8px;padding:10px 13px">
           <div style="font-size:12px;font-weight:700;color:${S.pcEstado==='pc_noaut'?'#5b21b6':S.pcEstado==='pc_nocond'?'#92400e':'#b85a10'};margin-bottom:6px">
-            ${S.pcEstado==='pc_noaut'?'🚫 Motivo — Cliente no autorizó':S.pcEstado==='pc_nocond'?'⚠️ Motivo — No fue posible realizarlas':'❌ Motivo'}
+            ${S.pcEstado==='pc_noaut'?'🚫 Cliente no autorizó pruebas con carga':S.pcEstado==='pc_nocond'?'⚠️ No fue posible realizarlas':'❌ No se realizaron'}
           </div>
           <input class="input" placeholder="Especifica el motivo o detalle adicional..." value="${S.pcMotivo||''}" oninput="S.pcMotivo=this.value" style="background:#fff">
         </div>` : ''}
       </div>
-    </div>
+    </div>` : ''}
 
-    <div class="field"><label class="label">Hallazgos y observaciones</label>
-      <textarea class="input" rows="5" placeholder="Describe los hallazgos principales, anomalías detectadas y acciones realizadas..." oninput="S.hallazgos=this.value">${S.hallazgos}</textarea></div>
-    <div class="field"><label class="label">Estatus actual del equipo</label>
+    ${esTTA ? `
+    <!-- MEDICIONES ELÉCTRICAS — TTA -->
+    <div class="prueba-block">
+      <div class="prueba-header"><i class="ti ti-transfer-in"></i>Mediciones eléctricas del tablero</div>
+      <div class="prueba-body">
+        <div class="field">
+          <label class="label">¿Se realizaron mediciones?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            ${[
+              {id:'pv_si', label:'✅ Sí se realizaron', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
+              {id:'pv_noaut', label:'🚫 Cliente no autorizó', color:'#7c3aed', bg:'#ede9fe', border:'#7c3aed'}
+            ].map(o=>`
+              <div onclick="S.pvEstado='${o.id}';render()"
+                style="border:2px solid ${S.pvEstado===o.id?o.border:'#e5e7eb'};border-radius:8px;padding:8px 10px;cursor:pointer;background:${S.pvEstado===o.id?o.bg:'#fff'};font-size:12px;font-weight:${S.pvEstado===o.id?'700':'500'};color:${S.pvEstado===o.id?o.color:'#374151'};text-align:center;transition:all .15s">
+                ${o.label}
+              </div>`).join('')}
+          </div>
+        </div>
+        ${S.pvEstado==='pv_si' ? `
+        <div class="input-row3">
+          <div class="field"><label class="label">V L1-L2 (red normal)</label><input class="input" placeholder="V" value="${S.pv_l1l2}" oninput="S.pv_l1l2=this.value"></div>
+          <div class="field"><label class="label">V L2-L3</label><input class="input" placeholder="V" value="${S.pv_l2l3}" oninput="S.pv_l2l3=this.value"></div>
+          <div class="field"><label class="label">V L1-L3</label><input class="input" placeholder="V" value="${S.pv_l1l3}" oninput="S.pv_l1l3=this.value"></div>
+        </div>
+        <div class="input-row">
+          <div class="field"><label class="label">Frecuencia (Hz)</label><input class="input" placeholder="Hz" value="${S.pv_freq}" oninput="S.pv_freq=this.value"></div>
+          <div class="field"><label class="label">V batería control (opcional)</label><input class="input" placeholder="VCC" value="${S.pv_bat}" oninput="S.pv_bat=this.value"></div>
+        </div>` : ''}
+        ${S.pvEstado==='pv_noaut' ? `
+        <div style="background:#ede9fe;border:2px solid #7c3aed;border-radius:8px;padding:10px 13px">
+          <div style="font-size:12px;font-weight:700;color:#5b21b6;margin-bottom:6px">🚫 Cliente no autorizó mediciones</div>
+          <input class="input" placeholder="Detalle adicional..." value="${S.pvMotivo||''}" oninput="S.pvMotivo=this.value" style="background:#fff">
+        </div>` : ''}
+      </div>
+    </div>` : ''}
+
+    <!-- HALLAZGOS -->
+    <div class="field" style="margin-top:4px">
+      <label class="label">Hallazgos y observaciones</label>
+      <textarea class="input" rows="5" placeholder="Describe los hallazgos principales, anomalías detectadas y acciones realizadas..." oninput="S.hallazgos=this.value">${S.hallazgos}</textarea>
+    </div>
+    <div class="field">
+      <label class="label">Estatus actual del equipo</label>
       <select class="input select" onchange="S.estatus=this.value">
         <option value="">Seleccionar...</option>
         <option ${S.estatus==='operativo'?'selected':''} value="operativo">Operativo</option>
         <option ${S.estatus==='operativo_obs'?'selected':''} value="operativo_obs">Operativo con observaciones</option>
         <option ${S.estatus==='requiere_servicio'?'selected':''} value="requiere_servicio">Requiere servicio</option>
         <option ${S.estatus==='fuera_servicio'?'selected':''} value="fuera_servicio">Fuera de servicio</option>
-      </select></div>
-    <div class="field"><label class="label">Conclusión y recomendaciones</label>
-      <textarea class="input" rows="4" placeholder="Conclusión técnica y próximos pasos recomendados..." oninput="S.conclusion=this.value">${S.conclusion}</textarea></div>`,
+      </select>
+    </div>
+    <div class="field">
+      <label class="label">Conclusión y recomendaciones</label>
+      <textarea class="input" rows="4" placeholder="Conclusión técnica y próximos pasos recomendados..." oninput="S.conclusion=this.value">${S.conclusion}</textarea>
+    </div>`;
+  },
 
-  REAL5: () => `
+    REAL5: () => `
     <div class="section-title">Firmas de conformidad</div>
     <div class="section-sub">Firma con el dedo directamente en la pantalla</div>
 
