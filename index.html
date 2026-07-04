@@ -167,6 +167,8 @@ const S = {
   modeloEquipo:'', serieEquipo:'', horometro:'', potencia:'', voltaje:'',
   marcaMotor:'', serieMotor:'',
   tipoServicio: null,
+  modoPrueba: null, // 'basico' | 'avanzado'
+  ttaModuloControl: null, // true | false
   tipoEquipo: null, tipoControl: null,
   checks:{}, fG:{}, fF:{},   // fotos generales y de falla (arrays de base64)
   // pruebas vacío
@@ -867,29 +869,62 @@ const STEPS = {
 
   REAL4: () => {
     const esGen = S.tipoEquipo==='gen' || S.tipoEquipo==='ambos';
-    const esTTA = S.tipoEquipo==='tta';
+    const esTTA = S.tipoEquipo==='tta' || S.tipoEquipo==='ambos';
+    const mb = S.modoPrueba === 'basico';
+    const ma = S.modoPrueba === 'avanzado';
+
+    // Selector de modo
+    const selectorModo = `
+    <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:12px;padding:14px;margin-bottom:18px">
+      <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Selecciona el tipo de pruebas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div onclick="S.modoPrueba='basico';render()" style="border:2px solid ${S.modoPrueba==='basico'?'#1a5fa8':'#e5e7eb'};border-radius:10px;padding:14px 12px;cursor:pointer;background:${S.modoPrueba==='basico'?'#eaf1fb':'#fff'};text-align:center;transition:all .15s">
+          <div style="font-size:22px;margin-bottom:6px">🔵</div>
+          <div style="font-size:14px;font-weight:700;color:${S.modoPrueba==='basico'?'#1a3a6a':'#374151'}">Modo básico</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:3px;line-height:1.4">Puntos esenciales<br>Revisión general</div>
+        </div>
+        <div onclick="S.modoPrueba='avanzado';render()" style="border:2px solid ${S.modoPrueba==='avanzado'?'#dc2626':'#e5e7eb'};border-radius:10px;padding:14px 12px;cursor:pointer;background:${S.modoPrueba==='avanzado'?'#fef2f2':'#fff'};text-align:center;transition:all .15s">
+          <div style="font-size:22px;margin-bottom:6px">🔴</div>
+          <div style="font-size:14px;font-weight:700;color:${S.modoPrueba==='avanzado'?'#dc2626':'#374151'}">Modo avanzado</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:3px;line-height:1.4">Diagnóstico completo<br>Todos los parámetros</div>
+        </div>
+      </div>
+    </div>`;
+
+    if (!S.modoPrueba) return `
+    <div class="section-title">Pruebas técnicas</div>
+    <div class="section-sub">Elige el tipo de pruebas según lo cotizado con el cliente</div>
+    ${selectorModo}`;
+
+    // Helper botones de estado prueba
+    const btnsPrueba = (estadoKey, opts) => opts.map(o=>`
+      <div onclick="S.${estadoKey}='${o.id}';render()"
+        style="border:2px solid ${`S.${estadoKey}`===`'${o.id}'`?o.border:'#e5e7eb'};border-radius:8px;padding:8px 10px;cursor:pointer;background:${`S.${estadoKey}`===`'${o.id}'`?o.bg:'#fff'};font-size:12px;font-weight:500;color:#374151;text-align:center;transition:all .15s">
+        ${o.label}
+      </div>`).join('');
+
     return `
     <div class="section-title">Pruebas técnicas</div>
     <div class="section-sub">Registra los parámetros medidos durante el servicio</div>
+    ${selectorModo}
 
     ${esGen ? `
-    <!-- PRUEBAS EN VACÍO — GENERADOR -->
+    <!-- ══ GENERADOR ══ -->
+    <div style="font-size:13px;font-weight:700;color:#0a2240;margin-bottom:10px;padding:8px 12px;background:#e8f0fb;border-radius:8px">⚡ Generador</div>
+
+    <!-- PRUEBAS EN VACÍO -->
     <div class="prueba-block">
-      <div class="prueba-header"><i class="ti ti-activity"></i>Pruebas en vacío (sin carga)</div>
+      <div class="prueba-header"><i class="ti ti-activity"></i>Pruebas en vacío</div>
       <div class="prueba-body">
         <div class="field">
-          <label class="label">¿Se realizaron pruebas en vacío?</label>
+          <label class="label">¿Se realizaron?</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
             ${[
-              {id:'pv_si', label:'✅ Sí se realizaron', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
-              {id:'pv_no', label:'❌ No se realizaron', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
-              {id:'pv_noaut', label:'🚫 Cliente no autorizó', color:'#7c3aed', bg:'#ede9fe', border:'#7c3aed'},
-              {id:'pv_nocond', label:'⚠️ No fue posible', color:'#92400e', bg:'#fef3c7', border:'#f59e0b'}
-            ].map(o=>`
-              <div onclick="S.pvEstado='${o.id}';render()"
-                style="border:2px solid ${S.pvEstado===o.id?o.border:'#e5e7eb'};border-radius:8px;padding:8px 10px;cursor:pointer;background:${S.pvEstado===o.id?o.bg:'#fff'};font-size:12px;font-weight:${S.pvEstado===o.id?'700':'500'};color:${S.pvEstado===o.id?o.color:'#374151'};text-align:center;transition:all .15s">
-                ${o.label}
-              </div>`).join('')}
+              {id:'pv_si',label:'✅ Sí',color:'#1a7a3a',bg:'#dcf5e4',border:'#4caf70'},
+              {id:'pv_no',label:'❌ No',color:'#b85a10',bg:'#ffe4d0',border:'#e87a2a'},
+              {id:'pv_noaut',label:'🚫 No autorizó',color:'#7c3aed',bg:'#ede9fe',border:'#7c3aed'},
+              {id:'pv_nocond',label:'⚠️ No fue posible',color:'#92400e',bg:'#fef3c7',border:'#f59e0b'}
+            ].map(o=>`<div onclick="S.pvEstado='${o.id}';render()" style="border:2px solid ${S.pvEstado===o.id?o.border:'#e5e7eb'};border-radius:8px;padding:8px 6px;cursor:pointer;background:${S.pvEstado===o.id?o.bg:'#fff'};font-size:11px;font-weight:${S.pvEstado===o.id?'700':'500'};color:${S.pvEstado===o.id?o.color:'#374151'};text-align:center">${o.label}</div>`).join('')}
           </div>
         </div>
         ${S.pvEstado==='pv_si' ? `
@@ -904,36 +939,49 @@ const STEPS = {
           <div class="field"><label class="label">V batería</label><input class="input" placeholder="VCC" value="${S.pv_bat}" oninput="S.pv_bat=this.value"></div>
         </div>
         <div class="input-row">
-          <div class="field"><label class="label">Temperatura</label><input class="input" placeholder="°C" value="${S.pv_temp}" oninput="S.pv_temp=this.value"></div>
-          <div class="field"><label class="label">Presión aceite</label><input class="input" placeholder="Bar" value="${S.pv_aceite}" oninput="S.pv_aceite=this.value"></div>
-        </div>` : ''}
+          <div class="field"><label class="label">Temperatura (°C)</label><input class="input" placeholder="°C" value="${S.pv_temp}" oninput="S.pv_temp=this.value"></div>
+          <div class="field"><label class="label">Presión aceite (Bar)</label><input class="input" placeholder="Bar" value="${S.pv_aceite}" oninput="S.pv_aceite=this.value"></div>
+        </div>
+        ${ma ? `
+        <!-- AVANZADO: fasímetro y baterías -->
+        <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:8px;padding:12px;margin-top:8px">
+          <div style="font-size:11px;font-weight:700;color:#1a3a6a;margin-bottom:8px;text-transform:uppercase">🔴 Avanzado — Fasímetro y baterías</div>
+          <div class="field"><label class="label">Secuencia de fases (fasímetro)</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+              ${['RST (correcta)','RTS (invertida)','No medido'].map(f=>`<div onclick="S.fasimetroGen='${f}';render()" style="border:2px solid ${S.fasimetroGen===f?'#1a5fa8':'#e5e7eb'};border-radius:7px;padding:7px 4px;cursor:pointer;background:${S.fasimetroGen===f?'#eaf1fb':'#fff'};font-size:11px;font-weight:${S.fasimetroGen===f?'700':'400'};text-align:center;color:${S.fasimetroGen===f?'#1a3a6a':'#374151'}">${f}</div>`).join('')}
+            </div>
+          </div>
+          <div class="field"><label class="label">Prueba de baterías</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+              ${['Buena','Sulfatada','Reemplazar'].map(b=>`<div onclick="S.estadoBateria='${b}';render()" style="border:2px solid ${S.estadoBateria===b?(b==='Buena'?'#4caf70':b==='Sulfatada'?'#f59e0b':'#dc2626'):'#e5e7eb'};border-radius:7px;padding:7px 4px;cursor:pointer;background:${S.estadoBateria===b?(b==='Buena'?'#dcf5e4':b==='Sulfatada'?'#fef3c7':'#fef2f2'):'#fff'};font-size:11px;font-weight:${S.estadoBateria===b?'700':'400'};text-align:center;color:${S.estadoBateria===b?(b==='Buena'?'#1a7a3a':b==='Sulfatada'?'#92400e':'#dc2626'):'#374151'}">${b}</div>`).join('')}
+            </div>
+            <div class="input-row">
+              <div class="field"><label class="label">V reposo</label><input class="input" placeholder="VCC" value="${S.batVReposo||''}" oninput="S.batVReposo=this.value"></div>
+              <div class="field"><label class="label">V bajo carga</label><input class="input" placeholder="VCC" value="${S.batVCarga||''}" oninput="S.batVCarga=this.value"></div>
+            </div>
+          </div>
+        </div>` : ''}` : ''}
         ${(S.pvEstado==='pv_noaut'||S.pvEstado==='pv_nocond'||S.pvEstado==='pv_no') ? `
         <div style="background:${S.pvEstado==='pv_noaut'?'#ede9fe':S.pvEstado==='pv_nocond'?'#fef3c7':'#ffe4d0'};border:2px solid ${S.pvEstado==='pv_noaut'?'#7c3aed':S.pvEstado==='pv_nocond'?'#f59e0b':'#e87a2a'};border-radius:8px;padding:10px 13px">
-          <div style="font-size:12px;font-weight:700;color:${S.pvEstado==='pv_noaut'?'#5b21b6':S.pvEstado==='pv_nocond'?'#92400e':'#b85a10'};margin-bottom:6px">
-            ${S.pvEstado==='pv_noaut'?'🚫 Cliente no autorizó encendido del equipo':S.pvEstado==='pv_nocond'?'⚠️ No fue posible realizarlas':'❌ No se realizaron'}
-          </div>
-          <input class="input" placeholder="Especifica el motivo o detalle adicional..." value="${S.pvMotivo||''}" oninput="S.pvMotivo=this.value" style="background:#fff">
+          <div style="font-size:12px;font-weight:700;color:${S.pvEstado==='pv_noaut'?'#5b21b6':S.pvEstado==='pv_nocond'?'#92400e':'#b85a10'};margin-bottom:6px">${S.pvEstado==='pv_noaut'?'🚫 Cliente no autorizó encendido':S.pvEstado==='pv_nocond'?'⚠️ No fue posible realizarlas':'❌ No se realizaron'}</div>
+          <input class="input" placeholder="Detalle adicional..." value="${S.pvMotivo||''}" oninput="S.pvMotivo=this.value" style="background:#fff">
         </div>` : ''}
       </div>
     </div>
 
-    <!-- PRUEBAS CON CARGA — GENERADOR -->
+    <!-- PRUEBAS CON CARGA -->
     <div class="prueba-block">
       <div class="prueba-header"><i class="ti ti-bolt"></i>Pruebas con carga</div>
       <div class="prueba-body">
         <div class="field">
-          <label class="label">¿Se realizaron pruebas con carga?</label>
+          <label class="label">¿Se realizaron?</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
             ${[
-              {id:'pc_si', label:'✅ Sí se realizaron', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
-              {id:'pc_no', label:'❌ No se realizaron', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
-              {id:'pc_noaut', label:'🚫 Cliente no autorizó', color:'#7c3aed', bg:'#ede9fe', border:'#7c3aed'},
-              {id:'pc_nocond', label:'⚠️ No fue posible', color:'#92400e', bg:'#fef3c7', border:'#f59e0b'}
-            ].map(o=>`
-              <div onclick="S.pcEstado='${o.id}';render()"
-                style="border:2px solid ${S.pcEstado===o.id?o.border:'#e5e7eb'};border-radius:8px;padding:8px 10px;cursor:pointer;background:${S.pcEstado===o.id?o.bg:'#fff'};font-size:12px;font-weight:${S.pcEstado===o.id?'700':'500'};color:${S.pcEstado===o.id?o.color:'#374151'};text-align:center;transition:all .15s">
-                ${o.label}
-              </div>`).join('')}
+              {id:'pc_si',label:'✅ Sí',color:'#1a7a3a',bg:'#dcf5e4',border:'#4caf70'},
+              {id:'pc_no',label:'❌ No',color:'#b85a10',bg:'#ffe4d0',border:'#e87a2a'},
+              {id:'pc_noaut',label:'🚫 No autorizó',color:'#7c3aed',bg:'#ede9fe',border:'#7c3aed'},
+              {id:'pc_nocond',label:'⚠️ No fue posible',color:'#92400e',bg:'#fef3c7',border:'#f59e0b'}
+            ].map(o=>`<div onclick="S.pcEstado='${o.id}';render()" style="border:2px solid ${S.pcEstado===o.id?o.border:'#e5e7eb'};border-radius:8px;padding:8px 6px;cursor:pointer;background:${S.pcEstado===o.id?o.bg:'#fff'};font-size:11px;font-weight:${S.pcEstado===o.id?'700':'500'};color:${S.pcEstado===o.id?o.color:'#374151'};text-align:center">${o.label}</div>`).join('')}
           </div>
         </div>
         ${S.pcEstado==='pc_si' ? `
@@ -949,58 +997,147 @@ const STEPS = {
         </div>
         <div class="input-row3">
           <div class="field"><label class="label">V batería</label><input class="input" placeholder="VCC" value="${S.pc_bat}" oninput="S.pc_bat=this.value"></div>
-          <div class="field"><label class="label">Temperatura</label><input class="input" placeholder="°C" value="${S.pc_temp}" oninput="S.pc_temp=this.value"></div>
-          <div class="field"><label class="label">Presión aceite</label><input class="input" placeholder="Bar" value="${S.pc_aceite}" oninput="S.pc_aceite=this.value"></div>
+          <div class="field"><label class="label">Temperatura (°C)</label><input class="input" placeholder="°C" value="${S.pc_temp}" oninput="S.pc_temp=this.value"></div>
+          <div class="field"><label class="label">Presión aceite (Bar)</label><input class="input" placeholder="Bar" value="${S.pc_aceite}" oninput="S.pc_aceite=this.value"></div>
         </div>` : ''}
         ${(S.pcEstado==='pc_noaut'||S.pcEstado==='pc_nocond'||S.pcEstado==='pc_no') ? `
         <div style="background:${S.pcEstado==='pc_noaut'?'#ede9fe':S.pcEstado==='pc_nocond'?'#fef3c7':'#ffe4d0'};border:2px solid ${S.pcEstado==='pc_noaut'?'#7c3aed':S.pcEstado==='pc_nocond'?'#f59e0b':'#e87a2a'};border-radius:8px;padding:10px 13px">
-          <div style="font-size:12px;font-weight:700;color:${S.pcEstado==='pc_noaut'?'#5b21b6':S.pcEstado==='pc_nocond'?'#92400e':'#b85a10'};margin-bottom:6px">
-            ${S.pcEstado==='pc_noaut'?'🚫 Cliente no autorizó pruebas con carga':S.pcEstado==='pc_nocond'?'⚠️ No fue posible realizarlas':'❌ No se realizaron'}
-          </div>
-          <input class="input" placeholder="Especifica el motivo o detalle adicional..." value="${S.pcMotivo||''}" oninput="S.pcMotivo=this.value" style="background:#fff">
+          <div style="font-size:12px;font-weight:700;color:${S.pcEstado==='pc_noaut'?'#5b21b6':S.pcEstado==='pc_nocond'?'#92400e':'#b85a10'};margin-bottom:6px">${S.pcEstado==='pc_noaut'?'🚫 Cliente no autorizó':S.pcEstado==='pc_nocond'?'⚠️ No fue posible':'❌ No se realizaron'}</div>
+          <input class="input" placeholder="Detalle adicional..." value="${S.pcMotivo||''}" oninput="S.pcMotivo=this.value" style="background:#fff">
         </div>` : ''}
       </div>
     </div>` : ''}
 
     ${esTTA ? `
-    <!-- MEDICIONES ELÉCTRICAS — TTA -->
+    <!-- ══ TTA ══ -->
+    <div style="font-size:13px;font-weight:700;color:#0a2240;margin-bottom:10px;padding:8px 12px;background:#e8f0fb;border-radius:8px">🔌 Tablero de Transferencia Automática</div>
+
+    <!-- ¿Tiene módulo de control? -->
+    <div style="border:1.5px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:14px;background:#fff">
+      <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px">¿El tablero cuenta con módulo de control integrado?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div onclick="S.ttaModuloControl=true;render()" style="border:2px solid ${S.ttaModuloControl===true?'#1a5fa8':'#e5e7eb'};border-radius:8px;padding:10px;cursor:pointer;background:${S.ttaModuloControl===true?'#eaf1fb':'#fff'};text-align:center;font-size:13px;font-weight:${S.ttaModuloControl===true?'700':'500'};color:${S.ttaModuloControl===true?'#1a3a6a':'#374151'}">✅ Sí tiene</div>
+        <div onclick="S.ttaModuloControl=false;render()" style="border:2px solid ${S.ttaModuloControl===false?'#e87a2a':'#e5e7eb'};border-radius:8px;padding:10px;cursor:pointer;background:${S.ttaModuloControl===false?'#fff9f4':'#fff'};text-align:center;font-size:13px;font-weight:${S.ttaModuloControl===false?'700':'500'};color:${S.ttaModuloControl===false?'#b85a10':'#374151'}">❌ No tiene</div>
+      </div>
+    </div>
+
+    <!-- MEDICIONES ELÉCTRICAS TTA — BÁSICO Y AVANZADO -->
     <div class="prueba-block">
-      <div class="prueba-header"><i class="ti ti-transfer-in"></i>Mediciones eléctricas del tablero</div>
+      <div class="prueba-header"><i class="ti ti-activity"></i>Mediciones eléctricas</div>
       <div class="prueba-body">
         <div class="field">
           <label class="label">¿Se realizaron mediciones?</label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
             ${[
-              {id:'pv_si', label:'✅ Sí se realizaron', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
-              {id:'pv_noaut', label:'🚫 Cliente no autorizó', color:'#7c3aed', bg:'#ede9fe', border:'#7c3aed'}
-            ].map(o=>`
-              <div onclick="S.pvEstado='${o.id}';render()"
-                style="border:2px solid ${S.pvEstado===o.id?o.border:'#e5e7eb'};border-radius:8px;padding:8px 10px;cursor:pointer;background:${S.pvEstado===o.id?o.bg:'#fff'};font-size:12px;font-weight:${S.pvEstado===o.id?'700':'500'};color:${S.pvEstado===o.id?o.color:'#374151'};text-align:center;transition:all .15s">
-                ${o.label}
-              </div>`).join('')}
+              {id:'pv_si',label:'✅ Sí',color:'#1a7a3a',bg:'#dcf5e4',border:'#4caf70'},
+              {id:'pv_noaut',label:'🚫 No autorizó',color:'#7c3aed',bg:'#ede9fe',border:'#7c3aed'}
+            ].map(o=>`<div onclick="S.pvEstado='${o.id}';render()" style="border:2px solid ${S.pvEstado===o.id?o.border:'#e5e7eb'};border-radius:8px;padding:8px 10px;cursor:pointer;background:${S.pvEstado===o.id?o.bg:'#fff'};font-size:12px;font-weight:${S.pvEstado===o.id?'700':'500'};color:${S.pvEstado===o.id?o.color:'#374151'};text-align:center">${o.label}</div>`).join('')}
           </div>
         </div>
         ${S.pvEstado==='pv_si' ? `
+        <!-- Voltajes red normal -->
+        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;margin:8px 0 4px">Red normal</div>
         <div class="input-row3">
-          <div class="field"><label class="label">V L1-L2 (red normal)</label><input class="input" placeholder="V" value="${S.pv_l1l2}" oninput="S.pv_l1l2=this.value"></div>
+          <div class="field"><label class="label">V L1-L2</label><input class="input" placeholder="V" value="${S.pv_l1l2}" oninput="S.pv_l1l2=this.value"></div>
           <div class="field"><label class="label">V L2-L3</label><input class="input" placeholder="V" value="${S.pv_l2l3}" oninput="S.pv_l2l3=this.value"></div>
           <div class="field"><label class="label">V L1-L3</label><input class="input" placeholder="V" value="${S.pv_l1l3}" oninput="S.pv_l1l3=this.value"></div>
         </div>
         <div class="input-row">
           <div class="field"><label class="label">Frecuencia (Hz)</label><input class="input" placeholder="Hz" value="${S.pv_freq}" oninput="S.pv_freq=this.value"></div>
-          <div class="field"><label class="label">V batería control (opcional)</label><input class="input" placeholder="VCC" value="${S.pv_bat}" oninput="S.pv_bat=this.value"></div>
-        </div>` : ''}
+          <div class="field"><label class="label">A L1</label><input class="input" placeholder="A" value="${S.tta_a1||''}" oninput="S.tta_a1=this.value"></div>
+        </div>
+        <div class="input-row">
+          <div class="field"><label class="label">A L2</label><input class="input" placeholder="A" value="${S.tta_a2||''}" oninput="S.tta_a2=this.value"></div>
+          <div class="field"><label class="label">A L3</label><input class="input" placeholder="A" value="${S.tta_a3||''}" oninput="S.tta_a3=this.value"></div>
+        </div>
+        ${ma ? `
+        <!-- AVANZADO TTA -->
+        <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:8px;padding:12px;margin-top:8px">
+          <div style="font-size:11px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase">🔴 Avanzado</div>
+          <!-- Fasímetro -->
+          <div class="field"><label class="label">Secuencia de fases — red normal (fasímetro)</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+              ${['RST (correcta)','RTS (invertida)','No medido'].map(f=>`<div onclick="S.fasimetroNormal='${f}';render()" style="border:2px solid ${S.fasimetroNormal===f?'#1a5fa8':'#e5e7eb'};border-radius:7px;padding:7px 4px;cursor:pointer;background:${S.fasimetroNormal===f?'#eaf1fb':'#fff'};font-size:11px;text-align:center;font-weight:${S.fasimetroNormal===f?'700':'400'}">${f}</div>`).join('')}
+            </div>
+          </div>
+          <div class="field"><label class="label">Secuencia de fases — red emergencia (fasímetro)</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+              ${['RST (correcta)','RTS (invertida)','No medido'].map(f=>`<div onclick="S.fasimetroEmergencia='${f}';render()" style="border:2px solid ${S.fasimetroEmergencia===f?'#1a5fa8':'#e5e7eb'};border-radius:7px;padding:7px 4px;cursor:pointer;background:${S.fasimetroEmergencia===f?'#eaf1fb':'#fff'};font-size:11px;text-align:center;font-weight:${S.fasimetroEmergencia===f?'700':'400'}">${f}</div>`).join('')}
+            </div>
+          </div>
+          <div class="field"><label class="label">V batería control</label><input class="input" placeholder="VCC" value="${S.pv_bat}" oninput="S.pv_bat=this.value"></div>
+        </div>` : ''}` : ''}
         ${S.pvEstado==='pv_noaut' ? `
         <div style="background:#ede9fe;border:2px solid #7c3aed;border-radius:8px;padding:10px 13px">
           <div style="font-size:12px;font-weight:700;color:#5b21b6;margin-bottom:6px">🚫 Cliente no autorizó mediciones</div>
-          <input class="input" placeholder="Detalle adicional..." value="${S.pvMotivo||''}" oninput="S.pvMotivo=this.value" style="background:#fff">
+          <input class="input" placeholder="Detalle..." value="${S.pvMotivo||''}" oninput="S.pvMotivo=this.value" style="background:#fff">
         </div>` : ''}
       </div>
-    </div>` : ''}
+    </div>
 
-    <!-- HALLAZGOS -->
-    <div class="field" style="margin-top:4px">
-      <label class="label">Hallazgos y observaciones</label>
+    <!-- PRUEBA DE TRANSFERENCIA -->
+    <div class="prueba-block">
+      <div class="prueba-header"><i class="ti ti-transfer-in"></i>Prueba de transferencia</div>
+      <div class="prueba-body">
+        <div class="field"><label class="label">¿El tablero transfiere correctamente al simular falla de red normal?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+            ${['✅ Sí','❌ No','⚠️ Parcial'].map((v,i)=>{const ids=['tf_si','tf_no','tf_parcial'];const cols=['#4caf70','#e87a2a','#f59e0b'];const bgs=['#dcf5e4','#ffe4d0','#fef3c7'];return`<div onclick="S.ttaTransfiere='${ids[i]}';render()" style="border:2px solid ${S.ttaTransfiere===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.ttaTransfiere===ids[i]?bgs[i]:'#fff'};font-size:12px;font-weight:${S.ttaTransfiere===ids[i]?'700':'500'};text-align:center">${v}</div>`}).join('')}
+          </div>
+        </div>
+        <div class="field"><label class="label">¿Retransfiere correctamente al regresar red normal?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+            ${['✅ Sí','❌ No','⚠️ Parcial'].map((v,i)=>{const ids=['rt_si','rt_no','rt_parcial'];const cols=['#4caf70','#e87a2a','#f59e0b'];const bgs=['#dcf5e4','#ffe4d0','#fef3c7'];return`<div onclick="S.ttaRetransfiere='${ids[i]}';render()" style="border:2px solid ${S.ttaRetransfiere===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.ttaRetransfiere===ids[i]?bgs[i]:'#fff'};font-size:12px;font-weight:${S.ttaRetransfiere===ids[i]?'700':'500'};text-align:center">${v}</div>`}).join('')}
+          </div>
+        </div>
+        <div class="field"><label class="label">¿Secuencia correcta — abre normal antes de cerrar emergencia?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            ${['✅ Correcta','❌ Incorrecta'].map((v,i)=>{const ids=['seq_ok','seq_mal'];const cols=['#4caf70','#e87a2a'];const bgs=['#dcf5e4','#ffe4d0'];return`<div onclick="S.ttaSecuencia='${ids[i]}';render()" style="border:2px solid ${S.ttaSecuencia===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.ttaSecuencia===ids[i]?bgs[i]:'#fff'};font-size:12px;font-weight:${S.ttaSecuencia===ids[i]?'700':'500'};text-align:center">${v}</div>`}).join('')}
+          </div>
+        </div>
+        ${ma ? `
+        <!-- TIEMPOS MEDIDOS — AVANZADO -->
+        <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:8px;padding:12px;margin-top:4px">
+          <div style="font-size:11px;font-weight:700;color:#1a3a6a;margin-bottom:8px;text-transform:uppercase">🔴 Avanzado — Tiempos medidos</div>
+          <div class="input-row">
+            <div class="field"><label class="label">T. transferencia N→E (seg)</label><input class="input" placeholder="seg" value="${S.ttaTiempoNE||''}" oninput="S.ttaTiempoNE=this.value"></div>
+            <div class="field"><label class="label">T. retransferencia E→N (seg)</label><input class="input" placeholder="seg" value="${S.ttaTiempoEN||''}" oninput="S.ttaTiempoEN=this.value"></div>
+          </div>
+          <div class="field"><label class="label">¿Se detecta calentamiento anormal en contactores?</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              ${['✅ No (normal)','⚠️ Sí (anormal)'].map((v,i)=>{const ids=['cal_no','cal_si'];const cols=['#4caf70','#e87a2a'];const bgs=['#dcf5e4','#ffe4d0'];return`<div onclick="S.ttaCalor='${ids[i]}';render()" style="border:2px solid ${S.ttaCalor===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.ttaCalor===ids[i]?bgs[i]:'#fff'};font-size:12px;font-weight:${S.ttaCalor===ids[i]?'700':'500'};text-align:center">${v}</div>`}).join('')}
+            </div>
+          </div>
+        </div>` : ''}
+        <div class="field" style="margin-top:8px"><label class="label">Observaciones de la prueba de transferencia</label>
+          <textarea class="input" rows="3" placeholder="Describe cualquier anomalía durante la transferencia..." oninput="S.ttaObsTransf=this.value">${S.ttaObsTransf||''}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÓDULO DE CONTROL — solo si tiene -->
+    ${S.ttaModuloControl===true ? `
+    <div class="prueba-block">
+      <div class="prueba-header"><i class="ti ti-cpu"></i>Módulo de control</div>
+      <div class="prueba-body">
+        <div class="field"><label class="label">¿Comunicación del módulo activa?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            ${['✅ Activa','❌ Sin comunicación'].map((v,i)=>{const ids=['mc_ok','mc_fail'];const cols=['#4caf70','#e87a2a'];const bgs=['#dcf5e4','#ffe4d0'];return`<div onclick="S.ttaMcComm='${ids[i]}';render()" style="border:2px solid ${S.ttaMcComm===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.ttaMcComm===ids[i]?bgs[i]:'#fff'};font-size:12px;font-weight:${S.ttaMcComm===ids[i]?'700':'500'};text-align:center">${v}</div>`}).join('')}
+          </div>
+        </div>
+        <div class="field"><label class="label">Alarmas activas en módulo</label>
+          <input class="input" placeholder="Describe las alarmas activas o escribe Ninguna" value="${S.ttaAlarmas||''}" oninput="S.ttaAlarmas=this.value">
+        </div>
+        <div class="field"><label class="label">¿Display y botones responden correctamente?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            ${['✅ Sí','❌ No'].map((v,i)=>{const ids=['disp_ok','disp_fail'];const cols=['#4caf70','#e87a2a'];const bgs=['#dcf5e4','#ffe4d0'];return`<div onclick="S.ttaDisplay='${ids[i]}';render()" style="border:2px solid ${S.ttaDisplay===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.ttaDisplay===ids[i]?bgs[i]:'#fff'};font-size:12px;font-weight:${S.ttaDisplay===ids[i]?'700':'500'};text-align:center">${v}</div>`}).join('')}
+          </div>
+        </div>
+      </div>
+    </div>` : ''}` : ''}
+
+    <!-- HALLAZGOS Y CONCLUSIÓN -->
+    <div class="field" style="margin-top:8px">
+      <label class="label">Hallazgos y observaciones generales</label>
       <textarea class="input" rows="5" placeholder="Describe los hallazgos principales, anomalías detectadas y acciones realizadas..." oninput="S.hallazgos=this.value">${S.hallazgos}</textarea>
     </div>
     <div class="field">
