@@ -1,0 +1,22 @@
+{
+  "name": "Sudmar Energy \u2014 Reportes",
+  "short_name": "Sudmar",
+  "description": "Sistema de reportes de servicio t\u00e9cnico",
+  "start_url": "/sudmar-diagnostico/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a2240",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
