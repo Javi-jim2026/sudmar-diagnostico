@@ -606,13 +606,13 @@ const STEPS = {
     </div>`,
 
   2: () => `
-    <div class="section-title">${S.tipoServicio==='solar'?'Subtipo de servicio solar':'Tipo de equipo'}</div>
-    <div class="section-sub">${S.tipoServicio==='solar'?'Selecciona qué tipo de servicio solar vas a realizar':'Selecciona qué se va a diagnosticar'}</div>
-    ${S.tipoServicio!=='solar' ? `<div class="eq-cards">${EQ.map(e=>`
+    <div class="section-title">Tipo de equipo</div>
+    <div class="section-sub">Selecciona qué se va a diagnosticar</div>
+    <div class="eq-cards">${EQ.map(e=>`
       <div class="eq-card ${e.full?'full':''} ${S.tipoEquipo===e.id?'selected':''}" onclick="S.tipoEquipo='${e.id}';S.tipoControl=null;render()">
         <i class="ti ${e.icon} eq-icon"></i><div class="eq-name">${e.name}</div><div class="eq-desc">${e.desc}</div>
-      </div>`).join('')}</div>` : ''}
-    ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') && S.tipoServicio!=='solar' ? `
+      </div>`).join('')}</div>
+    ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
     <div class="ctrl-branch">
       <div class="ctrl-title"><i class="ti ti-cpu" style="margin-right:6px"></i>Tipo de control del motor</div>
       <div class="radio-group">${[
@@ -628,39 +628,7 @@ const STEPS = {
     ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Datos del grupo electrógeno</div>
-      ${S.tipoServicio==='solar' ? `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      ${[
-        {id:'levantamiento', icon:'📐', name:'Levantamiento de sitio', desc:'Pre-instalación'},
-        {id:'instalacion', icon:'⚡', name:'Instalación', desc:'Montaje del sistema'},
-        {id:'diagnostico_solar', icon:'🔍', name:'Diagnóstico', desc:'Falla o baja producción'},
-        {id:'mantenimiento_solar', icon:'🔧', name:'Mantenimiento', desc:'Preventivo / limpieza'}
-      ].map(t=>`
-        <div onclick="S.subtipoSolar='${t.id}';render()" style="border:2px solid ${S.subtipoSolar===t.id?'#f59e0b':'#e5e7eb'};border-radius:10px;padding:14px 12px;cursor:pointer;background:${S.subtipoSolar===t.id?'#fffbeb':'#fff'};text-align:center;transition:all .15s">
-          <div style="font-size:22px;margin-bottom:6px">${t.icon}</div>
-          <div style="font-size:13px;font-weight:700;color:${S.subtipoSolar===t.id?'#b45309':'#374151'}">${t.name}</div>
-          <div style="font-size:11px;color:#6b7280;margin-top:2px">${t.desc}</div>
-        </div>`).join('')}
-    </div>
-    <div class="field"><label class="label">Marca / Fabricante de paneles</label><input class="input" placeholder="Ej. Canadian Solar, Longi, Jinko..." value="${S.solarMarcaPanel||''}" oninput="S.solarMarcaPanel=this.value"></div>
-    <div class="input-row">
-      <div class="field"><label class="label">Modelo de panel</label><input class="input" placeholder="Ej. CS6W-550MS" value="${S.solarModeloPanel||''}" oninput="S.solarModeloPanel=this.value"></div>
-      <div class="field"><label class="label">No. de paneles</label><input class="input" type="number" placeholder="Ej. 12" value="${S.solarNumPaneles||''}" oninput="S.solarNumPaneles=this.value"></div>
-    </div>
-    <div class="field"><label class="label">Marca / Modelo de inversor</label><input class="input" placeholder="Ej. SMA Sunny Boy 5000" value="${S.solarInversor||''}" oninput="S.solarInversor=this.value"></div>
-    <div class="input-row">
-      <div class="field"><label class="label">Potencia del sistema (kWp)</label><input class="input" placeholder="Ej. 6.6 kWp" value="${S.solarPotencia||''}" oninput="S.solarPotencia=this.value"></div>
-      <div class="field"><label class="label">Tipo de sistema</label>
-        <select class="input select" onchange="S.solarTipoSistema=this.value">
-          <option value="">Seleccionar...</option>
-          <option ${S.solarTipoSistema==='grid'?'selected':''} value="grid">On-Grid (interconectado CFE)</option>
-          <option ${S.solarTipoSistema==='offgrid'?'selected':''} value="offgrid">Off-Grid (aislado)</option>
-          <option ${S.solarTipoSistema==='hibrido'?'selected':''} value="hibrido">Híbrido (con baterías)</option>
-        </select>
-      </div>
-    </div>` : ''}
-
-    ${S.tipoServicio!=='solar' ? `<div class="field"><label class="label">Modelo del equipo</label><input class="input" placeholder="Ej. HIMOINSA HFW-250-T6" value="${S.modeloEquipo}" oninput="S.modeloEquipo=this.value"></div>
+      <div class="field"><label class="label">Modelo del equipo</label><input class="input" placeholder="Ej. HIMOINSA HFW-250-T6" value="${S.modeloEquipo}" oninput="S.modeloEquipo=this.value"></div>
       <div class="input-row">
         <div class="field"><label class="label">Serie del equipo</label><input class="input" placeholder="Número de serie" value="${S.serieEquipo}" oninput="S.serieEquipo=this.value"></div>
         <div class="field"><label class="label">Horómetro (hrs)</label><input class="input" placeholder="Horas" value="${S.horometro}" oninput="S.horometro=this.value"></div>
@@ -875,332 +843,7 @@ const STEPS = {
         </div>
       </div>`;
 
-    // SOLAR — formularios por subtipo
-    if (ts === 'solar') {
-      const sub = S.subtipoSolar;
-
-      // ── LEVANTAMIENTO DE SITIO ──────────────────────────────────
-      if (sub === 'levantamiento') return `
-        <div class="section-title">📐 Levantamiento de sitio</div>
-        <div class="section-sub">Recopila toda la información necesaria para diseñar el sistema solar</div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">☀️ Datos del sitio</div>
-          <div class="field"><label class="label">Tipo de inmueble</label>
-            <select class="input select" onchange="S.lev_inmueble=this.value">
-              <option value="">Seleccionar...</option>
-              <option ${S.lev_inmueble==='residencial'?'selected':''} value="residencial">Residencial</option>
-              <option ${S.lev_inmueble==='comercial'?'selected':''} value="comercial">Comercial</option>
-              <option ${S.lev_inmueble==='industrial'?'selected':''} value="industrial">Industrial</option>
-              <option ${S.lev_inmueble==='agricola'?'selected':''} value="agricola">Agrícola</option>
-            </select>
-          </div>
-          <div class="field"><label class="label">Tipo de techo / superficie</label>
-            <select class="input select" onchange="S.lev_techo=this.value">
-              <option value="">Seleccionar...</option>
-              <option ${S.lev_techo==='lamina'?'selected':''} value="lamina">Lámina metálica</option>
-              <option ${S.lev_techo==='concreto'?'selected':''} value="concreto">Concreto / losa</option>
-              <option ${S.lev_techo==='teja'?'selected':''} value="teja">Teja</option>
-              <option ${S.lev_techo==='suelo'?'selected':''} value="suelo">Suelo / estructura</option>
-              <option ${S.lev_techo==='otro'?'selected':''} value="otro">Otro</option>
-            </select>
-          </div>
-          <div class="input-row">
-            <div class="field"><label class="label">Área disponible (m²)</label><input class="input" placeholder="m²" value="${S.lev_area||''}" oninput="S.lev_area=this.value"></div>
-            <div class="field"><label class="label">Orientación del techo</label>
-              <select class="input select" onchange="S.lev_orientacion=this.value">
-                <option value="">Seleccionar...</option>
-                <option ${S.lev_orientacion==='sur'?'selected':''} value="sur">Sur (óptimo)</option>
-                <option ${S.lev_orientacion==='sureste'?'selected':''} value="sureste">Sureste</option>
-                <option ${S.lev_orientacion==='suroeste'?'selected':''} value="suroeste">Suroeste</option>
-                <option ${S.lev_orientacion==='este'?'selected':''} value="este">Este</option>
-                <option ${S.lev_orientacion==='oeste'?'selected':''} value="oeste">Oeste</option>
-                <option ${S.lev_orientacion==='norte'?'selected':''} value="norte">Norte (no recomendado)</option>
-              </select>
-            </div>
-          </div>
-          <div class="input-row">
-            <div class="field"><label class="label">Inclinación del techo (°)</label><input class="input" placeholder="Ej. 15°" value="${S.lev_inclinacion||''}" oninput="S.lev_inclinacion=this.value"></div>
-            <div class="field"><label class="label">Altura del techo (m)</label><input class="input" placeholder="metros" value="${S.lev_altura||''}" oninput="S.lev_altura=this.value"></div>
-          </div>
-        </div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">⚡ Datos eléctricos actuales</div>
-          <div class="field"><label class="label">Tarifa CFE actual</label>
-            <select class="input select" onchange="S.lev_tarifa=this.value">
-              <option value="">Seleccionar...</option>
-              <option ${S.lev_tarifa==='1'?'selected':''} value="1">Tarifa 1 (residencial)</option>
-              <option ${S.lev_tarifa==='1A'?'selected':''} value="1A">Tarifa 1A</option>
-              <option ${S.lev_tarifa==='1B'?'selected':''} value="1B">Tarifa 1B</option>
-              <option ${S.lev_tarifa==='1C'?'selected':''} value="1C">Tarifa 1C</option>
-              <option ${S.lev_tarifa==='1D'?'selected':''} value="1D">Tarifa 1D</option>
-              <option ${S.lev_tarifa==='1E'?'selected':''} value="1E">Tarifa 1E</option>
-              <option ${S.lev_tarifa==='1F'?'selected':''} value="1F">Tarifa 1F</option>
-              <option ${S.lev_tarifa==='dac'?'selected':''} value="dac">DAC (alto consumo)</option>
-              <option ${S.lev_tarifa==='gdmth'?'selected':''} value="gdmth">GDMTH (industrial/comercial)</option>
-              <option ${S.lev_tarifa==='otro'?'selected':''} value="otro">Otra</option>
-            </select>
-          </div>
-          <div class="input-row">
-            <div class="field"><label class="label">Consumo promedio bimestral (kWh)</label><input class="input" placeholder="kWh" value="${S.lev_consumo||''}" oninput="S.lev_consumo=this.value"></div>
-            <div class="field"><label class="label">Pago promedio bimestral ($)</label><input class="input" placeholder="MXN" value="${S.lev_pago||''}" oninput="S.lev_pago=this.value"></div>
-          </div>
-          <div class="field"><label class="label">Voltaje de suministro CFE</label>
-            <select class="input select" onchange="S.lev_voltaje=this.value">
-              <option value="">Seleccionar...</option>
-              <option ${S.lev_voltaje==='127'?'selected':''} value="127">127V monofásico</option>
-              <option ${S.lev_voltaje==='220'?'selected':''} value="220">220V bifásico</option>
-              <option ${S.lev_voltaje==='220t'?'selected':''} value="220t">220V trifásico</option>
-              <option ${S.lev_voltaje==='440'?'selected':''} value="440">440V trifásico</option>
-            </select>
-          </div>
-          <div class="field"><label class="label">¿Cuenta con medidor bidireccional CFE?</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-              ${['✅ Sí','❌ No','❓ No sabe'].map((v,i)=>{const ids=['med_si','med_no','med_ns'];const cols=['#4caf70','#e87a2a','#9ca3af'];const bgs=['#dcf5e4','#ffe4d0','#f3f4f6'];return`<div onclick="S.lev_medidor='${ids[i]}';render()" style="border:2px solid ${S.lev_medidor===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.lev_medidor===ids[i]?bgs[i]:'#fff'};font-size:12px;text-align:center;font-weight:${S.lev_medidor===ids[i]?'700':'500'}">${v}</div>`}).join('')}
-            </div>
-          </div>
-        </div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">🌑 Sombras y obstrucciones</div>
-          <div class="field"><label class="label">¿Hay sombras en el área disponible?</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-              ${['✅ Sin sombras','⚠️ Parciales','❌ Significativas'].map((v,i)=>{const ids=['som_no','som_par','som_si'];const cols=['#4caf70','#f59e0b','#e87a2a'];const bgs=['#dcf5e4','#fef3c7','#ffe4d0'];return`<div onclick="S.lev_sombras='${ids[i]}';render()" style="border:2px solid ${S.lev_sombras===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.lev_sombras===ids[i]?bgs[i]:'#fff'};font-size:11px;text-align:center;font-weight:${S.lev_sombras===ids[i]?'700':'500'}">${v}</div>`}).join('')}
-            </div>
-          </div>
-          <div class="field"><label class="label">Fuentes de sombra detectadas</label><input class="input" placeholder="Ej. árboles, antenas, edificios adyacentes..." value="${S.lev_fuenteSombra||''}" oninput="S.lev_fuenteSombra=this.value"></div>
-          <div class="field"><label class="label">Estado de la estructura / techo</label>
-            <select class="input select" onchange="S.lev_estadoTecho=this.value">
-              <option value="">Seleccionar...</option>
-              <option ${S.lev_estadoTecho==='excelente'?'selected':''} value="excelente">✅ Excelente — apto para instalación</option>
-              <option ${S.lev_estadoTecho==='bueno'?'selected':''} value="bueno">✅ Bueno — apto con precauciones</option>
-              <option ${S.lev_estadoTecho==='regular'?'selected':''} value="regular">⚠️ Regular — requiere refuerzo previo</option>
-              <option ${S.lev_estadoTecho==='malo'?'selected':''} value="malo">❌ Malo — no apto sin reparación</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field"><label class="label">Observaciones y notas del levantamiento</label>
-          <textarea class="input" rows="4" placeholder="Distancias al tablero, accesos, condiciones especiales del sitio..." oninput="S.lev_notas=this.value">${S.lev_notas||''}</textarea>
-        </div>`;
-
-      // ── INSTALACIÓN ─────────────────────────────────────────────
-      if (sub === 'instalacion') return `
-        <div class="section-title">⚡ Instalación solar</div>
-        <div class="section-sub">Registro del proceso de instalación del sistema fotovoltaico</div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">🔧 Trabajo realizado</div>
-          <div class="field"><label class="label">Etapa de la instalación</label>
-            <select class="input select" onchange="S.inst_etapa=this.value">
-              <option value="">Seleccionar...</option>
-              <option ${S.inst_etapa==='completa'?'selected':''} value="completa">Instalación completa</option>
-              <option ${S.inst_etapa==='estructura'?'selected':''} value="estructura">Solo estructura / montaje</option>
-              <option ${S.inst_etapa==='electrica'?'selected':''} value="electrica">Solo conexión eléctrica</option>
-              <option ${S.inst_etapa==='inversor'?'selected':''} value="inversor">Solo inversor</option>
-              <option ${S.inst_etapa==='interconexion'?'selected':''} value="interconexion">Interconexión CFE</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">✅ Checklist de instalación</div>
-          ${[
-            {key:'est_mont', label:'Estructura de montaje instalada y nivelada'},
-            {key:'pan_mont', label:'Paneles montados y asegurados'},
-            {key:'pan_torq', label:'Tornillería de paneles con torque correcto'},
-            {key:'cab_cc', label:'Cableado CC (paneles a inversor) instalado'},
-            {key:'cab_ca', label:'Cableado CA (inversor a tablero) instalado'},
-            {key:'tierra', label:'Tierra física instalada correctamente'},
-            {key:'prot_cc', label:'Protecciones CC (fusibles/breaker) instaladas'},
-            {key:'prot_ca', label:'Protecciones CA instaladas'},
-            {key:'inv_conf', label:'Inversor configurado y programado'},
-            {key:'mon_conf', label:'Sistema de monitoreo configurado'},
-            {key:'med_bid', label:'Medidor bidireccional CFE verificado'},
-            {key:'prueba_gen', label:'Prueba de generación realizada'}
-          ].map(item=>`
-            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">
-              <span style="flex:1;font-size:13px;color:#374151">${item.label}</span>
-              <div style="display:flex;gap:4px">
-                ${['✓','✗','—'].map((b,i)=>{const vals=['ok','mal','na'];return`<button onclick="S['inst_${item.key}']=S['inst_${item.key}']?S['inst_${item.key}']:'';S['inst_${item.key}']='${vals[i]}';render()" class="cb ${i===0?'ok':i===1?'mal':'na'} ${S['inst_'+item.key]===vals[i]?'active':''}">${b}</button>`}).join('')}
-              </div>
-            </div>`).join('')}
-        </div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">📊 Pruebas de puesta en marcha</div>
-          <div class="input-row">
-            <div class="field"><label class="label">Voc paneles (V CC)</label><input class="input" placeholder="V" value="${S.inst_voc||''}" oninput="S.inst_voc=this.value"></div>
-            <div class="field"><label class="label">Isc paneles (A CC)</label><input class="input" placeholder="A" value="${S.inst_isc||''}" oninput="S.inst_isc=this.value"></div>
-          </div>
-          <div class="input-row">
-            <div class="field"><label class="label">V salida inversor (V CA)</label><input class="input" placeholder="V" value="${S.inst_vca||''}" oninput="S.inst_vca=this.value"></div>
-            <div class="field"><label class="label">Potencia generada (W)</label><input class="input" placeholder="W" value="${S.inst_potGen||''}" oninput="S.inst_potGen=this.value"></div>
-          </div>
-          <div class="field"><label class="label">Frecuencia de salida (Hz)</label><input class="input" placeholder="Hz" value="${S.inst_freq||''}" oninput="S.inst_freq=this.value"></div>
-          <div class="field"><label class="label">¿El sistema inyecta a la red CFE?</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-              ${['✅ Sí','❌ No','⏳ Pendiente CFE'].map((v,i)=>{const ids=['iny_si','iny_no','iny_pend'];const cols=['#4caf70','#e87a2a','#9ca3af'];const bgs=['#dcf5e4','#ffe4d0','#f3f4f6'];return`<div onclick="S.inst_inyecta='${ids[i]}';render()" style="border:2px solid ${S.inst_inyecta===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.inst_inyecta===ids[i]?bgs[i]:'#fff'};font-size:11px;text-align:center;font-weight:${S.inst_inyecta===ids[i]?'700':'500'}">${v}</div>`}).join('')}
-            </div>
-          </div>
-        </div>
-
-        <div class="field"><label class="label">Observaciones de la instalación</label>
-          <textarea class="input" rows="4" placeholder="Incidencias durante la instalación, pendientes, recomendaciones..." oninput="S.inst_notas=this.value">${S.inst_notas||''}</textarea>
-        </div>`;
-
-      // ── DIAGNÓSTICO SOLAR ────────────────────────────────────────
-      if (sub === 'diagnostico_solar') return `
-        <div class="section-title">🔍 Diagnóstico del sistema solar</div>
-        <div class="section-sub">Análisis de fallas, baja producción o problemas de facturación</div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">🚨 Problema reportado por el cliente</div>
-          <div class="field"><label class="label">Tipo de problema</label>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              ${[
-                {id:'no_genera', label:'❌ No genera nada'},
-                {id:'baja_prod', label:'📉 Genera menos de lo esperado'},
-                {id:'fact_cfe', label:'🧾 Problemas en facturación CFE'},
-                {id:'inversor', label:'⚠️ Alarma o error en inversor'},
-                {id:'app_monit', label:'📱 Error en app de monitoreo'},
-                {id:'otro_prob', label:'🔧 Otro problema'}
-              ].map(p=>`
-                <div onclick="S.diag_problema='${p.id}';render()" style="border:2px solid ${S.diag_problema===p.id?'#f59e0b':'#e5e7eb'};border-radius:8px;padding:10px 13px;cursor:pointer;background:${S.diag_problema===p.id?'#fffbeb':'#fff'};font-size:13px;font-weight:${S.diag_problema===p.id?'700':'500'};color:${S.diag_problema===p.id?'#b45309':'#374151'}">
-                  ${p.label}
-                </div>`).join('')}
-            </div>
-          </div>
-          <div class="field"><label class="label">¿Desde cuándo presenta el problema?</label><input class="input" placeholder="Ej. hace 2 semanas, desde la última lluvia..." value="${S.diag_desde||''}" oninput="S.diag_desde=this.value"></div>
-        </div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">🔎 Inspección de paneles</div>
-          ${[
-            {key:'pan_sucio', label:'Paneles sucios o con polvo'},
-            {key:'pan_sombra', label:'Sombras sobre paneles (árboles, antenas, objetos)'},
-            {key:'pan_danio', label:'Daño físico visible en paneles (rotura, decoloración)'},
-            {key:'pan_conex', label:'Conexiones entre paneles flojas o dañadas'},
-            {key:'pan_marco', label:'Marcos o estructura con corrosión'},
-            {key:'pan_pajaros', label:'Excremento de aves o anidación'}
-          ].map(item=>`
-            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">
-              <span style="flex:1;font-size:13px;color:#374151">${item.label}</span>
-              <div style="display:flex;gap:4px">
-                ${['✓','✗','—'].map((b,i)=>{const vals=['ok','mal','na'];return`<button onclick="S['diag_${item.key}']=S['diag_${item.key}']?S['diag_${item.key}']:'';S['diag_${item.key}']='${vals[i]}';render()" class="cb ${i===0?'ok':i===1?'mal':'na'} ${S['diag_'+item.key]===vals[i]?'active':''}">${b}</button>`}).join('')}
-              </div>
-            </div>`).join('')}
-        </div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">🔌 Inspección del inversor</div>
-          <div class="field"><label class="label">Estado del inversor</label>
-            <select class="input select" onchange="S.diag_invEstado=this.value">
-              <option value="">Seleccionar...</option>
-              <option ${S.diag_invEstado==='operando'?'selected':''} value="operando">✅ Operando normalmente</option>
-              <option ${S.diag_invEstado==='alarma'?'selected':''} value="alarma">⚠️ Con alarma activa</option>
-              <option ${S.diag_invEstado==='apagado'?'selected':''} value="apagado">❌ Apagado / sin encender</option>
-              <option ${S.diag_invEstado==='error'?'selected':''} value="error">❌ Error / código de falla</option>
-            </select>
-          </div>
-          <div class="field"><label class="label">Código de error / alarma (si aplica)</label><input class="input" placeholder="Ej. Error F001, Grid Fault..." value="${S.diag_invError||''}" oninput="S.diag_invError=this.value"></div>
-          <div class="input-row">
-            <div class="field"><label class="label">V entrada CC (paneles)</label><input class="input" placeholder="V CC" value="${S.diag_vcc||''}" oninput="S.diag_vcc=this.value"></div>
-            <div class="field"><label class="label">V salida CA (inversor)</label><input class="input" placeholder="V CA" value="${S.diag_vca||''}" oninput="S.diag_vca=this.value"></div>
-          </div>
-          <div class="input-row">
-            <div class="field"><label class="label">Potencia actual (W)</label><input class="input" placeholder="W" value="${S.diag_potActual||''}" oninput="S.diag_potActual=this.value"></div>
-            <div class="field"><label class="label">Potencia esperada (W)</label><input class="input" placeholder="W" value="${S.diag_potEsperada||''}" oninput="S.diag_potEsperada=this.value"></div>
-          </div>
-          ${[
-            {key:'inv_vent', label:'Ventilación del inversor libre y sin obstrucción'},
-            {key:'inv_calor', label:'Inversor sin sobrecalentamiento anormal'},
-            {key:'inv_conex', label:'Conexiones del inversor firmes y sin daño'},
-            {key:'inv_fus', label:'Fusibles CC en buen estado'}
-          ].map(item=>`
-            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">
-              <span style="flex:1;font-size:13px;color:#374151">${item.label}</span>
-              <div style="display:flex;gap:4px">
-                ${['✓','✗','—'].map((b,i)=>{const vals=['ok','mal','na'];return`<button onclick="S['diag_${item.key}']=S['diag_${item.key}']?S['diag_${item.key}']:'';S['diag_${item.key}']='${vals[i]}';render()" class="cb ${i===0?'ok':i===1?'mal':'na'} ${S['diag_'+item.key]===vals[i]?'active':''}">${b}</button>`}).join('')}
-              </div>
-            </div>`).join('')}
-        </div>
-
-        ${S.diag_problema==='fact_cfe' ? `
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">🧾 Análisis de facturación CFE</div>
-          <div class="field"><label class="label">¿El recibo CFE muestra NETMET o FOTOVOLTAICO?</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              ${['✅ Sí aparece','❌ No aparece'].map((v,i)=>{const ids=['netmet_si','netmet_no'];const cols=['#4caf70','#e87a2a'];const bgs=['#dcf5e4','#ffe4d0'];return`<div onclick="S.diag_netmet='${ids[i]}';render()" style="border:2px solid ${S.diag_netmet===ids[i]?cols[i]:'#e5e7eb'};border-radius:8px;padding:8px;cursor:pointer;background:${S.diag_netmet===ids[i]?bgs[i]:'#fff'};font-size:12px;text-align:center;font-weight:${S.diag_netmet===ids[i]?'700':'500'}">${v}</div>`}).join('')}
-            </div>
-          </div>
-          <div class="input-row">
-            <div class="field"><label class="label">kWh tomados de CFE</label><input class="input" placeholder="kWh" value="${S.diag_kwh_tomados||''}" oninput="S.diag_kwh_tomados=this.value"></div>
-            <div class="field"><label class="label">kWh inyectados a CFE</label><input class="input" placeholder="kWh" value="${S.diag_kwh_inyectados||''}" oninput="S.diag_kwh_inyectados=this.value"></div>
-          </div>
-          <div class="field"><label class="label">Producción reportada por app del inversor (kWh)</label><input class="input" placeholder="kWh" value="${S.diag_kwh_app||''}" oninput="S.diag_kwh_app=this.value"></div>
-        </div>` : ''}
-
-        <div class="field"><label class="label">Diagnóstico y causa raíz identificada</label>
-          <textarea class="input" rows="4" placeholder="Describe la causa del problema y las acciones realizadas..." oninput="S.diag_causaRaiz=this.value">${S.diag_causaRaiz||''}</textarea>
-        </div>`;
-
-      // ── MANTENIMIENTO SOLAR ──────────────────────────────────────
-      if (sub === 'mantenimiento_solar') return `
-        <div class="section-title">🔧 Mantenimiento solar</div>
-        <div class="section-sub">Registro del mantenimiento preventivo del sistema fotovoltaico</div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">✅ Actividades realizadas</div>
-          ${[
-            {key:'mto_limpieza', label:'Limpieza de paneles realizada'},
-            {key:'mto_torque', label:'Revisión y apriete de tornillería'},
-            {key:'mto_conex', label:'Revisión de conexiones y terminales'},
-            {key:'mto_cableado', label:'Inspección de cableado CC y CA'},
-            {key:'mto_inversor', label:'Revisión del inversor y limpieza de ventilación'},
-            {key:'mto_estructura', label:'Revisión de estructura y anclajes'},
-            {key:'mto_corrosion', label:'Inspección de corrosión en estructura'},
-            {key:'mto_sombras', label:'Verificación de nuevas sombras / vegetación'},
-            {key:'mto_monitoreo', label:'Verificación del sistema de monitoreo'},
-            {key:'mto_lectura', label:'Lectura de producción vs producción esperada'}
-          ].map(item=>`
-            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">
-              <span style="flex:1;font-size:13px;color:#374151">${item.label}</span>
-              <div style="display:flex;gap:4px">
-                ${['✓','✗','—'].map((b,i)=>{const vals=['ok','mal','na'];return`<button onclick="S['mto_${item.key}']=S['mto_${item.key}']?S['mto_${item.key}']:'';S['mto_${item.key}']='${vals[i]}';render()" class="cb ${i===0?'ok':i===1?'mal':'na'} ${S['mto_'+item.key]===vals[i]?'active':''}">${b}</button>`}).join('')}
-              </div>
-            </div>`).join('')}
-        </div>
-
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px">
-          <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">📊 Mediciones de producción</div>
-          <div class="input-row">
-            <div class="field"><label class="label">Producción actual (W)</label><input class="input" placeholder="W" value="${S.mto_prodActual||''}" oninput="S.mto_prodActual=this.value"></div>
-            <div class="field"><label class="label">Producción esperada (W)</label><input class="input" placeholder="W" value="${S.mto_prodEsperada||''}" oninput="S.mto_prodEsperada=this.value"></div>
-          </div>
-          <div class="input-row">
-            <div class="field"><label class="label">V entrada CC (paneles)</label><input class="input" placeholder="V CC" value="${S.mto_vcc||''}" oninput="S.mto_vcc=this.value"></div>
-            <div class="field"><label class="label">V salida CA (inversor)</label><input class="input" placeholder="V CA" value="${S.mto_vca||''}" oninput="S.mto_vca=this.value"></div>
-          </div>
-        </div>
-
-        <div class="field"><label class="label">Observaciones y recomendaciones</label>
-          <textarea class="input" rows="4" placeholder="Estado general del sistema, observaciones importantes, próximo mantenimiento recomendado..." oninput="S.mto_notas=this.value">${S.mto_notas||''}</textarea>
-        </div>`;
-
-      // Default solar sin subtipo
-      return `
-        <div class="section-title">☀️ Servicio solar</div>
-        <div class="section-sub">Regresa al paso anterior y selecciona el subtipo de servicio solar</div>
-        <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:20px;text-align:center">
-          <div style="font-size:32px;margin-bottom:8px">📐⚡🔍🔧</div>
-          <div style="font-size:14px;font-weight:700;color:#b45309">Selecciona el tipo de servicio solar en el paso anterior</div>
-          <div style="font-size:12px;color:#6b7280;margin-top:4px">Levantamiento · Instalación · Diagnóstico · Mantenimiento</div>
-        </div>`;
-    }
-
-    // CIERRE DE CONEXIONES / DEFAULT
+    // CIERRE DE CONEXIONES / SOLAR / DEFAULT
     return `
       <div class="section-title">Detalles del servicio</div>
       <div class="section-sub">Registra los detalles específicos de este servicio</div>
@@ -1225,32 +868,6 @@ const STEPS = {
   },
 
   REAL4: () => {
-    // Solar no tiene pruebas de generador/TTA
-    if (S.tipoServicio === 'solar') return `
-      <div class="section-title">Resultados y conclusión</div>
-      <div class="section-sub">Registra el resultado final del servicio solar</div>
-      <div class="field"><label class="label">Resultado del servicio</label>
-        <select class="input select" onchange="S.solar_resultado=this.value">
-          <option value="">Seleccionar...</option>
-          <option ${S.solar_resultado==='exitoso'?'selected':''} value="exitoso">✅ Servicio completado exitosamente</option>
-          <option ${S.solar_resultado==='parcial'?'selected':''} value="parcial">⚠️ Completado parcialmente — pendientes</option>
-          <option ${S.solar_resultado==='pendiente'?'selected':''} value="pendiente">⏳ Pendiente — requiere segunda visita</option>
-          <option ${S.solar_resultado==='no_procede'?'selected':''} value="no_procede">❌ No procede — ver observaciones</option>
-        </select>
-      </div>
-      <div class="field"><label class="label">Estatus del sistema solar</label>
-        <select class="input select" onchange="S.estatus=this.value">
-          <option value="">Seleccionar...</option>
-          <option ${S.estatus==='operativo'?'selected':''} value="operativo">✅ Operativo — generando correctamente</option>
-          <option ${S.estatus==='operativo_obs'?'selected':''} value="operativo_obs">⚠️ Operativo con observaciones</option>
-          <option ${S.estatus==='requiere_servicio'?'selected':''} value="requiere_servicio">🔧 Requiere servicio adicional</option>
-          <option ${S.estatus==='fuera_servicio'?'selected':''} value="fuera_servicio">❌ Fuera de servicio</option>
-        </select>
-      </div>
-      <div class="field"><label class="label">Conclusión y recomendaciones</label>
-        <textarea class="input" rows="5" placeholder="Describe los resultados, hallazgos y próximas acciones recomendadas..." oninput="S.conclusion=this.value">${S.conclusion}</textarea>
-      </div>`;
-
     const esGen = S.tipoEquipo==='gen' || S.tipoEquipo==='ambos';
     const esTTA = S.tipoEquipo==='tta' || S.tipoEquipo==='ambos';
     const mb = S.modoPrueba === 'basico';
@@ -1334,42 +951,13 @@ const STEPS = {
               ${['RST (correcta)','RTS (invertida)','No medido'].map(f=>`<div onclick="S.fasimetroGen='${f}';render()" style="border:2px solid ${S.fasimetroGen===f?'#1a5fa8':'#e5e7eb'};border-radius:7px;padding:7px 4px;cursor:pointer;background:${S.fasimetroGen===f?'#eaf1fb':'#fff'};font-size:11px;font-weight:${S.fasimetroGen===f?'700':'400'};text-align:center;color:${S.fasimetroGen===f?'#1a3a6a':'#374151'}">${f}</div>`).join('')}
             </div>
           </div>
-          <div class="field">
-            <label class="label">Prueba de baterías</label>
-            <div style="border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff">
-              <div style="background:#1a1a2e;padding:8px 12px;text-align:center;font-size:12px;font-weight:700;color:#fff;letter-spacing:1px">BATTERY TEST</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
-                <div style="padding:10px 12px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb">
-                  <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:4px">SOC (Carga actual)</div>
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <input class="input" type="number" min="0" max="100" placeholder="%" value="${S.batSOC||''}" oninput="S.batSOC=this.value" style="padding:6px 8px;font-size:14px;font-weight:700">
-                    <span style="font-size:14px;color:#6b7280;font-weight:700">%</span>
-                  </div>
-                </div>
-                <div style="padding:10px 12px;border-bottom:1px solid #e5e7eb">
-                  <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Life (Vida útil)</div>
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <input class="input" type="number" min="0" max="100" placeholder="%" value="${S.batLife||''}" oninput="S.batLife=this.value" style="padding:6px 8px;font-size:14px;font-weight:700">
-                    <span style="font-size:14px;color:#6b7280;font-weight:700">%</span>
-                  </div>
-                </div>
-                <div style="padding:10px 12px;border-right:1px solid #e5e7eb">
-                  <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Voltage</div>
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <input class="input" placeholder="V" value="${S.batVoltage||''}" oninput="S.batVoltage=this.value" style="padding:6px 8px;font-size:14px;font-weight:700">
-                    <span style="font-size:14px;color:#6b7280;font-weight:700">V</span>
-                  </div>
-                </div>
-                <div style="padding:10px 12px">
-                  <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Resultado</div>
-                  <select class="input select" onchange="S.estadoBateria=this.value" style="padding:6px 8px;font-size:13px;font-weight:700">
-                    <option value="">Seleccionar...</option>
-                    <option ${S.estadoBateria==='Buena'?'selected':''} value="Buena">✅ Buena</option>
-                    <option ${S.estadoBateria==='Dañada'?'selected':''} value="Dañada">⚠️ Dañada</option>
-                    <option ${S.estadoBateria==='Reemplazar'?'selected':''} value="Reemplazar">❌ Reemplazar</option>
-                  </select>
-                </div>
-              </div>
+          <div class="field"><label class="label">Prueba de baterías</label>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+              ${['Buena','Sulfatada','Reemplazar'].map(b=>`<div onclick="S.estadoBateria='${b}';render()" style="border:2px solid ${S.estadoBateria===b?(b==='Buena'?'#4caf70':b==='Sulfatada'?'#f59e0b':'#dc2626'):'#e5e7eb'};border-radius:7px;padding:7px 4px;cursor:pointer;background:${S.estadoBateria===b?(b==='Buena'?'#dcf5e4':b==='Sulfatada'?'#fef3c7':'#fef2f2'):'#fff'};font-size:11px;font-weight:${S.estadoBateria===b?'700':'400'};text-align:center;color:${S.estadoBateria===b?(b==='Buena'?'#1a7a3a':b==='Sulfatada'?'#92400e':'#dc2626'):'#374151'}">${b}</div>`).join('')}
+            </div>
+            <div class="input-row">
+              <div class="field"><label class="label">V reposo</label><input class="input" placeholder="VCC" value="${S.batVReposo||''}" oninput="S.batVReposo=this.value"></div>
+              <div class="field"><label class="label">V bajo carga</label><input class="input" placeholder="VCC" value="${S.batVCarga||''}" oninput="S.batVCarga=this.value"></div>
             </div>
           </div>
         </div>` : ''}` : ''}
@@ -1654,24 +1242,24 @@ function render() {
 
 function nav(d) {
   if (d > 0) {
-    // ── VALIDACIONES DESACTIVADAS EN VERSIÓN DE PRUEBA ──
-    // if (step===1) {
-    //   if (!S.tipoServicio) return showAlert('⚠️ Selecciona el tipo de servicio para continuar');
-    //   if (!S.cliente) return showAlert('⚠️ El nombre del cliente es obligatorio');
-    //   if (!S.empresa) return showAlert('⚠️ El nombre de la empresa es obligatorio');
-    //   if (!S.responsable) return showAlert('⚠️ Indica el responsable del diagnóstico');
-    // }
-    // if (step===2) {
-    //   if (!S.tipoEquipo) return showAlert('⚠️ Selecciona el tipo de equipo');
-    //   if ((S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') && !S.tipoControl) return showAlert('⚠️ Selecciona el tipo de control del motor');
-    // }
-    // if (step===4) {
-    //   const secs = getSecs();
-    //   const malSinFoto = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fF[k]&&S.fF[k].length));
-    //   const malSinDesc = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fallaDesc&&S.fallaDesc[k]));
-    //   if (malSinFoto.length > 0) return showAlert(`📸 Tienes ${malSinFoto.length} punto(s) con falla sin foto de evidencia — es obligatoria`);
-    //   if (malSinDesc.length > 0) return showAlert(`📝 Tienes ${malSinDesc.length} punto(s) con falla sin descripción — describe qué encontraste`);
-    // }
+    // Validaciones por paso
+    if (step===1) {
+      if (!S.tipoServicio) return showAlert('⚠️ Selecciona el tipo de servicio para continuar');
+      if (!S.cliente) return showAlert('⚠️ El nombre del cliente es obligatorio');
+      if (!S.empresa) return showAlert('⚠️ El nombre de la empresa es obligatorio');
+      if (!S.responsable) return showAlert('⚠️ Indica el responsable del diagnóstico');
+    }
+    if (step===2) {
+      if (!S.tipoEquipo) return showAlert('⚠️ Selecciona el tipo de equipo');
+      if ((S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') && !S.tipoControl) return showAlert('⚠️ Selecciona el tipo de control del motor');
+    }
+    if (step===4) {
+      const secs = getSecs();
+      const malSinFoto = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fF[k]&&S.fF[k].length));
+      const malSinDesc = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fallaDesc&&S.fallaDesc[k]));
+      if (malSinFoto.length > 0) return showAlert(`📸 Tienes ${malSinFoto.length} punto(s) con falla sin foto de evidencia — es obligatoria`);
+      if (malSinDesc.length > 0) return showAlert(`📝 Tienes ${malSinDesc.length} punto(s) con falla sin descripción — describe qué encontraste`);
+    }
   }
   const n = step+d;
   if (n<1||n>TOTAL_STEPS) return;
@@ -1775,152 +1363,6 @@ function estatusColor(e) {
 }
 function estatusLabel(e) {
   return {operativo:'Operativo', operativo_obs:'Operativo con observaciones', requiere_servicio:'Requiere servicio', fuera_servicio:'Fuera de servicio'}[e]||e;
-}
-
-function generarPruebasHTMLReporte() {
-  const esGen = S.tipoEquipo==='gen' || S.tipoEquipo==='ambos';
-  const esTTA = S.tipoEquipo==='tta' || S.tipoEquipo==='ambos';
-  const modoLabel = S.modoPrueba==='avanzado' ? '<span style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:8px">AVANZADO</span>' : '<span style="background:#1a5fa8;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:8px">BÁSICO</span>';
-  let out = '';
-
-  const notaNoRealizada = (estado, motivo) => {
-    const cfg = {
-      pv_noaut: {color:'#5b21b6', bg:'#ede9fe', border:'#7c3aed', txt:'🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'},
-      pc_noaut: {color:'#5b21b6', bg:'#ede9fe', border:'#7c3aed', txt:'🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'},
-      pv_no:    {color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a', txt:'❌ NO SE REALIZARON'},
-      pc_no:    {color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a', txt:'❌ NO SE REALIZARON'},
-      pv_nocond:{color:'#92400e', bg:'#fef3c7', border:'#f59e0b', txt:'⚠️ NO REALIZADAS — NO FUE POSIBLE'},
-      pc_nocond:{color:'#92400e', bg:'#fef3c7', border:'#f59e0b', txt:'⚠️ NO REALIZADAS — NO FUE POSIBLE'},
-    };
-    const c = cfg[estado] || {color:'#374151', bg:'#f3f4f6', border:'#e5e7eb', txt:'— No realizadas'};
-    return '<div style="background:' + c.bg + ';border:2px solid ' + c.border + ';border-radius:8px;padding:12px 16px;margin:0 32px 12px">' +
-      '<div style="font-size:13px;font-weight:700;color:' + c.color + '">' + c.txt + '</div>' +
-      (motivo ? '<div style="font-size:12px;color:#374151;margin-top:4px">' + motivo + '</div>' : '') +
-    '</div>';
-  };
-
-  const datoGrid = (items) => '<div class="datos-grid">' + items.map(([l,v]) =>
-    '<div class="dato"><span class="dato-label">' + l + '</span><span class="dato-val">' + (v||'—') + '</span></div>'
-  ).join('') + '</div>';
-
-  if (esGen) {
-    out += '<div style="font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px">⚡ Generador ' + modoLabel + '</div>';
-
-    // Pruebas en vacío
-    out += '<h3>Pruebas en vacío</h3>';
-    if (S.pvEstado === 'pv_si') {
-      out += datoGrid([
-        ['V L1-L2', (S.pv_l1l2||'—') + ' V'],
-        ['V L2-L3', (S.pv_l2l3||'—') + ' V'],
-        ['V L1-L3', (S.pv_l1l3||'—') + ' V'],
-        ['Frecuencia', (S.pv_freq||'—') + ' Hz'],
-        ['RPM', S.pv_rpm||'—'],
-        ['V batería', (S.pv_bat||'—') + ' VCC'],
-        ['Temperatura', (S.pv_temp||'—') + ' °C'],
-        ['Presión aceite', (S.pv_aceite||'—') + ' Bar']
-      ]);
-      if (S.modoPrueba === 'avanzado') {
-        out += '<div style="margin:0 32px 12px">';
-        if (S.fasimetroGen) out += '<div class="dato"><span class="dato-label">Fasímetro</span><span class="dato-val">' + S.fasimetroGen + '</span></div>';
-        if (S.estadoBateria) {
-          out += '<h3>Prueba de baterías</h3>';
-          out += datoGrid([
-            ['SOC (Carga)', (S.batSOC||'—') + ' %'],
-            ['Life (Vida útil)', (S.batLife||'—') + ' %'],
-            ['Voltage', (S.batVoltage||'—') + ' V'],
-            ['Resultado', S.estadoBateria||'—']
-          ]);
-        }
-        out += '</div>';
-      }
-    } else if (S.pvEstado) {
-      out += notaNoRealizada(S.pvEstado, S.pvMotivo);
-    }
-
-    // Pruebas con carga
-    out += '<h3>Pruebas con carga</h3>';
-    if (S.pcEstado === 'pc_si') {
-      out += datoGrid([
-        ['V L1-L2', (S.pc_l1l2||'—') + ' V'],
-        ['V L2-L3', (S.pc_l2l3||'—') + ' V'],
-        ['V L1-L3', (S.pc_l1l3||'—') + ' V'],
-        ['A L1', (S.pc_a1||'—') + ' A'],
-        ['A L2', (S.pc_a2||'—') + ' A'],
-        ['A L3', (S.pc_a3||'—') + ' A'],
-        ['V batería', (S.pc_bat||'—') + ' VCC'],
-        ['Temperatura', (S.pc_temp||'—') + ' °C'],
-        ['Presión aceite', (S.pc_aceite||'—') + ' Bar']
-      ]);
-    } else if (S.pcEstado) {
-      out += notaNoRealizada(S.pcEstado, S.pcMotivo);
-    }
-  }
-
-  if (esTTA) {
-    out += '<div style="font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px">🔌 Tablero de Transferencia Automática ' + modoLabel + '</div>';
-
-    // Mediciones eléctricas TTA
-    out += '<h3>Mediciones eléctricas</h3>';
-    if (S.pvEstado === 'pv_si') {
-      out += datoGrid([
-        ['V L1-L2 (red normal)', (S.pv_l1l2||'—') + ' V'],
-        ['V L2-L3', (S.pv_l2l3||'—') + ' V'],
-        ['V L1-L3', (S.pv_l1l3||'—') + ' V'],
-        ['Frecuencia', (S.pv_freq||'—') + ' Hz'],
-        ['A L1', (S.tta_a1||'—') + ' A'],
-        ['A L2', (S.tta_a2||'—') + ' A'],
-        ['A L3', (S.tta_a3||'—') + ' A']
-      ]);
-      if (S.modoPrueba === 'avanzado' && S.fasimetroNormal) {
-        out += '<div style="margin:0 32px 8px">';
-        out += datoGrid([
-          ['Fasímetro red normal', S.fasimetroNormal||'—'],
-          ['Fasímetro red emergencia', S.fasimetroEmergencia||'—'],
-          ['V batería control', (S.pv_bat||'—') + ' VCC']
-        ]);
-        out += '</div>';
-      }
-    } else if (S.pvEstado) {
-      out += notaNoRealizada(S.pvEstado, S.pvMotivo);
-    }
-
-    // Prueba de transferencia
-    const tf = {tf_si:'✅ Sí', tf_no:'❌ No', tf_parcial:'⚠️ Parcial'};
-    const rt = {rt_si:'✅ Sí', rt_no:'❌ No', rt_parcial:'⚠️ Parcial'};
-    const sq = {seq_ok:'✅ Correcta', seq_mal:'❌ Incorrecta'};
-    out += '<h3>Prueba de transferencia</h3>';
-    out += datoGrid([
-      ['Transfiere N→E', tf[S.ttaTransfiere]||'—'],
-      ['Retransfiere E→N', rt[S.ttaRetransfiere]||'—'],
-      ['Secuencia de conmutación', sq[S.ttaSecuencia]||'—']
-    ]);
-    if (S.modoPrueba === 'avanzado') {
-      out += datoGrid([
-        ['Tiempo N→E', (S.ttaTiempoNE||'—') + ' seg'],
-        ['Tiempo E→N', (S.ttaTiempoEN||'—') + ' seg'],
-        ['Calentamiento en contactores', S.ttaCalor==='cal_si'?'⚠️ Anormal detectado':'✅ Normal']
-      ]);
-    }
-    if (S.ttaObsTransf) {
-      out += '<div style="margin:0 32px 10px;background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;font-size:12px;color:#374151">' + S.ttaObsTransf + '</div>';
-    }
-
-    // Módulo de control
-    if (S.ttaModuloControl === true) {
-      const mc = {mc_ok:'✅ Activa', mc_fail:'❌ Sin comunicación'};
-      const dp = {disp_ok:'✅ Sí', disp_fail:'❌ No'};
-      out += '<h3>Módulo de control</h3>';
-      out += datoGrid([
-        ['Comunicación', mc[S.ttaMcComm]||'—'],
-        ['Alarmas activas', S.ttaAlarmas||'—'],
-        ['Display y botones', dp[S.ttaDisplay]||'—']
-      ]);
-    } else if (S.ttaModuloControl === false) {
-      out += '<div style="margin:0 32px 10px;font-size:12px;color:#6b7280;font-style:italic">Sin módulo de control integrado</div>';
-    }
-  }
-
-  return out || '<div style="margin:0 32px;color:#9ca3af;font-size:13px">Sin pruebas registradas</div>';
 }
 
 function generarReporte(tipo, destino) {
@@ -2090,7 +1532,40 @@ ${S.tipoServicio==='garantia'?`
 </div></div>`:``}
 
 <h2>4. Pruebas técnicas</h2>
-${generarPruebasHTMLReporte()}
+${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')?`
+<h3>Pruebas en vacío</h3>
+<div class="datos-grid">
+  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
+  <div class="dato"><span class="dato-label">RPM</span><span class="dato-val">${S.pv_rpm||'—'}</span></div>
+  <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pv_bat||'—'} VCC</span></div>
+  <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pv_temp||'—'} °C</span></div>
+  <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pv_aceite||'—'} Bar</span></div>
+</div>
+<h3>Pruebas con carga</h3>
+<div class="datos-grid">
+  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pc_l1l2||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pc_l2l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pc_l1l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">A L1</span><span class="dato-val">${S.pc_a1||'—'} A</span></div>
+  <div class="dato"><span class="dato-label">A L2</span><span class="dato-val">${S.pc_a2||'—'} A</span></div>
+  <div class="dato"><span class="dato-label">A L3</span><span class="dato-val">${S.pc_a3||'—'} A</span></div>
+  <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pc_bat||'—'} VCC</span></div>
+  <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pc_temp||'—'} °C</span></div>
+  <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pc_aceite||'—'} Bar</span></div>
+</div>`:``}
+${S.tipoEquipo==='tta'?`
+<h3>Mediciones eléctricas</h3>
+<div class="datos-grid">
+  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
+  <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
+  ${S.pv_bat?`<div class="dato"><span class="dato-label">V batería control</span><span class="dato-val">${S.pv_bat} VCC</span></div>`:''}
+</div>`:``}
+
 <h2>5. Hallazgos y conclusión</h2>
 <div class="sb">
 <div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">${S.hallazgos||'Sin hallazgos registrados.'}</div>
