@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#0a2240"/>
+  <circle cx="48" cy="96" r="18" fill="#1a5fa8"/>
+  <circle cx="96" cy="96" r="18" fill="#1a5fa8"/>
+  <circle cx="144" cy="96" r="18" fill="#ffffff"/>
+  <text x="96" y="160" font-family="Arial" font-size="28" font-weight="bold" fill="#ffffff" text-anchor="middle">SUDMAR</text>
+</svg>
