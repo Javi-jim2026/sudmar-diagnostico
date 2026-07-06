@@ -1394,6 +1394,152 @@ function estatusLabel(e) {
   return {operativo:'Operativo', operativo_obs:'Operativo con observaciones', requiere_servicio:'Requiere servicio', fuera_servicio:'Fuera de servicio'}[e]||e;
 }
 
+function generarPruebasHTMLReporte() {
+  const esGen = S.tipoEquipo==='gen' || S.tipoEquipo==='ambos';
+  const esTTA = S.tipoEquipo==='tta' || S.tipoEquipo==='ambos';
+  const modoLabel = S.modoPrueba==='avanzado' ? '<span style="background:#dc2626;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:8px">AVANZADO</span>' : '<span style="background:#1a5fa8;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;margin-left:8px">BÁSICO</span>';
+  let out = '';
+
+  const notaNoRealizada = (estado, motivo) => {
+    const cfg = {
+      pv_noaut: {color:'#5b21b6', bg:'#ede9fe', border:'#7c3aed', txt:'🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'},
+      pc_noaut: {color:'#5b21b6', bg:'#ede9fe', border:'#7c3aed', txt:'🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'},
+      pv_no:    {color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a', txt:'❌ NO SE REALIZARON'},
+      pc_no:    {color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a', txt:'❌ NO SE REALIZARON'},
+      pv_nocond:{color:'#92400e', bg:'#fef3c7', border:'#f59e0b', txt:'⚠️ NO REALIZADAS — NO FUE POSIBLE'},
+      pc_nocond:{color:'#92400e', bg:'#fef3c7', border:'#f59e0b', txt:'⚠️ NO REALIZADAS — NO FUE POSIBLE'},
+    };
+    const c = cfg[estado] || {color:'#374151', bg:'#f3f4f6', border:'#e5e7eb', txt:'— No realizadas'};
+    return '<div style="background:' + c.bg + ';border:2px solid ' + c.border + ';border-radius:8px;padding:12px 16px;margin:0 32px 12px">' +
+      '<div style="font-size:13px;font-weight:700;color:' + c.color + '">' + c.txt + '</div>' +
+      (motivo ? '<div style="font-size:12px;color:#374151;margin-top:4px">' + motivo + '</div>' : '') +
+    '</div>';
+  };
+
+  const datoGrid = (items) => '<div class="datos-grid">' + items.map(([l,v]) =>
+    '<div class="dato"><span class="dato-label">' + l + '</span><span class="dato-val">' + (v||'—') + '</span></div>'
+  ).join('') + '</div>';
+
+  if (esGen) {
+    out += '<div style="font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px">⚡ Generador ' + modoLabel + '</div>';
+
+    // Pruebas en vacío
+    out += '<h3>Pruebas en vacío</h3>';
+    if (S.pvEstado === 'pv_si') {
+      out += datoGrid([
+        ['V L1-L2', (S.pv_l1l2||'—') + ' V'],
+        ['V L2-L3', (S.pv_l2l3||'—') + ' V'],
+        ['V L1-L3', (S.pv_l1l3||'—') + ' V'],
+        ['Frecuencia', (S.pv_freq||'—') + ' Hz'],
+        ['RPM', S.pv_rpm||'—'],
+        ['V batería', (S.pv_bat||'—') + ' VCC'],
+        ['Temperatura', (S.pv_temp||'—') + ' °C'],
+        ['Presión aceite', (S.pv_aceite||'—') + ' Bar']
+      ]);
+      if (S.modoPrueba === 'avanzado') {
+        out += '<div style="margin:0 32px 12px">';
+        if (S.fasimetroGen) out += '<div class="dato"><span class="dato-label">Fasímetro</span><span class="dato-val">' + S.fasimetroGen + '</span></div>';
+        if (S.estadoBateria) {
+          out += '<h3>Prueba de baterías</h3>';
+          out += datoGrid([
+            ['SOC (Carga)', (S.batSOC||'—') + ' %'],
+            ['Life (Vida útil)', (S.batLife||'—') + ' %'],
+            ['Voltage', (S.batVoltage||'—') + ' V'],
+            ['Resultado', S.estadoBateria||'—']
+          ]);
+        }
+        out += '</div>';
+      }
+    } else if (S.pvEstado) {
+      out += notaNoRealizada(S.pvEstado, S.pvMotivo);
+    }
+
+    // Pruebas con carga
+    out += '<h3>Pruebas con carga</h3>';
+    if (S.pcEstado === 'pc_si') {
+      out += datoGrid([
+        ['V L1-L2', (S.pc_l1l2||'—') + ' V'],
+        ['V L2-L3', (S.pc_l2l3||'—') + ' V'],
+        ['V L1-L3', (S.pc_l1l3||'—') + ' V'],
+        ['A L1', (S.pc_a1||'—') + ' A'],
+        ['A L2', (S.pc_a2||'—') + ' A'],
+        ['A L3', (S.pc_a3||'—') + ' A'],
+        ['V batería', (S.pc_bat||'—') + ' VCC'],
+        ['Temperatura', (S.pc_temp||'—') + ' °C'],
+        ['Presión aceite', (S.pc_aceite||'—') + ' Bar']
+      ]);
+    } else if (S.pcEstado) {
+      out += notaNoRealizada(S.pcEstado, S.pcMotivo);
+    }
+  }
+
+  if (esTTA) {
+    out += '<div style="font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px">🔌 Tablero de Transferencia Automática ' + modoLabel + '</div>';
+
+    // Mediciones eléctricas TTA
+    out += '<h3>Mediciones eléctricas</h3>';
+    if (S.pvEstado === 'pv_si') {
+      out += datoGrid([
+        ['V L1-L2 (red normal)', (S.pv_l1l2||'—') + ' V'],
+        ['V L2-L3', (S.pv_l2l3||'—') + ' V'],
+        ['V L1-L3', (S.pv_l1l3||'—') + ' V'],
+        ['Frecuencia', (S.pv_freq||'—') + ' Hz'],
+        ['A L1', (S.tta_a1||'—') + ' A'],
+        ['A L2', (S.tta_a2||'—') + ' A'],
+        ['A L3', (S.tta_a3||'—') + ' A']
+      ]);
+      if (S.modoPrueba === 'avanzado' && S.fasimetroNormal) {
+        out += '<div style="margin:0 32px 8px">';
+        out += datoGrid([
+          ['Fasímetro red normal', S.fasimetroNormal||'—'],
+          ['Fasímetro red emergencia', S.fasimetroEmergencia||'—'],
+          ['V batería control', (S.pv_bat||'—') + ' VCC']
+        ]);
+        out += '</div>';
+      }
+    } else if (S.pvEstado) {
+      out += notaNoRealizada(S.pvEstado, S.pvMotivo);
+    }
+
+    // Prueba de transferencia
+    const tf = {tf_si:'✅ Sí', tf_no:'❌ No', tf_parcial:'⚠️ Parcial'};
+    const rt = {rt_si:'✅ Sí', rt_no:'❌ No', rt_parcial:'⚠️ Parcial'};
+    const sq = {seq_ok:'✅ Correcta', seq_mal:'❌ Incorrecta'};
+    out += '<h3>Prueba de transferencia</h3>';
+    out += datoGrid([
+      ['Transfiere N→E', tf[S.ttaTransfiere]||'—'],
+      ['Retransfiere E→N', rt[S.ttaRetransfiere]||'—'],
+      ['Secuencia de conmutación', sq[S.ttaSecuencia]||'—']
+    ]);
+    if (S.modoPrueba === 'avanzado') {
+      out += datoGrid([
+        ['Tiempo N→E', (S.ttaTiempoNE||'—') + ' seg'],
+        ['Tiempo E→N', (S.ttaTiempoEN||'—') + ' seg'],
+        ['Calentamiento en contactores', S.ttaCalor==='cal_si'?'⚠️ Anormal detectado':'✅ Normal']
+      ]);
+    }
+    if (S.ttaObsTransf) {
+      out += '<div style="margin:0 32px 10px;background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;font-size:12px;color:#374151">' + S.ttaObsTransf + '</div>';
+    }
+
+    // Módulo de control
+    if (S.ttaModuloControl === true) {
+      const mc = {mc_ok:'✅ Activa', mc_fail:'❌ Sin comunicación'};
+      const dp = {disp_ok:'✅ Sí', disp_fail:'❌ No'};
+      out += '<h3>Módulo de control</h3>';
+      out += datoGrid([
+        ['Comunicación', mc[S.ttaMcComm]||'—'],
+        ['Alarmas activas', S.ttaAlarmas||'—'],
+        ['Display y botones', dp[S.ttaDisplay]||'—']
+      ]);
+    } else if (S.ttaModuloControl === false) {
+      out += '<div style="margin:0 32px 10px;font-size:12px;color:#6b7280;font-style:italic">Sin módulo de control integrado</div>';
+    }
+  }
+
+  return out || '<div style="margin:0 32px;color:#9ca3af;font-size:13px">Sin pruebas registradas</div>';
+}
+
 function generarReporte(tipo, destino) {
   const secs = getSecs();
   const tipoLabel = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'}[S.tipoEquipo]||'';
@@ -1561,40 +1707,7 @@ ${S.tipoServicio==='garantia'?`
 </div></div>`:``}
 
 <h2>4. Pruebas técnicas</h2>
-${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')?`
-<h3>Pruebas en vacío</h3>
-<div class="datos-grid">
-  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
-  <div class="dato"><span class="dato-label">RPM</span><span class="dato-val">${S.pv_rpm||'—'}</span></div>
-  <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pv_bat||'—'} VCC</span></div>
-  <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pv_temp||'—'} °C</span></div>
-  <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pv_aceite||'—'} Bar</span></div>
-</div>
-<h3>Pruebas con carga</h3>
-<div class="datos-grid">
-  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pc_l1l2||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pc_l2l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pc_l1l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">A L1</span><span class="dato-val">${S.pc_a1||'—'} A</span></div>
-  <div class="dato"><span class="dato-label">A L2</span><span class="dato-val">${S.pc_a2||'—'} A</span></div>
-  <div class="dato"><span class="dato-label">A L3</span><span class="dato-val">${S.pc_a3||'—'} A</span></div>
-  <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pc_bat||'—'} VCC</span></div>
-  <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pc_temp||'—'} °C</span></div>
-  <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pc_aceite||'—'} Bar</span></div>
-</div>`:``}
-${S.tipoEquipo==='tta'?`
-<h3>Mediciones eléctricas</h3>
-<div class="datos-grid">
-  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
-  ${S.pv_bat?`<div class="dato"><span class="dato-label">V batería control</span><span class="dato-val">${S.pv_bat} VCC</span></div>`:''}
-</div>`:``}
-
+${generarPruebasHTMLReporte()}
 <h2>5. Hallazgos y conclusión</h2>
 <div class="sb">
 <div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">${S.hallazgos||'Sin hallazgos registrados.'}</div>
