@@ -3,6 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a2240">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sudmar">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230a2240'/%3E%3Ccircle cx='48' cy='88' r='18' fill='%231a5fa8'/%3E%3Ccircle cx='96' cy='88' r='18' fill='%231a5fa8'/%3E%3Ccircle cx='144' cy='88' r='18' fill='%23ffffff'/%3E%3Ctext x='96' y='152' font-family='Arial' font-size='24' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3ESUDMAR%3C/text%3E%3C/svg%3E">
+<script>
+// ─── Manifest inline ─────────────────────────────────────────────
+const manifestData = {
+  name: "Sudmar Energy — Reportes",
+  short_name: "Sudmar",
+  description: "Sistema de reportes de servicio técnico",
+  start_url: "/sudmar-diagnostico/",
+  display: "standalone",
+  background_color: "#ffffff",
+  theme_color: "#0a2240",
+  orientation: "portrait",
+  icons: [{
+    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230a2240'/%3E%3Ccircle cx='48' cy='88' r='18' fill='%231a5fa8'/%3E%3Ccircle cx='96' cy='88' r='18' fill='%231a5fa8'/%3E%3Ccircle cx='144' cy='88' r='18' fill='%23ffffff'/%3E%3C/svg%3E",
+    sizes: "192x192", type: "image/svg+xml"
+  }]
+};
+const manifestBlob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
+const manifestURL = URL.createObjectURL(manifestBlob);
+const manifestLink = document.createElement('link');
+manifestLink.rel = 'manifest';
+manifestLink.href = manifestURL;
+document.head.appendChild(manifestLink);
+</script>
 <title>Diagnóstico — Sudmar Energy</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1803,30 +1832,6 @@ document.addEventListener('click', function(e) {
 
 render();
 
-// ─── Registrar Service Worker (PWA) ─────────────────────────────
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sudmar-diagnostico/sw.js')
-      .then(reg => {
-        console.log('SW registrado:', reg.scope);
-        // Verificar actualizaciones
-        reg.addEventListener('updatefound', () => {
-          const newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // Hay actualización disponible
-              const banner = document.createElement('div');
-              banner.style.cssText = 'position:fixed;bottom:80px;left:16px;right:16px;background:#0a2240;color:#fff;padding:12px 16px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;z-index:9999;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
-              banner.innerHTML = '<span>📲 Nueva versión disponible</span><button onclick="window.location.reload()" style="background:#1a5fa8;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer">Actualizar</button>';
-              document.body.appendChild(banner);
-            }
-          });
-        });
-      })
-      .catch(err => console.log('SW error:', err));
-  });
-}
-
 // ─── Autocompletado de ubicación (OpenStreetMap Nominatim) ──────
 let ubicTimer = null;
 
@@ -1879,6 +1884,57 @@ document.addEventListener('click', function(e) {
   el('logo-endress-hdr', LOGO_ENDRESS);
   el('logo-comap-hdr', LOGO_COMAP);
 })();
+</script>
+<script>
+// ─── Registrar Service Worker inline ────────────────────────────
+if ('serviceWorker' in navigator) {
+  const swCode = `const CACHE = 'sudmar-v23';
+const URLS = ['./'];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(ks =>
+    Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))
+  ));
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request).then(r => {
+      if (r && r.status === 200) {
+        const clone = r.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+      }
+      return r;
+    }).catch(() => caches.match(e.request).then(r => r || caches.match('./')))
+  );
+});`;
+  const swBlob = new Blob([swCode], {type: 'application/javascript'});
+  const swURL = URL.createObjectURL(swBlob);
+  
+  navigator.serviceWorker.register(swURL, {scope: './'})
+    .then(reg => {
+      console.log('SW registrado OK');
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            const b = document.createElement('div');
+            b.style.cssText = 'position:fixed;bottom:80px;left:16px;right:16px;background:#0a2240;color:#fff;padding:12px 16px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;z-index:9999;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+            b.innerHTML = '<span>📲 Nueva versión disponible</span><button onclick="window.location.reload()" style="background:#1a5fa8;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer">Actualizar</button>';
+            document.body.appendChild(b);
+          }
+        });
+      });
+    })
+    .catch(e => console.log('SW no disponible:', e));
+}
 </script>
 </body>
 </html>
