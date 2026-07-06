@@ -364,6 +364,8 @@ function openCamera(key, type) {
 // ─── Renderizado de checklist ─────────────────────────────────────
 function getSecs() {
   const t = S.tipoEquipo, s = [];
+  // Garantía sin diagnóstico: no muestra checklist
+  if (S.tipoServicio === 'garantia' && S.garantiaConDiag !== true) return [];
   if (t==='gen'||t==='ambos') {
     s.push('motor_base');
     if (S.tipoControl) s.push('ctrl_'+S.tipoControl);
@@ -848,29 +850,58 @@ const STEPS = {
         <textarea class="input" rows="4" placeholder="Describe el resultado final de la reparación y si el equipo quedó operativo..." oninput="S.resolucion=this.value">${S.resolucion||''}</textarea>
       </div>`;
 
-    // GARANTÍA
+    // GARANTÍA — con opción de incluir diagnóstico
     if (ts === 'garantia') return `
-      <div class="section-title">Datos de garantía</div>
-      <div class="section-sub">Registra la información relevante para la validación de garantía</div>
+      <div class="section-title">Atención a garantía</div>
+      <div class="section-sub">Registra la información de la garantía</div>
+
       <div class="field"><label class="label">Número de garantía / referencia</label>
         <input class="input" placeholder="Número de caso o referencia" value="${S.numGarantia||''}" oninput="S.numGarantia=this.value">
       </div>
       <div class="field"><label class="label">Descripción del problema reportado por el cliente</label>
         <textarea class="input" rows="3" placeholder="¿Qué reportó el cliente?" oninput="S.probGarantia=this.value">${S.probGarantia||''}</textarea>
       </div>
-      <div class="field"><label class="label">Dictamen de garantía</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
+
+      <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">¿Este servicio incluye diagnóstico técnico?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div onclick="S.garantiaConDiag=true;render()" style="border:2px solid ${S.garantiaConDiag===true?'#1a5fa8':'#e5e7eb'};border-radius:10px;padding:14px;cursor:pointer;background:${S.garantiaConDiag===true?'#eaf1fb':'#fff'};text-align:center;transition:all .15s">
+            <div style="font-size:24px;margin-bottom:6px">🔍</div>
+            <div style="font-size:13px;font-weight:700;color:${S.garantiaConDiag===true?'#1a3a6a':'#374151'}">Sí incluye diagnóstico</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:3px">Checklist completo + pruebas + dictamen</div>
+          </div>
+          <div onclick="S.garantiaConDiag=false;render()" style="border:2px solid ${S.garantiaConDiag===false?'#e87a2a':'#e5e7eb'};border-radius:10px;padding:14px;cursor:pointer;background:${S.garantiaConDiag===false?'#fff9f4':'#fff'};text-align:center;transition:all .15s">
+            <div style="font-size:24px;margin-bottom:6px">📋</div>
+            <div style="font-size:13px;font-weight:700;color:${S.garantiaConDiag===false?'#b85a10':'#374151'}">Solo dictamen</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:3px">Sin checklist, solo validar garantía</div>
+          </div>
+        </div>
+      </div>
+
+      ${S.garantiaConDiag===false ? `
+      <div style="background:#fff8f2;border:1.5px solid #f0c090;border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">📋 Dictamen de garantía</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
           ${[
-            {id:'aprobado', icon:'✅', label:'Aprobado', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
-            {id:'no_aprobado', icon:'❌', label:'No aprobado', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
+            {id:'aprobado', icon:'✅', label:'Aprobada', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
+            {id:'no_aprobado', icon:'❌', label:'No aprobada', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
             {id:'por_validar', icon:'⏳', label:'Por validar', color:'#6b7280', bg:'#f3f4f6', border:'#9ca3af'}
           ].map(d => `
-            <div onclick="S.dictamen='${d.id}';render()" style="border:2px solid ${S.dictamen===d.id?d.border:'#e5e7eb'};border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;background:${S.dictamen===d.id?d.bg:'#fff'};transition:all .15s">
+            <div onclick="S.dictamen='${d.id}';render()" style="border:2px solid ${S.dictamen===d.id?d.border:'#e5e7eb'};border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;background:${S.dictamen===d.id?d.bg:'#fff'}">
               <div style="font-size:22px;margin-bottom:4px">${d.icon}</div>
               <div style="font-size:12px;font-weight:700;color:${S.dictamen===d.id?d.color:'#6b7280'}">${d.label}</div>
             </div>`).join('')}
         </div>
-      </div>`;
+      </div>` : ''}
+
+      ${S.garantiaConDiag===true ? `
+      <div style="background:#dcf5e4;border:1.5px solid #4caf70;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">✅</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#1a5a2a">Diagnóstico habilitado</div>
+          <div style="font-size:12px;color:#2a7a4a">El checklist completo y las pruebas técnicas están disponibles. Al final se agregará el dictamen de garantía.</div>
+        </div>
+      </div>` : ''}`;
 
     // CIERRE DE CONEXIONES / SOLAR / DEFAULT
     return `
@@ -885,6 +916,25 @@ const STEPS = {
   6: () => STEPS.REAL5(),
 
   REAL_PASO3: () => {
+    // Garantía solo dictamen — sin checklist
+    if (S.tipoServicio === 'garantia' && S.garantiaConDiag === false) return `
+      <div class="section-title">Dictamen de garantía</div>
+      <div class="section-sub">Selecciona el resultado de la evaluación de garantía</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px">
+        ${[
+          {id:'aprobado', icon:'✅', label:'Garantía aprobada', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
+          {id:'no_aprobado', icon:'❌', label:'No aprobada', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
+          {id:'por_validar', icon:'⏳', label:'Por validar', color:'#6b7280', bg:'#f3f4f6', border:'#9ca3af'}
+        ].map(d=>`
+          <div onclick="S.dictamen='${d.id}';render()" style="border:2px solid ${S.dictamen===d.id?d.border:'#e5e7eb'};border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;background:${S.dictamen===d.id?d.bg:'#fff'};transition:all .15s">
+            <div style="font-size:32px;margin-bottom:8px">${d.icon}</div>
+            <div style="font-size:13px;font-weight:700;color:${S.dictamen===d.id?d.color:'#374151'}">${d.label}</div>
+          </div>`).join('')}
+      </div>
+      <div class="field" style="margin-top:16px"><label class="label">Justificación del dictamen</label>
+        <textarea class="input" rows="4" placeholder="Describe los motivos del dictamen de garantía..." oninput="S.justDictamen=this.value">${S.justDictamen||''}</textarea>
+      </div>`;
+
     const secs = getSecs();
     if (!secs.length) return '<div class="alert-box"><i class="ti ti-info-circle"></i>Regresa al paso anterior y selecciona el tipo de equipo.</div>';
     const mal = Object.values(S.checks).filter(v=>v==='mal').length;
@@ -893,7 +943,28 @@ const STEPS = {
       <div class="section-title">Puntos de inspección</div>
       <div class="section-sub">✓ Bien · ✗ Mal (foto obligatoria) · — No aplica</div>
       ${mal>0?`<div class="alert-box"><i class="ti ti-alert-triangle"></i><span><b>${mal} punto(s) con falla</b> · ${pf} foto(s) de evidencia pendiente(s)</span></div>`:''}
-      ${secs.map(s=>rSec(s)).join('')}`;
+      ${secs.map(s=>rSec(s)).join('')}
+
+      ${S.tipoServicio==='garantia' && S.garantiaConDiag===true ? `
+      <div style="background:#fff8f2;border:2px solid #f59e0b;border-radius:12px;padding:16px;margin-top:8px">
+        <div style="font-size:13px;font-weight:700;color:#b45309;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">🛡️</span> Dictamen de garantía
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+          ${[
+            {id:'aprobado', icon:'✅', label:'Aprobada', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
+            {id:'no_aprobado', icon:'❌', label:'No aprobada', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
+            {id:'por_validar', icon:'⏳', label:'Por validar', color:'#6b7280', bg:'#f3f4f6', border:'#9ca3af'}
+          ].map(d=>`
+            <div onclick="S.dictamen='${d.id}';render()" style="border:2px solid ${S.dictamen===d.id?d.border:'#e5e7eb'};border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;background:${S.dictamen===d.id?d.bg:'#fff'}">
+              <div style="font-size:24px;margin-bottom:4px">${d.icon}</div>
+              <div style="font-size:12px;font-weight:700;color:${S.dictamen===d.id?d.color:'#6b7280'}">${d.label}</div>
+            </div>`).join('')}
+        </div>
+        <div class="field"><label class="label">Justificación del dictamen</label>
+          <textarea class="input" rows="3" placeholder="Describe los motivos del dictamen..." oninput="S.justDictamen=this.value">${S.justDictamen||''}</textarea>
+        </div>
+      </div>` : ''}`;
   },
 
   REAL4: () => {
@@ -1554,11 +1625,16 @@ ${S.tipoServicio==='reparacion'&&S.componentes&&S.componentes.length?`
 </div>`:``}
 
 ${S.tipoServicio==='garantia'?`
-<h2>3b. Dictamen de garantía</h2>
-<div class="sb"><div style="text-align:center;padding:20px;border:2px solid ${S.dictamen==='aprobado'?'#4caf70':S.dictamen==='no_aprobado'?'#e87a2a':'#9ca3af'};border-radius:12px;background:${S.dictamen==='aprobado'?'#dcf5e4':S.dictamen==='no_aprobado'?'#ffe4d0':'#f3f4f6'};margin-bottom:14px">
-  <div style="font-size:40px;margin-bottom:8px">${S.dictamen==='aprobado'?'✅':S.dictamen==='no_aprobado'?'❌':'⏳'}</div>
-  <div style="font-size:20px;font-weight:700;color:${S.dictamen==='aprobado'?'#1a7a3a':S.dictamen==='no_aprobado'?'#b85a10':'#6b7280'}">${S.dictamen==='aprobado'?'GARANTÍA APROBADA':S.dictamen==='no_aprobado'?'GARANTÍA NO APROBADA':'GARANTÍA POR VALIDAR'}</div>
-</div></div>`:``}
+<h2>${S.garantiaConDiag===true?'4b':'3'}. Dictamen de garantía</h2>
+<div class="sb">
+<div style="text-align:center;padding:24px;border:2px solid ${S.dictamen==='aprobado'?'#4caf70':S.dictamen==='no_aprobado'?'#e87a2a':'#9ca3af'};border-radius:12px;background:${S.dictamen==='aprobado'?'#dcf5e4':S.dictamen==='no_aprobado'?'#ffe4d0':'#f3f4f6'};margin-bottom:14px">
+  <div style="font-size:48px;margin-bottom:10px">${S.dictamen==='aprobado'?'✅':S.dictamen==='no_aprobado'?'❌':'⏳'}</div>
+  <div style="font-size:22px;font-weight:700;color:${S.dictamen==='aprobado'?'#1a7a3a':S.dictamen==='no_aprobado'?'#b85a10':'#6b7280'}">${S.dictamen==='aprobado'?'GARANTÍA APROBADA':S.dictamen==='no_aprobado'?'GARANTÍA NO APROBADA':'GARANTÍA POR VALIDAR'}</div>
+  ${S.numGarantia?'<div style="font-size:13px;color:#6b7280;margin-top:6px">Referencia: '+S.numGarantia+'</div>':''}
+</div>
+${S.justDictamen?'<div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;font-size:13px;line-height:1.7;margin-bottom:14px">'+S.justDictamen+'</div>':''}
+${S.probGarantia?'<h3>Problema reportado por el cliente</h3><div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;font-size:13px;line-height:1.7;margin-bottom:14px">'+S.probGarantia+'</div>':''}
+</div>`:``}
 
 <h2>4. Pruebas técnicas</h2>
 ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')?`
