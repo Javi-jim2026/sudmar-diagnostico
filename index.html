@@ -951,13 +951,42 @@ const STEPS = {
               ${['RST (correcta)','RTS (invertida)','No medido'].map(f=>`<div onclick="S.fasimetroGen='${f}';render()" style="border:2px solid ${S.fasimetroGen===f?'#1a5fa8':'#e5e7eb'};border-radius:7px;padding:7px 4px;cursor:pointer;background:${S.fasimetroGen===f?'#eaf1fb':'#fff'};font-size:11px;font-weight:${S.fasimetroGen===f?'700':'400'};text-align:center;color:${S.fasimetroGen===f?'#1a3a6a':'#374151'}">${f}</div>`).join('')}
             </div>
           </div>
-          <div class="field"><label class="label">Prueba de baterías</label>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
-              ${['Buena','Sulfatada','Reemplazar'].map(b=>`<div onclick="S.estadoBateria='${b}';render()" style="border:2px solid ${S.estadoBateria===b?(b==='Buena'?'#4caf70':b==='Sulfatada'?'#f59e0b':'#dc2626'):'#e5e7eb'};border-radius:7px;padding:7px 4px;cursor:pointer;background:${S.estadoBateria===b?(b==='Buena'?'#dcf5e4':b==='Sulfatada'?'#fef3c7':'#fef2f2'):'#fff'};font-size:11px;font-weight:${S.estadoBateria===b?'700':'400'};text-align:center;color:${S.estadoBateria===b?(b==='Buena'?'#1a7a3a':b==='Sulfatada'?'#92400e':'#dc2626'):'#374151'}">${b}</div>`).join('')}
-            </div>
-            <div class="input-row">
-              <div class="field"><label class="label">V reposo</label><input class="input" placeholder="VCC" value="${S.batVReposo||''}" oninput="S.batVReposo=this.value"></div>
-              <div class="field"><label class="label">V bajo carga</label><input class="input" placeholder="VCC" value="${S.batVCarga||''}" oninput="S.batVCarga=this.value"></div>
+          <div class="field">
+            <label class="label">Prueba de baterías</label>
+            <div style="border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#fff">
+              <div style="background:#1a1a2e;padding:8px 12px;text-align:center;font-size:12px;font-weight:700;color:#fff;letter-spacing:1px">BATTERY TEST</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+                <div style="padding:10px 12px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb">
+                  <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:4px">SOC (Carga actual)</div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <input class="input" type="number" min="0" max="100" placeholder="%" value="${S.batSOC||''}" oninput="S.batSOC=this.value" style="padding:6px 8px;font-size:14px;font-weight:700">
+                    <span style="font-size:14px;color:#6b7280;font-weight:700">%</span>
+                  </div>
+                </div>
+                <div style="padding:10px 12px;border-bottom:1px solid #e5e7eb">
+                  <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Life (Vida útil)</div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <input class="input" type="number" min="0" max="100" placeholder="%" value="${S.batLife||''}" oninput="S.batLife=this.value" style="padding:6px 8px;font-size:14px;font-weight:700">
+                    <span style="font-size:14px;color:#6b7280;font-weight:700">%</span>
+                  </div>
+                </div>
+                <div style="padding:10px 12px;border-right:1px solid #e5e7eb">
+                  <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Voltage</div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <input class="input" placeholder="V" value="${S.batVoltage||''}" oninput="S.batVoltage=this.value" style="padding:6px 8px;font-size:14px;font-weight:700">
+                    <span style="font-size:14px;color:#6b7280;font-weight:700">V</span>
+                  </div>
+                </div>
+                <div style="padding:10px 12px">
+                  <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Resultado</div>
+                  <select class="input select" onchange="S.estadoBateria=this.value" style="padding:6px 8px;font-size:13px;font-weight:700">
+                    <option value="">Seleccionar...</option>
+                    <option ${S.estadoBateria==='Buena'?'selected':''} value="Buena">✅ Buena</option>
+                    <option ${S.estadoBateria==='Dañada'?'selected':''} value="Dañada">⚠️ Dañada</option>
+                    <option ${S.estadoBateria==='Reemplazar'?'selected':''} value="Reemplazar">❌ Reemplazar</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
         </div>` : ''}` : ''}
@@ -1242,24 +1271,24 @@ function render() {
 
 function nav(d) {
   if (d > 0) {
-    // Validaciones por paso
-    if (step===1) {
-      if (!S.tipoServicio) return showAlert('⚠️ Selecciona el tipo de servicio para continuar');
-      if (!S.cliente) return showAlert('⚠️ El nombre del cliente es obligatorio');
-      if (!S.empresa) return showAlert('⚠️ El nombre de la empresa es obligatorio');
-      if (!S.responsable) return showAlert('⚠️ Indica el responsable del diagnóstico');
-    }
-    if (step===2) {
-      if (!S.tipoEquipo) return showAlert('⚠️ Selecciona el tipo de equipo');
-      if ((S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') && !S.tipoControl) return showAlert('⚠️ Selecciona el tipo de control del motor');
-    }
-    if (step===4) {
-      const secs = getSecs();
-      const malSinFoto = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fF[k]&&S.fF[k].length));
-      const malSinDesc = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fallaDesc&&S.fallaDesc[k]));
-      if (malSinFoto.length > 0) return showAlert(`📸 Tienes ${malSinFoto.length} punto(s) con falla sin foto de evidencia — es obligatoria`);
-      if (malSinDesc.length > 0) return showAlert(`📝 Tienes ${malSinDesc.length} punto(s) con falla sin descripción — describe qué encontraste`);
-    }
+    // ── VALIDACIONES DESACTIVADAS EN VERSIÓN DE PRUEBA ──
+    // if (step===1) {
+    //   if (!S.tipoServicio) return showAlert('⚠️ Selecciona el tipo de servicio para continuar');
+    //   if (!S.cliente) return showAlert('⚠️ El nombre del cliente es obligatorio');
+    //   if (!S.empresa) return showAlert('⚠️ El nombre de la empresa es obligatorio');
+    //   if (!S.responsable) return showAlert('⚠️ Indica el responsable del diagnóstico');
+    // }
+    // if (step===2) {
+    //   if (!S.tipoEquipo) return showAlert('⚠️ Selecciona el tipo de equipo');
+    //   if ((S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') && !S.tipoControl) return showAlert('⚠️ Selecciona el tipo de control del motor');
+    // }
+    // if (step===4) {
+    //   const secs = getSecs();
+    //   const malSinFoto = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fF[k]&&S.fF[k].length));
+    //   const malSinDesc = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fallaDesc&&S.fallaDesc[k]));
+    //   if (malSinFoto.length > 0) return showAlert(`📸 Tienes ${malSinFoto.length} punto(s) con falla sin foto de evidencia — es obligatoria`);
+    //   if (malSinDesc.length > 0) return showAlert(`📝 Tienes ${malSinDesc.length} punto(s) con falla sin descripción — describe qué encontraste`);
+    // }
   }
   const n = step+d;
   if (n<1||n>TOTAL_STEPS) return;
