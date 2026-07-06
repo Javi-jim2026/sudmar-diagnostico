@@ -1803,6 +1803,30 @@ document.addEventListener('click', function(e) {
 
 render();
 
+// ─── Registrar Service Worker (PWA) ─────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sudmar-diagnostico/sw.js')
+      .then(reg => {
+        console.log('SW registrado:', reg.scope);
+        // Verificar actualizaciones
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Hay actualización disponible
+              const banner = document.createElement('div');
+              banner.style.cssText = 'position:fixed;bottom:80px;left:16px;right:16px;background:#0a2240;color:#fff;padding:12px 16px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;z-index:9999;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+              banner.innerHTML = '<span>📲 Nueva versión disponible</span><button onclick="window.location.reload()" style="background:#1a5fa8;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer">Actualizar</button>';
+              document.body.appendChild(banner);
+            }
+          });
+        });
+      })
+      .catch(err => console.log('SW error:', err));
+  });
+}
+
 // ─── Autocompletado de ubicación (OpenStreetMap Nominatim) ──────
 let ubicTimer = null;
 
