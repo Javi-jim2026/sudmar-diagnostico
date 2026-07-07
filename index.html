@@ -324,6 +324,7 @@ document.getElementById('gal-input').addEventListener('change', function(e) {
       if (!S.fF[pendingPhotoKey]) S.fF[pendingPhotoKey] = [];
       S.fF[pendingPhotoKey].push(b64);
     }
+    updateFotoPlacas();
     render();
   };
   reader.readAsDataURL(file);
@@ -359,6 +360,13 @@ function openCamera(key, type) {
   pendingPhotoKey = key;
   pendingPhotoType = type;
   document.getElementById('cam-input').click();
+}
+
+// Track fotos de placas como booleanos
+function updateFotoPlacas() {
+  S.fotoPlacaGen = S.fG['placaGen'] && S.fG['placaGen'].length > 0;
+  S.fotoPlacaMotor = S.fG['placaMotor'] && S.fG['placaMotor'].length > 0;
+  S.fotoPlacaAlt = S.fG['placaAlt'] && S.fG['placaAlt'].length > 0;
 }
 
 // ─── Renderizado de checklist ─────────────────────────────────────
@@ -405,7 +413,11 @@ function ci(sid, item, idx) {
         </div>
         <div onclick="openGallery('${k}','falla')" title="Subir de galería" style="border:2px dashed #f0a060;border-left:none;padding:0 14px;display:flex;align-items:center;background:#fff9f4;cursor:pointer;color:#e87a2a;font-size:18px">📁</div>
       </div>
-      ${hasFoto ? `<div class="falla-thumbs captured">${arr.map(b=>`<img class="photo-thumb" src="${b}">`).join('')}</div>` : ''}
+      ${hasFoto ? `<div class="falla-thumbs captured">${arr.map((b,i)=>`
+        <div style="position:relative;display:inline-block">
+          <img class="photo-thumb" src="${b}">
+          <button onclick="S.fF['${k}'].splice(${i},1);render()" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+        </div>`).join('')}</div>` : ''}
       <div style="padding:8px 12px;background:#fff9f4;border:2px dashed #f0a060;border-top:none">
         <input class="input" placeholder="📝 Describe brevemente la falla observada..." 
           value="${(S.fallaDesc&&S.fallaDesc[k])||''}" 
@@ -442,7 +454,11 @@ function rSec(sid) {
         </div>
         <div onclick="openGallery('${sid}','gen')" title="Subir de galería" style="border:2px dashed #c0d0e0;border-left:none;padding:0 14px;display:flex;align-items:center;background:#f8fafc;cursor:pointer;color:#6b7280;font-size:18px">📁</div>
       </div>
-      ${hg ? `<div class="photo-thumbs">${arr.map(b=>`<img class="photo-thumb" src="${b}">`).join('')}</div>` : ''}
+      ${hg ? `<div class="photo-thumbs">${arr.map((b,i)=>`
+        <div style="position:relative;display:inline-block">
+          <img class="photo-thumb" src="${b}">
+          <button onclick="S.fG['${sid}'].splice(${i},1);render()" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+        </div>`).join('')}</div>` : ''}
       <div class="check-items">${items.map((it,i)=>ci(sid,it,i)).join('')}</div>
     </div>`;
 }
@@ -666,12 +682,15 @@ const STEPS = {
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">📋 Datos del grupo electrógeno</div>
       <div style="font-size:11px;color:#6b7280;margin-bottom:10px">📸 Toma foto de la placa del generador</div>
-      <div class="photo-gen-btn ${S.fotoPlacaGen?'captured':''}" onclick="openCamera('placaGen','gen')" style="margin-bottom:10px;border-radius:8px">
-        <i class="ti ${S.fotoPlacaGen?'ti-circle-check':'ti-camera'}"></i>
-        <div>
-          <div class="photo-gen-text">${S.fotoPlacaGen?'Foto de placa capturada ✓':'📸 Foto obligatoria — placa del generador'}</div>
-          <div class="photo-gen-sub">Placa de datos del grupo electrógeno</div>
+      <div style="display:flex;gap:0;margin-bottom:10px">
+        <div class="photo-gen-btn ${S.fotoPlacaGen?'captured':''}" onclick="openCamera('placaGen','gen')" style="flex:1;border-radius:8px 0 0 8px">
+          <i class="ti ${S.fotoPlacaGen?'ti-circle-check':'ti-camera'}"></i>
+          <div>
+            <div class="photo-gen-text">${S.fotoPlacaGen?'Foto de placa capturada ✓':'📸 Foto obligatoria — placa del generador'}</div>
+            <div class="photo-gen-sub">Placa de datos del grupo electrógeno</div>
+          </div>
         </div>
+        ${S.fotoPlacaGen ? `<button onclick="S.fotoPlacaGen=null;S.fG['placaGen']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
       </div>
       <div class="field" style="position:relative">
         <label class="label">Modelo del equipo (generador)</label>
@@ -706,12 +725,15 @@ const STEPS = {
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">🔧 Datos de motor (placa OEM)</div>
       <div style="font-size:11px;color:#6b7280;margin-bottom:10px">📸 Toma foto de la placa del motor</div>
-      <div class="photo-gen-btn ${S.fotoPlacaMotor?'captured':''}" onclick="openCamera('placaMotor','gen')" style="margin-bottom:10px;border-radius:8px">
-        <i class="ti ${S.fotoPlacaMotor?'ti-circle-check':'ti-camera'}"></i>
-        <div>
-          <div class="photo-gen-text">${S.fotoPlacaMotor?'Foto de placa capturada ✓':'📸 Foto obligatoria — placa del motor'}</div>
-          <div class="photo-gen-sub">Placa de datos del motor</div>
+      <div style="display:flex;gap:0;margin-bottom:10px">
+        <div class="photo-gen-btn ${S.fotoPlacaMotor?'captured':''}" onclick="openCamera('placaMotor','gen')" style="flex:1;border-radius:8px 0 0 8px">
+          <i class="ti ${S.fotoPlacaMotor?'ti-circle-check':'ti-camera'}"></i>
+          <div>
+            <div class="photo-gen-text">${S.fotoPlacaMotor?'Foto de placa capturada ✓':'📸 Foto obligatoria — placa del motor'}</div>
+            <div class="photo-gen-sub">Placa de datos del motor</div>
+          </div>
         </div>
+        ${S.fotoPlacaMotor ? `<button onclick="S.fotoPlacaMotor=null;S.fG['placaMotor']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
       </div>
       <div class="field" style="position:relative">
         <label class="label">Marca de motor</label>
@@ -731,12 +753,15 @@ const STEPS = {
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">⚡ Datos de alternador (placa OEM)</div>
       <div style="font-size:11px;color:#6b7280;margin-bottom:10px">📸 Toma foto de la placa del alternador</div>
-      <div class="photo-gen-btn ${S.fotoPlacaAlt?'captured':''}" onclick="openCamera('placaAlt','gen')" style="margin-bottom:10px;border-radius:8px">
-        <i class="ti ${S.fotoPlacaAlt?'ti-circle-check':'ti-camera'}"></i>
-        <div>
-          <div class="photo-gen-text">${S.fotoPlacaAlt?'Foto de placa capturada ✓':'📸 Foto obligatoria — placa del alternador'}</div>
-          <div class="photo-gen-sub">Placa de datos del alternador</div>
+      <div style="display:flex;gap:0;margin-bottom:10px">
+        <div class="photo-gen-btn ${S.fotoPlacaAlt?'captured':''}" onclick="openCamera('placaAlt','gen')" style="flex:1;border-radius:8px 0 0 8px">
+          <i class="ti ${S.fotoPlacaAlt?'ti-circle-check':'ti-camera'}"></i>
+          <div>
+            <div class="photo-gen-text">${S.fotoPlacaAlt?'Foto de placa capturada ✓':'📸 Foto obligatoria — placa del alternador'}</div>
+            <div class="photo-gen-sub">Placa de datos del alternador</div>
+          </div>
         </div>
+        ${S.fotoPlacaAlt ? `<button onclick="S.fotoPlacaAlt=null;S.fG['placaAlt']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
       </div>
       <div class="field" style="position:relative">
         <label class="label">Marca de alternador</label>
@@ -750,10 +775,9 @@ const STEPS = {
         </div>
         <div id="alt-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:200px;overflow-y:auto"></div>
       </div>
-      </div>
-
       <div class="field"><label class="label">Modelo de alternador</label><input class="input" placeholder="Ej. HCK4-844F" value="${S.modeloAlt||''}" oninput="S.modeloAlt=this.value"></div>
       <div class="field"><label class="label">Serie de alternador</label><input class="input" placeholder="Número de serie" value="${S.serieAlt||''}" oninput="S.serieAlt=this.value"></div>
+      </div>
     </div>` : ''}
 
     ${S.tipoEquipo==='tta' ? `
