@@ -440,12 +440,12 @@ function rSec(sid) {
   return `
     <div class="check-section">
       <div class="check-header"><i class="ti ${icon}"></i>${label}<span class="tag">${items.length} pts</span></div>
-      <div style="background:#fff8e6;border:1.5px solid #f5c842;border-radius:0;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:none">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:18px">📸</span>
-          <span style="font-size:12px;color:#8a6a00;font-weight:600;line-height:1.4">Sal a tomar fotos/videos detallados y guárdalos en tu galería antes de continuar.</span>
+      <div style="background:#fff8e6;border:1.5px solid #f5c842;border-radius:0;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:none">
+        <div style="display:flex;align-items:center;gap:8px;flex:1">
+          <span style="font-size:18px;flex-shrink:0">📸</span>
+          <span style="font-size:12px;color:#8a6a00;font-weight:600;line-height:1.3">Sal a tomar fotos/videos detallados y guárdalos en tu galería antes de continuar.</span>
         </div>
-        <button onclick="this.parentElement.style.display='none'" style="background:#f59e0b;color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">✓ Ya tomé</button>
+        <button onclick="this.parentElement.style.display='none'" style="background:#f59e0b;color:#fff;border:none;border-radius:7px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">✓ Ya tomé</button>
       </div>
       <div style="display:flex;gap:0">
         <div class="photo-gen-btn ${hg?'captured':''}" onclick="openCamera('${sid}','gen')" style="flex:1">
@@ -462,25 +462,7 @@ function rSec(sid) {
           <img class="photo-thumb" src="${b}">
           <button onclick="S.fG['${sid}'].splice(${i},1);render()" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
         </div>`).join('')}</div>` : ''}
-      <div style="background:#fff;border:1.5px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px;padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        ${items.map((it,i) => {
-          const k=sid+'_'+i, v=S.checks[k], np=v==='mal', arr=S.fF[k]||[], hasFoto=arr.length>0;
-          return '<div style="border:1px solid '+(v==='ok'?'#4caf70':v==='mal'?'#e87a2a':v==='na'?'#e5e7eb':'#e5e7eb')+';border-radius:8px;padding:7px 8px;background:'+(v==='ok'?'#f2fff5':v==='mal'?'#fff9f4':'#fff')+'">'
-            +'<div style="font-size:11px;color:#374151;margin-bottom:5px;line-height:1.3">'+it+'</div>'
-            +'<div style="display:flex;gap:3px;margin-bottom:'+(np?'5px':'0')+'">'
-            +'<button onclick="setC(''+sid+'','+i+','ok')" class="cb ok '+(v==='ok'?'active':'')+'" style="flex:1;height:26px;font-size:12px">✓</button>'
-            +'<button onclick="setC(''+sid+'','+i+','mal')" class="cb mal '+(v==='mal'?'active':'')+'" style="flex:1;height:26px;font-size:12px">✗</button>'
-            +'<button onclick="setC(''+sid+'','+i+','na')" class="cb na '+(v==='na'?'active':'')+'" style="flex:1;height:26px;font-size:12px">—</button>'
-            +'</div>'
-            +(np ? '<div style="display:flex;gap:4px">'
-              +'<div onclick="openCamera(''+k+'','falla')" style="flex:1;background:#fff9f4;border:1px dashed #e87a2a;border-radius:6px;padding:4px 6px;cursor:pointer;font-size:10px;color:#b85a10;text-align:center">'+(hasFoto?'📸 '+arr.length+' foto(s) ✓':'📸 Foto obligatoria')+'</div>'
-              +(hasFoto?'<button onclick="S.fF[''+k+''].splice(S.fF[''+k+''].length-1,1);render()" style="background:#dc2626;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:10px;cursor:pointer">✕</button>':'')
-              +'</div>'
-              +'<input placeholder="Describe la falla..." value="'+(S.fallaDesc&&S.fallaDesc[k]?S.fallaDesc[k]:'')+'" oninput="if(!S.fallaDesc)S.fallaDesc={};S.fallaDesc[''+k+'']=this.value" style="width:100%;margin-top:4px;padding:4px 6px;border:1px solid #f0c090;border-radius:6px;font-size:11px;font-family:inherit">'
-            : '')
-            +'</div>';
-        }).join('')}
-      </div>
+      <div class="check-items">${items.map((it,i)=>ci(sid,it,i)).join('')}</div>
     </div>`;
 }
 
@@ -998,7 +980,45 @@ const STEPS = {
         </div>
       </div>` : ''}`;
 
-    // CIERRE DE CONEXIONES / SOLAR / DEFAULT
+    // CIERRE DE CONEXIONES
+    if (ts === 'cierre') return `
+      <div class="section-title">Cierre de conexiones</div>
+      <div class="section-sub">Descripción del trabajo y verificación final</div>
+      <div class="field"><label class="label">Descripción del trabajo realizado</label>
+        <textarea class="input" rows="3" placeholder="Describe el trabajo de conexiones realizado..." oninput="S.detalleServicio=this.value">${S.detalleServicio||''}</textarea>
+      </div>
+      <div style="border:1.5px solid #c0d0f0;border-radius:10px;overflow:hidden;margin-bottom:14px">
+        <div style="background:#0a2240;color:#fff;padding:10px 14px;font-size:13px;font-weight:700">✅ Checklist de verificación final</div>
+        ${[
+          {key:'ck_etiquetado', label:'Cable debidamente etiquetado'},
+          {key:'ck_correspondencia', label:'Cables corresponden al número designado en ambos extremos'},
+          {key:'ck_ferrules', label:'Puntas con terminales tipo ferrule (conexión rápida)'},
+          {key:'ck_orden', label:'Cableado ordenado con cinchos y pasacinchos'},
+          {key:'ck_precalentador', label:'Precalentador y cargador de baterías validados'}
+        ].map((item,idx) => {
+          const v = S.checks[item.key]||'';
+          const arr = S.fF[item.key]||[];
+          const hf = arr.length > 0;
+          return '<div style="padding:10px 14px;border-bottom:1px solid #e5e7eb;background:'+(v==='ok'?'#f2fff5':v==='mal'?'#fff9f4':'#fff')+'">'
+            +'<div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:7px">'+(idx+1)+'. '+item.label+'</div>'
+            +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:'+(v?'8px':'0')+'">'
+            +'<button onclick="S.checks[''+item.key+'']='ok';render()" class="cb ok '+(v==='ok'?'active':'')+'" style="height:32px;font-size:12px">✓ Correcto</button>'
+            +'<button onclick="S.checks[''+item.key+'']='mal';render()" class="cb mal '+(v==='mal'?'active':'')+'" style="height:32px;font-size:12px">✗ Incorrecto</button>'
+            +'<button onclick="S.checks[''+item.key+'']='na';render()" class="cb na '+(v==='na'?'active':'')+'" style="height:32px;font-size:12px">— N/A</button>'
+            +'</div>'
+            +(v ? '<div style="display:flex;gap:6px;align-items:center">'
+              +'<div onclick="openCamera(''+item.key+'','falla')" style="flex:1;background:#eaf1fb;border:1.5px dashed #1a5fa8;border-radius:8px;padding:8px;cursor:pointer;display:flex;align-items:center;gap:8px">'
+              +'<span>'+(hf?'✅':'📸')+'</span>'
+              +'<span style="font-size:12px;font-weight:700;color:#1a3a6a">'+(hf?arr.length+' foto(s) ✓':'Foto obligatoria — toca para capturar')+'</span>'
+              +'</div>'
+              +(hf?'<button onclick="S.fF[''+item.key+''].pop();render()" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-weight:700;cursor:pointer">✕</button>':'')
+              +'</div>'
+            :'')
+            +'</div>';
+        }).join('')}
+      </div>`;
+
+    // DEFAULT
     return `
       <div class="section-title">Detalles del servicio</div>
       <div class="section-sub">Registra los detalles específicos de este servicio</div>
