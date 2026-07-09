@@ -3,6 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a2240">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sudmar">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230a2240'/%3E%3Ccircle cx='48' cy='88' r='18' fill='%231a5fa8'/%3E%3Ccircle cx='96' cy='88' r='18' fill='%231a5fa8'/%3E%3Ccircle cx='144' cy='88' r='18' fill='%23ffffff'/%3E%3Ctext x='96' y='152' font-family='Arial' font-size='24' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3ESUDMAR%3C/text%3E%3C/svg%3E">
+<script>
+// ─── Manifest inline ─────────────────────────────────────────────
+const manifestData = {
+  name: "Sudmar Energy — Reportes",
+  short_name: "Sudmar",
+  description: "Sistema de reportes de servicio técnico",
+  start_url: "/sudmar-diagnostico/",
+  display: "standalone",
+  background_color: "#ffffff",
+  theme_color: "#0a2240",
+  orientation: "portrait",
+  icons: [{
+    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230a2240'/%3E%3Ccircle cx='48' cy='88' r='18' fill='%231a5fa8'/%3E%3Ccircle cx='96' cy='88' r='18' fill='%231a5fa8'/%3E%3Ccircle cx='144' cy='88' r='18' fill='%23ffffff'/%3E%3C/svg%3E",
+    sizes: "192x192", type: "image/svg+xml"
+  }]
+};
+const manifestBlob = new Blob([JSON.stringify(manifestData)], {type:'application/json'});
+const manifestURL = URL.createObjectURL(manifestBlob);
+const manifestLink = document.createElement('link');
+manifestLink.rel = 'manifest';
+manifestLink.href = manifestURL;
+document.head.appendChild(manifestLink);
+</script>
 <title>Diagnóstico — Sudmar Energy</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -295,6 +324,7 @@ document.getElementById('gal-input').addEventListener('change', function(e) {
       if (!S.fF[pendingPhotoKey]) S.fF[pendingPhotoKey] = [];
       S.fF[pendingPhotoKey].push(b64);
     }
+    updateFotoPlacas();
     render();
   };
   reader.readAsDataURL(file);
@@ -332,9 +362,18 @@ function openCamera(key, type) {
   document.getElementById('cam-input').click();
 }
 
+// Track fotos de placas como booleanos
+function updateFotoPlacas() {
+  S.fotoPlacaGen = S.fG['placaGen'] && S.fG['placaGen'].length > 0;
+  S.fotoPlacaMotor = S.fG['placaMotor'] && S.fG['placaMotor'].length > 0;
+  S.fotoPlacaAlt = S.fG['placaAlt'] && S.fG['placaAlt'].length > 0;
+}
+
 // ─── Renderizado de checklist ─────────────────────────────────────
 function getSecs() {
   const t = S.tipoEquipo, s = [];
+  // Garantía sin diagnóstico: no muestra checklist
+  if (S.tipoServicio === 'garantia' && S.garantiaConDiag !== true) return [];
   if (t==='gen'||t==='ambos') {
     s.push('motor_base');
     if (S.tipoControl) s.push('ctrl_'+S.tipoControl);
@@ -374,7 +413,11 @@ function ci(sid, item, idx) {
         </div>
         <div onclick="openGallery('${k}','falla')" title="Subir de galería" style="border:2px dashed #f0a060;border-left:none;padding:0 14px;display:flex;align-items:center;background:#fff9f4;cursor:pointer;color:#e87a2a;font-size:18px">📁</div>
       </div>
-      ${hasFoto ? `<div class="falla-thumbs captured">${arr.map(b=>`<img class="photo-thumb" src="${b}">`).join('')}</div>` : ''}
+      ${hasFoto ? `<div class="falla-thumbs captured">${arr.map((b,i)=>`
+        <div style="position:relative;display:inline-block">
+          <img class="photo-thumb" src="${b}">
+          <button onclick="S.fF['${k}'].splice(${i},1);render()" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+        </div>`).join('')}</div>` : ''}
       <div style="padding:8px 12px;background:#fff9f4;border:2px dashed #f0a060;border-top:none">
         <input class="input" placeholder="📝 Describe brevemente la falla observada..." 
           value="${(S.fallaDesc&&S.fallaDesc[k])||''}" 
@@ -411,7 +454,11 @@ function rSec(sid) {
         </div>
         <div onclick="openGallery('${sid}','gen')" title="Subir de galería" style="border:2px dashed #c0d0e0;border-left:none;padding:0 14px;display:flex;align-items:center;background:#f8fafc;cursor:pointer;color:#6b7280;font-size:18px">📁</div>
       </div>
-      ${hg ? `<div class="photo-thumbs">${arr.map(b=>`<img class="photo-thumb" src="${b}">`).join('')}</div>` : ''}
+      ${hg ? `<div class="photo-thumbs">${arr.map((b,i)=>`
+        <div style="position:relative;display:inline-block">
+          <img class="photo-thumb" src="${b}">
+          <button onclick="S.fG['${sid}'].splice(${i},1);render()" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+        </div>`).join('')}</div>` : ''}
       <div class="check-items">${items.map((it,i)=>ci(sid,it,i)).join('')}</div>
     </div>`;
 }
@@ -492,7 +539,13 @@ function clearSig(stateKey, canvasId) {
 // ─── Pasos ────────────────────────────────────────────────────────
 const STEPS = {
   1: () => `
-    <div class="section-title">Datos generales</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div class="section-title" style="margin-bottom:0">Datos generales</div>
+      <button onclick="if(confirm('¿Iniciar un nuevo reporte? Se borrarán todos los datos actuales.')){Object.keys(S).forEach(k=>{if(typeof S[k]==='string')S[k]='';else if(typeof S[k]==='boolean')S[k]=false;else S[k]=null});S.checks={};S.fG={};S.fF={};S.tecnicosArr=[];S.fecha=new Date().toISOString().slice(0,10);try{localStorage.removeItem('sudmar_reporte')}catch(e){};render()}" 
+        style="background:#fff;border:1.5px solid #e5e7eb;color:#6b7280;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
+        🗑️ Nuevo reporte
+      </button>
+    </div>
     <div class="section-sub">Información del servicio y responsables</div>
 
     <div class="field">
@@ -627,10 +680,41 @@ const STEPS = {
     </div>` : ''}
     ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Datos del grupo electrógeno</div>
-      <div class="field"><label class="label">Modelo del equipo</label><input class="input" placeholder="Ej. HIMOINSA HFW-250-T6" value="${S.modeloEquipo}" oninput="S.modeloEquipo=this.value"></div>
+      <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">📋 Datos del grupo electrógeno</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px">📸 Toma foto de la placa del generador</div>
+      <div style="display:flex;gap:0;margin-bottom:10px">
+        <div class="photo-gen-btn ${S.fotoPlacaGen?'captured':''}" onclick="openCamera('placaGen','gen')" style="flex:1;border-radius:8px 0 0 8px">
+          <i class="ti ${S.fotoPlacaGen?'ti-circle-check':'ti-camera'}"></i>
+          <div>
+            <div class="photo-gen-text">${S.fotoPlacaGen?'Foto de placa capturada ✓':'📸 Foto obligatoria — placa del generador'}</div>
+            <div class="photo-gen-sub">Placa de datos del grupo electrógeno</div>
+          </div>
+        </div>
+        ${S.fotoPlacaGen ? `<button onclick="S.fotoPlacaGen=null;S.fG['placaGen']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
+      </div>
+      <div class="field" style="position:relative">
+        <label class="label">Modelo del equipo (generador)</label>
+        <div style="position:relative">
+          <input class="input" id="modelo-input"
+            placeholder="Buscar o escribir modelo..." 
+            value="${S.modeloEquipo}"
+            oninput="S.modeloEquipo=this.value;filtrarModelos(this.value)"
+            onfocus="filtrarModelos(this.value)"
+            autocomplete="off">
+        </div>
+        <div id="modelo-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:200px;overflow-y:auto"></div>
+      </div>
       <div class="input-row">
-        <div class="field"><label class="label">Serie del equipo</label><input class="input" placeholder="Número de serie" value="${S.serieEquipo}" oninput="S.serieEquipo=this.value"></div>
+        <div class="field" style="position:relative">
+          <label class="label">Serie del equipo</label>
+          <input class="input" id="serie-input"
+            placeholder="Buscar o escribir número de serie..." 
+            value="${S.serieEquipo}"
+            oninput="S.serieEquipo=this.value;filtrarSeries(this.value)"
+            onfocus="filtrarSeries(this.value)"
+            autocomplete="off">
+          <div id="serie-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:180px;overflow-y:auto"></div>
+        </div>
         <div class="field"><label class="label">Horómetro (hrs)</label><input class="input" placeholder="Horas" value="${S.horometro}" oninput="S.horometro=this.value"></div>
       </div>
       <div class="input-row">
@@ -639,7 +723,18 @@ const STEPS = {
       </div>
     </div>
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Datos de motor (placa OEM)</div>
+      <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">🔧 Datos de motor (placa OEM)</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px">📸 Toma foto de la placa del motor</div>
+      <div style="display:flex;gap:0;margin-bottom:10px">
+        <div class="photo-gen-btn ${S.fotoPlacaMotor?'captured':''}" onclick="openCamera('placaMotor','gen')" style="flex:1;border-radius:8px 0 0 8px">
+          <i class="ti ${S.fotoPlacaMotor?'ti-circle-check':'ti-camera'}"></i>
+          <div>
+            <div class="photo-gen-text">${S.fotoPlacaMotor?'Foto de placa capturada ✓':'📸 Foto obligatoria — placa del motor'}</div>
+            <div class="photo-gen-sub">Placa de datos del motor</div>
+          </div>
+        </div>
+        ${S.fotoPlacaMotor ? `<button onclick="S.fotoPlacaMotor=null;S.fG['placaMotor']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
+      </div>
       <div class="field" style="position:relative">
         <label class="label">Marca de motor</label>
         <div style="position:relative">
@@ -656,7 +751,18 @@ const STEPS = {
       <div class="field"><label class="label">Serie de motor</label><input class="input" placeholder="Número de serie" value="${S.serieMotor}" oninput="S.serieMotor=this.value"></div>
     </div>
     <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Datos de alternador (placa OEM)</div>
+      <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">⚡ Datos de alternador (placa OEM)</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px">📸 Toma foto de la placa del alternador</div>
+      <div style="display:flex;gap:0;margin-bottom:10px">
+        <div class="photo-gen-btn ${S.fotoPlacaAlt?'captured':''}" onclick="openCamera('placaAlt','gen')" style="flex:1;border-radius:8px 0 0 8px">
+          <i class="ti ${S.fotoPlacaAlt?'ti-circle-check':'ti-camera'}"></i>
+          <div>
+            <div class="photo-gen-text">${S.fotoPlacaAlt?'Foto de placa capturada ✓':'📸 Foto obligatoria — placa del alternador'}</div>
+            <div class="photo-gen-sub">Placa de datos del alternador</div>
+          </div>
+        </div>
+        ${S.fotoPlacaAlt ? `<button onclick="S.fotoPlacaAlt=null;S.fG['placaAlt']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
+      </div>
       <div class="field" style="position:relative">
         <label class="label">Marca de alternador</label>
         <div style="position:relative">
@@ -669,10 +775,9 @@ const STEPS = {
         </div>
         <div id="alt-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:200px;overflow-y:auto"></div>
       </div>
-      </div>
-
       <div class="field"><label class="label">Modelo de alternador</label><input class="input" placeholder="Ej. HCK4-844F" value="${S.modeloAlt||''}" oninput="S.modeloAlt=this.value"></div>
       <div class="field"><label class="label">Serie de alternador</label><input class="input" placeholder="Número de serie" value="${S.serieAlt||''}" oninput="S.serieAlt=this.value"></div>
+      </div>
     </div>` : ''}
 
     ${S.tipoEquipo==='tta' ? `
@@ -819,29 +924,58 @@ const STEPS = {
         <textarea class="input" rows="4" placeholder="Describe el resultado final de la reparación y si el equipo quedó operativo..." oninput="S.resolucion=this.value">${S.resolucion||''}</textarea>
       </div>`;
 
-    // GARANTÍA
+    // GARANTÍA — con opción de incluir diagnóstico
     if (ts === 'garantia') return `
-      <div class="section-title">Datos de garantía</div>
-      <div class="section-sub">Registra la información relevante para la validación de garantía</div>
+      <div class="section-title">Atención a garantía</div>
+      <div class="section-sub">Registra la información de la garantía</div>
+
       <div class="field"><label class="label">Número de garantía / referencia</label>
         <input class="input" placeholder="Número de caso o referencia" value="${S.numGarantia||''}" oninput="S.numGarantia=this.value">
       </div>
       <div class="field"><label class="label">Descripción del problema reportado por el cliente</label>
         <textarea class="input" rows="3" placeholder="¿Qué reportó el cliente?" oninput="S.probGarantia=this.value">${S.probGarantia||''}</textarea>
       </div>
-      <div class="field"><label class="label">Dictamen de garantía</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:4px">
+
+      <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">¿Este servicio incluye diagnóstico técnico?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div onclick="S.garantiaConDiag=true;render()" style="border:2px solid ${S.garantiaConDiag===true?'#1a5fa8':'#e5e7eb'};border-radius:10px;padding:14px;cursor:pointer;background:${S.garantiaConDiag===true?'#eaf1fb':'#fff'};text-align:center;transition:all .15s">
+            <div style="font-size:24px;margin-bottom:6px">🔍</div>
+            <div style="font-size:13px;font-weight:700;color:${S.garantiaConDiag===true?'#1a3a6a':'#374151'}">Sí incluye diagnóstico</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:3px">Checklist completo + pruebas + dictamen</div>
+          </div>
+          <div onclick="S.garantiaConDiag=false;render()" style="border:2px solid ${S.garantiaConDiag===false?'#e87a2a':'#e5e7eb'};border-radius:10px;padding:14px;cursor:pointer;background:${S.garantiaConDiag===false?'#fff9f4':'#fff'};text-align:center;transition:all .15s">
+            <div style="font-size:24px;margin-bottom:6px">📋</div>
+            <div style="font-size:13px;font-weight:700;color:${S.garantiaConDiag===false?'#b85a10':'#374151'}">Solo dictamen</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:3px">Sin checklist, solo validar garantía</div>
+          </div>
+        </div>
+      </div>
+
+      ${S.garantiaConDiag===false ? `
+      <div style="background:#fff8f2;border:1.5px solid #f0c090;border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#b45309;margin-bottom:10px;text-transform:uppercase">📋 Dictamen de garantía</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
           ${[
-            {id:'aprobado', icon:'✅', label:'Aprobado', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
-            {id:'no_aprobado', icon:'❌', label:'No aprobado', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
+            {id:'aprobado', icon:'✅', label:'Aprobada', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
+            {id:'no_aprobado', icon:'❌', label:'No aprobada', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
             {id:'por_validar', icon:'⏳', label:'Por validar', color:'#6b7280', bg:'#f3f4f6', border:'#9ca3af'}
           ].map(d => `
-            <div onclick="S.dictamen='${d.id}';render()" style="border:2px solid ${S.dictamen===d.id?d.border:'#e5e7eb'};border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;background:${S.dictamen===d.id?d.bg:'#fff'};transition:all .15s">
+            <div onclick="S.dictamen='${d.id}';render()" style="border:2px solid ${S.dictamen===d.id?d.border:'#e5e7eb'};border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;background:${S.dictamen===d.id?d.bg:'#fff'}">
               <div style="font-size:22px;margin-bottom:4px">${d.icon}</div>
               <div style="font-size:12px;font-weight:700;color:${S.dictamen===d.id?d.color:'#6b7280'}">${d.label}</div>
             </div>`).join('')}
         </div>
-      </div>`;
+      </div>` : ''}
+
+      ${S.garantiaConDiag===true ? `
+      <div style="background:#dcf5e4;border:1.5px solid #4caf70;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">✅</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#1a5a2a">Diagnóstico habilitado</div>
+          <div style="font-size:12px;color:#2a7a4a">El checklist completo y las pruebas técnicas están disponibles. Al final se agregará el dictamen de garantía.</div>
+        </div>
+      </div>` : ''}`;
 
     // CIERRE DE CONEXIONES / SOLAR / DEFAULT
     return `
@@ -856,6 +990,25 @@ const STEPS = {
   6: () => STEPS.REAL5(),
 
   REAL_PASO3: () => {
+    // Garantía solo dictamen — sin checklist
+    if (S.tipoServicio === 'garantia' && S.garantiaConDiag === false) return `
+      <div class="section-title">Dictamen de garantía</div>
+      <div class="section-sub">Selecciona el resultado de la evaluación de garantía</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px">
+        ${[
+          {id:'aprobado', icon:'✅', label:'Garantía aprobada', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
+          {id:'no_aprobado', icon:'❌', label:'No aprobada', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
+          {id:'por_validar', icon:'⏳', label:'Por validar', color:'#6b7280', bg:'#f3f4f6', border:'#9ca3af'}
+        ].map(d=>`
+          <div onclick="S.dictamen='${d.id}';render()" style="border:2px solid ${S.dictamen===d.id?d.border:'#e5e7eb'};border-radius:12px;padding:20px 12px;text-align:center;cursor:pointer;background:${S.dictamen===d.id?d.bg:'#fff'};transition:all .15s">
+            <div style="font-size:32px;margin-bottom:8px">${d.icon}</div>
+            <div style="font-size:13px;font-weight:700;color:${S.dictamen===d.id?d.color:'#374151'}">${d.label}</div>
+          </div>`).join('')}
+      </div>
+      <div class="field" style="margin-top:16px"><label class="label">Justificación del dictamen</label>
+        <textarea class="input" rows="4" placeholder="Describe los motivos del dictamen de garantía..." oninput="S.justDictamen=this.value">${S.justDictamen||''}</textarea>
+      </div>`;
+
     const secs = getSecs();
     if (!secs.length) return '<div class="alert-box"><i class="ti ti-info-circle"></i>Regresa al paso anterior y selecciona el tipo de equipo.</div>';
     const mal = Object.values(S.checks).filter(v=>v==='mal').length;
@@ -864,7 +1017,28 @@ const STEPS = {
       <div class="section-title">Puntos de inspección</div>
       <div class="section-sub">✓ Bien · ✗ Mal (foto obligatoria) · — No aplica</div>
       ${mal>0?`<div class="alert-box"><i class="ti ti-alert-triangle"></i><span><b>${mal} punto(s) con falla</b> · ${pf} foto(s) de evidencia pendiente(s)</span></div>`:''}
-      ${secs.map(s=>rSec(s)).join('')}`;
+      ${secs.map(s=>rSec(s)).join('')}
+
+      ${S.tipoServicio==='garantia' && S.garantiaConDiag===true ? `
+      <div style="background:#fff8f2;border:2px solid #f59e0b;border-radius:12px;padding:16px;margin-top:8px">
+        <div style="font-size:13px;font-weight:700;color:#b45309;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:20px">🛡️</span> Dictamen de garantía
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+          ${[
+            {id:'aprobado', icon:'✅', label:'Aprobada', color:'#1a7a3a', bg:'#dcf5e4', border:'#4caf70'},
+            {id:'no_aprobado', icon:'❌', label:'No aprobada', color:'#b85a10', bg:'#ffe4d0', border:'#e87a2a'},
+            {id:'por_validar', icon:'⏳', label:'Por validar', color:'#6b7280', bg:'#f3f4f6', border:'#9ca3af'}
+          ].map(d=>`
+            <div onclick="S.dictamen='${d.id}';render()" style="border:2px solid ${S.dictamen===d.id?d.border:'#e5e7eb'};border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;background:${S.dictamen===d.id?d.bg:'#fff'}">
+              <div style="font-size:24px;margin-bottom:4px">${d.icon}</div>
+              <div style="font-size:12px;font-weight:700;color:${S.dictamen===d.id?d.color:'#6b7280'}">${d.label}</div>
+            </div>`).join('')}
+        </div>
+        <div class="field"><label class="label">Justificación del dictamen</label>
+          <textarea class="input" rows="3" placeholder="Describe los motivos del dictamen..." oninput="S.justDictamen=this.value">${S.justDictamen||''}</textarea>
+        </div>
+      </div>` : ''}`;
   },
 
   REAL4: () => {
@@ -1158,7 +1332,61 @@ const STEPS = {
 
     REAL5: () => `
     <div class="section-title">Firmas de conformidad</div>
-    <div class="section-sub">Firma con el dedo directamente en la pantalla</div>
+    <div class="section-sub">Revisa el resumen antes de firmar</div>
+
+    <!-- RESUMEN DE CONFIRMACIÓN -->
+    <div style="background:#fff8e6;border:2px solid #f59e0b;border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="font-size:13px;font-weight:700;color:#b45309;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">⚠️</span> Confirma los datos antes de firmar
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">EMPRESA</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a1a">${S.empresa==='otro'?S.empresaOtra:S.empresa||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">CONTACTO</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a1a">${S.cliente||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">MODELO EQUIPO</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a1a">${S.modeloEquipo||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">SERIE EQUIPO</span>
+          <span style="font-size:13px;font-weight:700;color:#e87a2a">${S.serieEquipo||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">MOTOR</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a1a">${S.marcaMotor||'—'} ${S.modeloMotor||''}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">SERIE MOTOR</span>
+          <span style="font-size:13px;font-weight:700;color:#e87a2a">${S.serieMotor||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">ALTERNADOR</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a1a">${S.marcaAlt||'—'} ${S.modeloAlt||''}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">SERIE ALTERNADOR</span>
+          <span style="font-size:13px;font-weight:700;color:#e87a2a">${S.serieAlt||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">SERVICIO</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a1a">${{diagnostico:'Diagnóstico',mantenimiento:'Mantenimiento',reparacion:'Reparación',garantia:'Garantía',cierre:'Cierre conexiones',solar:'Solar'}[S.tipoServicio]||'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 10px;background:#fff;border-radius:7px;border:1px solid #f0c090">
+          <span style="font-size:12px;font-weight:700;color:#6b7280">ESTATUS</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1a1a">${{operativo:'✅ Operativo',operativo_obs:'⚠️ Con observaciones',requiere_servicio:'🔧 Requiere servicio',fuera_servicio:'❌ Fuera de servicio'}[S.estatus]||'—'}</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:#fef3c7;border-radius:8px;font-size:12px;color:#92400e;font-weight:600">
+        ⚠️ Los datos marcados en naranja son los números de serie — verifica que sean correctos antes de continuar
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:12px">✍️ Firmas</div>
 
     <div class="sign-container">
       <div class="sign-label-bar">
@@ -1222,7 +1450,33 @@ function uH() {
   if (titulo) titulo.textContent = S.tipoServicio ? 'Reporte de ' + (ts[S.tipoServicio]||S.tipoServicio) : 'Reporte de servicio';
 }
 
+// ─── Guardado automático ─────────────────────────────────────────
+function guardarEstado() {
+  try {
+    const guardar = Object.assign({}, S);
+    // No guardar fotos en localStorage (muy pesadas)
+    delete guardar.fG;
+    delete guardar.fF;
+    localStorage.setItem('sudmar_reporte', JSON.stringify(guardar));
+  } catch(e) {}
+}
+
+function cargarEstado() {
+  try {
+    const saved = localStorage.getItem('sudmar_reporte');
+    if (saved) {
+      const data = JSON.parse(saved);
+      Object.assign(S, data);
+      console.log('Reporte recuperado del almacenamiento local');
+    }
+  } catch(e) {}
+}
+
+// Cargar estado al iniciar
+cargarEstado();
+
 function render() {
+  guardarEstado();
   document.getElementById('content').innerHTML = STEPS[step]();
   document.getElementById('prog').style.width = (step/TOTAL_STEPS*100)+'%';
   for (let i=1;i<=TOTAL_STEPS;i++) {
@@ -1525,11 +1779,16 @@ ${S.tipoServicio==='reparacion'&&S.componentes&&S.componentes.length?`
 </div>`:``}
 
 ${S.tipoServicio==='garantia'?`
-<h2>3b. Dictamen de garantía</h2>
-<div class="sb"><div style="text-align:center;padding:20px;border:2px solid ${S.dictamen==='aprobado'?'#4caf70':S.dictamen==='no_aprobado'?'#e87a2a':'#9ca3af'};border-radius:12px;background:${S.dictamen==='aprobado'?'#dcf5e4':S.dictamen==='no_aprobado'?'#ffe4d0':'#f3f4f6'};margin-bottom:14px">
-  <div style="font-size:40px;margin-bottom:8px">${S.dictamen==='aprobado'?'✅':S.dictamen==='no_aprobado'?'❌':'⏳'}</div>
-  <div style="font-size:20px;font-weight:700;color:${S.dictamen==='aprobado'?'#1a7a3a':S.dictamen==='no_aprobado'?'#b85a10':'#6b7280'}">${S.dictamen==='aprobado'?'GARANTÍA APROBADA':S.dictamen==='no_aprobado'?'GARANTÍA NO APROBADA':'GARANTÍA POR VALIDAR'}</div>
-</div></div>`:``}
+<h2>${S.garantiaConDiag===true?'4b':'3'}. Dictamen de garantía</h2>
+<div class="sb">
+<div style="text-align:center;padding:24px;border:2px solid ${S.dictamen==='aprobado'?'#4caf70':S.dictamen==='no_aprobado'?'#e87a2a':'#9ca3af'};border-radius:12px;background:${S.dictamen==='aprobado'?'#dcf5e4':S.dictamen==='no_aprobado'?'#ffe4d0':'#f3f4f6'};margin-bottom:14px">
+  <div style="font-size:48px;margin-bottom:10px">${S.dictamen==='aprobado'?'✅':S.dictamen==='no_aprobado'?'❌':'⏳'}</div>
+  <div style="font-size:22px;font-weight:700;color:${S.dictamen==='aprobado'?'#1a7a3a':S.dictamen==='no_aprobado'?'#b85a10':'#6b7280'}">${S.dictamen==='aprobado'?'GARANTÍA APROBADA':S.dictamen==='no_aprobado'?'GARANTÍA NO APROBADA':'GARANTÍA POR VALIDAR'}</div>
+  ${S.numGarantia?'<div style="font-size:13px;color:#6b7280;margin-top:6px">Referencia: '+S.numGarantia+'</div>':''}
+</div>
+${S.justDictamen?'<div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;font-size:13px;line-height:1.7;margin-bottom:14px">'+S.justDictamen+'</div>':''}
+${S.probGarantia?'<h3>Problema reportado por el cliente</h3><div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;font-size:13px;line-height:1.7;margin-bottom:14px">'+S.probGarantia+'</div>':''}
+</div>`:``}
 
 <h2>4. Pruebas técnicas</h2>
 ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')?`
@@ -1703,6 +1962,59 @@ async function guardarYCompartir(reporteHTML, tipo) {
   }
 }
 
+// ─── Buscador de modelos de generador ───────────────────────────
+const MODELOS_GEN = ["ESE 1020 BW", "ESE 105 CW/AS", "ESE 110 PW/AS", "ESE 1125 CW/AS", "ESE 1125 CW/AS MPP", "ESE 125 CW", "ESE 125 CW/AS", "ESE 15 PW", "ESE 15 PW/AS CP", "ESE 1520 CW/AS", "ESE 1520 CW/AS HC RENTAL", "ESE 1520 CW/AS HC RENTAL ESCAPES", "ESE 1520 CW/AS MPP", "ESE 160 CW/AS", "ESE 170 IW", "ESE 170 IW/AS", "ESE 1825 CW/AS", "ESE 190 CW", "ESE 190 CW/AS", "ESE 190 IW/AS", "ESE 20 YW/B", "ESE 20 YW/RS", "ESE 2006 DBS-GT", "ESE 2006 DBS-GT ES", "ESE 2100I", "ESE 2100I SILENT", "ESE 2100i Silent inverter", "ESE 220 MW/AS", "ESE 220 VW/AS", "ESE 25 PW", "ESE 25 PW/AS CP", "ESE 250 BW/AS", "ESE 260 CW/AS", "ESE 260 CW/AS MPP", "ESE 260 CW/AS+MPP", "ESE 285 BW/AS", "ESE 285 CW/AS", "ESE 285 CW/AS MPP", "ESE 285 CW/AS+MPP", "ESE 30 CW/AS", "ESE 30 PW", "ESE 3000 I SILENT", "ESE 3000 I Silent", "ESE 3000i Silent inverter", "ESE 300I", "ESE 300i Silent inverter", "ESE 320 IW/AS", "ESE 340 CW/AS", "ESE 340 CW/AS MPP", "ESE 340 CW/AS+ MPP", "ESE 35 BW/AS", "ESE 350 IW/AS", "ESE 375 BW/AS", "ESE 400 IW/AS", "ESE 400 IW/AS MPP", "ESE 45 BW/AS", "ESE 45 CW/AS", "ESE 45 YW", "ESE 45 YW/AS", "ESE 45 YW/RS", "ESE 455 BW/AS", "ESE 460 IW/AS", "ESE 460 VW/AS", "ESE 475 CW/AS", "ESE 475 CW/AS MPP", "ESE 5500I", "ESE 5500I OFFEN", "ESE 5500I Offen", "ESE 5500l Offen", "ESE 560 CW/AS", "ESE 560 CW/AS MPP", "ESE 560 CW/AS+MPP", "ESE 560 VW/AS", "ESE 590 VW", "ESE 590 VW MPP", "ESE 590 VW/AS", "ESE 590 VW/AS MPP", "ESE 60 CW/AS", "ESE 65 PW", "ESE 65 PW/AS", "ESE 705 CW/AS", "ESE 705 CW/AS MPP", "ESE 75 CW", "ESE 75 CW/AS", "ESE 80 PW-B", "ESE 80 PW/AS", "ESE 8000I", "ESE 8000I OFFEN", "ESE 804", "ESE 804 SDHS-DC", "ESE 900 CW/AS MPP", "LTS 1000A", "LTS E US ESE 100", "LTS E US ESE 1000", "LTS E US ESE 100A", "LTS E US ESE 1250", "LTS E US ESE 160", "LTS E US ESE 1600", "LTS E US ESE 250", "LTS E US ESE 400", "LTS E US ESE 630", "LTS E US ESE 800", "SY000A00115LTS 63 A", "SY000A00175", "SY000A00179", "SY000A0017A"];
+const SERIES_GEN = ["1210770021", "1210770022", "1210770023", "1210770024", "1210770025", "1210770026", "1210770027", "1210770028", "1210770029", "1210770030", "1210770031", "1210770032", "1210770156", "1210770157", "1210770158", "1210770159", "1210770160", "141001-10536", "141001-10537", "141001MX10533", "1818201007717P34006A", "2113201013917PS4010A", "2113201014017PS4010A", "2113201014117PS4010A", "2113201014217PS4010A", "2113201014317PS4010A", "2113201014417PS4010A", "2113201014517PS4010A", "2115201017917PS4010A", "2115201018017PS4010A", "2115201018117PS4010A", "2115201018317PS4010A", "2115201018417PS4010A", "2128201006217PS4010A", "2128201006317PS4010A", "2145201005817PS4040A", "2145201005917PS4040A", "2207201018717PS4100A", "22362010176GBE0421450A-07A", "22362010177GBE0421450A07A", "22362010178GBE0421450A-07A", "22362010180GBE0421450A-07A", "22362010181GBE0421450A-07A", "22362010182GBE0421450A-07A", "22402010013GBE0421450A06A", "22402010020GBE0421450A06A", "22432010006GBE0421450A-05A", "22432010007GBE0421450A-05A", "22432010009GBE0421450A-05A", "22432010011GBE0421450A-05A", "22442010034GBE0421450A08A", "22442010037GBE0421450A08A", "22442010038GBE0421450A08A", "230035-10517", "23003510515", "23003510516", "23003510518", "23003510519", "23003510520", "23003510521", "23003510522", "23003510523", "23003510524", "23003510525", "23003510526", "23003510527", "23003510528", "23003510529", "23003510530", "2327201107617PS4100A", "232720110771PS4100A", "2344201015117PS4079A", "2344201015317PS4079A", "2344201015517PS4079A", "2345201006817PS4120A", "2345201018217PS4100A", "2345201018417PS4100A", "2346201009417PS4100A", "2347201014517PS4100A", "2350201008517PS4160A", "23512010198GBE0421450A", "23512010199GBE0421450A", "23512010200GBE0421450A", "23512010201GBE0421450A", "23512010202GBE0421450A", "23512010203GBE0421450A", "23512010204GBE0421450A", "24042010002GBE0421450A", "24042010023GBE0421450A", "24042010025GBE0421450A", "24042010026GBE0421450A", "24042010029GBE0421450A", "333330/0082", "333330/0083", "333330/0084", "333330/0085", "333330/0086", "333330/0087", "333330/0088", "333330/0089", "333330/0090", "333330/0091", "333330/0092", "333330/0093", "333330/0094", "333330/0095", "333330/0096", "333330/0097", "333330/0098", "333330/0099", "333330/0100", "333330/0101", "333330/0102", "333330/0103", "333330/0104", "333331/0065", "333331/0070", "333331/0071", "333331/0072", "333331/0074", "333331/0075", "333331/0076", "333331/0077", "333331/0078", "333331/0079", "333331/0080", "333331/0081", "333331/0082", "333331/0083", "333333/0045", "333333/0046", "333333/0047", "333333/0048", "333333/0049", "333333/0050", "333333/0051", "333333/0052", "333333/0053", "333333/0054", "333333/0055", "333333/0056", "333333/0057", "333333/0058", "333333/0059", "333333/0060", "333333/0073", "333333/0081", "333352/0003", "333352/0004", "339269/0190", "339269/0191", "339269/0192", "339269/0193", "339269/0194", "339269/1089", "339271/0062", "339271/0063", "339271/0064", "339271/0065", "339271/0066", "339271/0067", "339271/0068", "339271/0069", "339271/0070", "339271/0071", "339271/0072", "339271/0073", "339271/0074", "339271/0075", "339271/0076", "339271/0077", "339271/0078", "339271/0079", "339271/0080", "339271/0081", "339271/0082", "89310010/0001", "89310010/0002", "89310010/0003", "89310010/0004", "89310010/0005", "89310010/0006", "89310010/0007", "89310010/0008", "89310010/0009", "89310010/0010", "89331010/0001", "89331020/0001", "89331025/0001", "89331025/0002", "89331025/0003", "89331025/0004", "89331025/0005", "89331025/0006", "89331025/0007", "89331025/0008", "89331025/0009", "89331025/0010", "89331025/0011", "89331025/0012", "89331025/0013", "89331025/0014", "89331030/0001", "89331030/0002", "89331030/0003", "89331030/0004", "89331030/0005", "89331030/0006", "89331030/0007", "89331030/0008", "89331030/0009", "89331030/0010", "89331035/0001", "89331035/0002", "89331035/0003", "89331035/0004", "89331035/0005", "89331035/0006", "89331035/0007", "89331035/0008", "89331050/0001", "89331050/0002", "89331050/0003", "89331050/0004", "89331050/0005", "89331050/0006", "89331050/0007", "89331050/0008", "89331060/0001", "89331060/0002", "89331060/0003", "89331060/0004", "89331060/0005", "89331060/0006", "89331070/0001", "89331070/0002", "89331070/0003", "89331070/0004", "89331070/0005", "89331070/0006", "89331070/0007", "89331070/0008", "89331071/0001", "89331071/0002", "89331071/0003", "89331071/0004", "89331075/0001", "89331075/0002", "89331075/0003", "89331075/0005", "89331075/0006", "89331080/0005", "89331080/0006", "89331080/0007", "89331080/0008", "89331080/0009", "89331080/0010", "89331080/0011", "89331080/0012", "89331080/0013", "89331080/0014", "89331080/0015", "89331080/0016", "89331080/0017", "89331080/0018", "89331085/0001", "89331085/0002", "89331085/0003", "89331085/0004", "89331085/0005", "89331085/0006", "89331085/0007", "89332010/0001", "89332010/0002", "89332020-0002", "89332020/0001", "89332020/0003", "89332020/0004", "89332021/0005", "89332022/0001", "89333010/0001", "89333010/0002", "89333010/0003", "89333010/0004", "89333010/0005", "89333010/0006", "89333010/0007", "89333010/0009", "89333015/0001", "89333015/0002", "89333015/0003", "89333015/0004", "89333015/0005", "89333015/0006", "89333015/0007", "89333015/0008", "89333015/0009", "89333015/0010", "89333015/0011", "89333015/0012", "89333065/0001", "89333065/0002", "89333065/0003", "89333065/0004", "89333065/0005", "89333070/0001", "89333070/0002", "89333080/0001", "89333080/0003", "89333080/0004", "89333080/0005", "89333090/0001", "89333090/0002", "89333090/0003", "89333090/0004", "89333090/0005", "A2107024972", "A2107024973", "A2107025075", "A2107025076", "A2107025077", "A2107025078", "A2107025079", "A2107025080", "A2107025081", "A2107025082", "A2107025083", "A2107025084", "A2107029695", "A2107029696", "A2107029698", "A2107029699", "A2107029700", "A2107029701", "A2107029702", "A2107029703", "A2107029704", "A2107029705", "A2107029706", "A2107029707", "A2107029708", "A2107029709", "A2107029710", "A2107029711", "A2107029712", "A2107029713", "A2107029714", "A2107029715", "A2107029716", "A2107029717", "A2107029718", "A2107029753", "A2107029754", "A2107029755", "A2107029756", "A2107029757", "A2107029758", "A2107029759", "A2107029760", "A2107029761", "A2107029762", "A2107029763", "A2107029764", "A2107029765", "A2107029766", "A2107029767", "A2107029768", "A2107029769", "A2107029770", "A2107029771", "A2108000013", "A2108000014", "A2108000015", "A2108000016", "A2108000017", "A2108000018", "A2108000019", "A2108000020", "A2108000021", "A2108000022", "A2108000023", "A2108000024", "A2108000025", "A2108000026", "A2108000028", "A2108000029", "A2108000030", "A2108000103", "DFWA00937", "GE10222", "GE1152", "GE11524", "GE11589", "HEI0009948", "HEI0010063", "HEI0010083", "HEI0010084", "HEI0010094", "HEI0010153", "HEI0010171", "HEI0010172", "HEI0010258", "HEI0010261", "HEI0010271", "HEI0010273", "HEI0010349", "HEI0010350", "HEI0010356", "HEI0010360", "HEI0010361", "HEI0010362", "HEI0010364", "HEI0010365", "HEI0010366", "HEI0010382", "HEI0010383", "HEI0010395", "HEI0010399", "HEI0010408", "HEI0010419", "HEI0010420", "HEI0010424", "HEI0010435", "HEI0010439", "HEI0010441", "HEI0010451", "HEI0010975", "HEI0010992", "HEI0010996", "HEI0011015", "HEI0011031", "HEI0011032", "PEE2677660", "PEE2677685", "PEE2677686", "PEE2690732", "PEE2690734", "PEE2690816", "PEE2690817", "PEE2690818", "PEE2690819", "PEE2690820", "PEE2690821", "PEE2690828", "PEE2690829", "PEE2690830", "PEE2690831", "PEE2690832", "PEE2690833", "PEE2690834", "PEE2690835", "PEE2690836", "PEE2690837", "PEE2690838", "PEE2690839", "PEE2690898", "PEE2690899", "PEE2690900", "PEE2691080", "PEE2691082", "PEE2691566", "PEE2691567", "PEE2691568", "PEE2691569", "PEE2691570", "PEE2691571", "PEE2691572", "PEE2691573", "PEE2691574", "PEE2691575", "PEE2691889", "PEE2691890", "PEE2691891", "PEE2691892", "PEE2691893", "PEE2691894", "PEE2691895", "PEE2691896", "PEE2691897", "PEE2691898", "PEE2691913", "PEE2691914", "PEE2691915", "PEE2691916", "PEE2691917", "PEE2691918", "PEE2691961", "PEE2691962", "PEE2691963", "PEE2691964", "PEE2691965", "PEE2691966", "PEE2691967", "PEE2691968", "PEE2691969", "PEE2691983", "PEE2691984", "PEE2691985", "PEE2691986", "PEE2692014", "PEE2692015", "PEE2692016", "PEE2692017", "PEE2692018", "PEE2692840", "PEE2692842", "PEE2692843", "PEE2692844", "PEE2692885", "PEE2692886", "PEE2692887", "PEE2692888", "PEE2692889", "PEE2692890", "PEE2692912", "PEE2692913", "PEE2692914", "PEE2692915", "PEE2692916", "PEE2692917", "PEE2692918", "PEE2692919", "PEE2693543", "PEE2693544", "PEE2693545", "PEE2693546", "PEE2693547", "PEE2693548", "PEE2693549", "PEE2693550", "PEE2693551", "PEE2693552", "PEE2693553", "PEE2693554", "PEE2693555", "PEE2693556", "PEE2693557", "PEE2693558", "PEE2693559", "PEE2695723", "PEE2695724", "PEE2695725", "PEE2695726", "PEE2695731", "PEE2695732", "PEE2695733", "PEE2695734", "PEE2695759", "PEE2695760", "PEE2695761", "PEE2695762", "PEE2695763", "PEE2695838", "PEE2696256", "PEE2696257", "PEE2696700", "PEE2696701", "PEE2696702", "PEM000219"];
+
+function filtrarModelos(query) {
+  const sug = document.getElementById('modelo-sugs');
+  if (!sug) return;
+  const q = (query||'').trim().toUpperCase();
+  const res = q.length===0 ? MODELOS_GEN : MODELOS_GEN.filter(m=>m.toUpperCase().includes(q));
+  if (!res.length) { sug.style.display='none'; return; }
+  sug.innerHTML = res.slice(0,20).map(m=>
+    `<div onclick="selModelo('${m}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid #f3f4f6" onmouseover="this.style.background='#f0f5ff'" onmouseout="this.style.background=''">${m}</div>`
+  ).join('') + (res.length>20?`<div style="padding:8px 14px;font-size:11px;color:#9ca3af;text-align:center">${res.length-20} más — sigue escribiendo</div>`:'');
+  sug.style.display='block';
+}
+
+function selModelo(val) {
+  S.modeloEquipo = val;
+  const inp = document.getElementById('modelo-input');
+  if(inp) inp.value = val;
+  const sug = document.getElementById('modelo-sugs');
+  if(sug) sug.style.display='none';
+}
+
+function filtrarSeries(query) {
+  const sug = document.getElementById('serie-sugs');
+  if (!sug) return;
+  const q = (query||'').trim().toUpperCase();
+  const res = q.length===0 ? SERIES_GEN.slice(0,10) : SERIES_GEN.filter(s=>s.toUpperCase().includes(q));
+  if (!res.length) { sug.style.display='none'; return; }
+  sug.innerHTML = res.slice(0,15).map(s=>
+    `<div onclick="selSerie('${s}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid #f3f4f6;font-family:monospace" onmouseover="this.style.background='#f0f5ff'" onmouseout="this.style.background=''">${s}</div>`
+  ).join('') + (res.length>15?`<div style="padding:8px 14px;font-size:11px;color:#9ca3af;text-align:center">Sigue escribiendo para filtrar</div>`:'');
+  sug.style.display='block';
+}
+
+function selSerie(val) {
+  S.serieEquipo = val;
+  const inp = document.getElementById('serie-input');
+  if(inp) inp.value = val;
+  const sug = document.getElementById('serie-sugs');
+  if(sug) sug.style.display='none';
+}
+
+document.addEventListener('click', function(e) {
+  ['modelo-sugs','serie-sugs'].forEach(id => {
+    const sug = document.getElementById(id);
+    const key = id.replace('-sugs','-input');
+    const inp = document.getElementById(key);
+    if(sug && !sug.contains(e.target) && e.target !== inp) sug.style.display='none';
+  });
+});
+
 // ─── Buscador de motores ─────────────────────────────────────────
 const MOTORES_LIST = ["Baudouin", "Briggs & Stratton", "Cummins", "Deutz", "Doosan", "FPT Industrial", "Honda", "Isuzu", "Iveco", "John Deere", "Kohler", "Kubota", "Lovol", "MAN", "MTU", "Mitsubishi", "Perkins", "Rolls-Royce", "SDEC", "Scania", "Volvo Penta", "Weichai", "Yamaha", "Yanmar"];
 const ALTERNADORES_LIST = ["Engga", "EvoTec", "Faraday", "JDG", "Kaijieli", "Leroy-Somer", "Linz Electric", "Marathon Electric", "Mecc Alte", "Potencia", "Sincro", "Stamford"];
@@ -1855,6 +2167,57 @@ document.addEventListener('click', function(e) {
   el('logo-endress-hdr', LOGO_ENDRESS);
   el('logo-comap-hdr', LOGO_COMAP);
 })();
+</script>
+<script>
+// ─── Registrar Service Worker inline ────────────────────────────
+if ('serviceWorker' in navigator) {
+  const swCode = `const CACHE = 'sudmar-v23';
+const URLS = ['./'];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(ks =>
+    Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))
+  ));
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request).then(r => {
+      if (r && r.status === 200) {
+        const clone = r.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+      }
+      return r;
+    }).catch(() => caches.match(e.request).then(r => r || caches.match('./')))
+  );
+});`;
+  const swBlob = new Blob([swCode], {type: 'application/javascript'});
+  const swURL = URL.createObjectURL(swBlob);
+  
+  navigator.serviceWorker.register(swURL, {scope: './'})
+    .then(reg => {
+      console.log('SW registrado OK');
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            const b = document.createElement('div');
+            b.style.cssText = 'position:fixed;bottom:80px;left:16px;right:16px;background:#0a2240;color:#fff;padding:12px 16px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;z-index:9999;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+            b.innerHTML = '<span>📲 Nueva versión disponible</span><button onclick="window.location.reload()" style="background:#1a5fa8;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer">Actualizar</button>';
+            document.body.appendChild(b);
+          }
+        });
+      });
+    })
+    .catch(e => console.log('SW no disponible:', e));
+}
 </script>
 </body>
 </html>
