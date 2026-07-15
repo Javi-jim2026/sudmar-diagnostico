@@ -1619,6 +1619,11 @@ function estatusLabel(e) {
   return {operativo:'Operativo', operativo_obs:'Operativo con observaciones', requiere_servicio:'Requiere servicio', fuera_servicio:'Fuera de servicio'}[e]||e;
 }
 
+function escHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function generarSeccionPruebas() {
   const esGen = S.tipoEquipo==='gen'||S.tipoEquipo==='ambos';
   const esTTA = S.tipoEquipo==='tta'||S.tipoEquipo==='ambos';
@@ -1885,11 +1890,14 @@ ${generarSeccionPruebas()}
 
 <h2>5. Hallazgos y conclusión</h2>
 <div class="sb">
-<div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">${S.hallazgos||'Sin hallazgos registrados.'}</div>
+${S.detalleServicio ? '<h3>Descripción del trabajo</h3><div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+escHTML(S.detalleServicio)+'</div>' : ''}
+${S.hallazgos ? '<h3>Hallazgos y observaciones</h3><div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+escHTML(S.hallazgos)+'</div>' : '<div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;color:#9ca3af;font-style:italic">Sin hallazgos registrados.</div>'}
+${S.obsMto ? '<h3>Observaciones del mantenimiento</h3><div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+escHTML(S.obsMto)+'</div>' : ''}
+${S.resolucion ? '<h3>Resolución de la reparación</h3><div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+escHTML(S.resolucion)+'</div>' : ''}
+${S.diag_causaRaiz ? '<h3>Diagnóstico y causa raíz</h3><div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+escHTML(S.diag_causaRaiz)+'</div>' : ''}
 <h3>Estatus actual del equipo</h3>
 <div class="estatus-badge" style="background:${estatusColor(S.estatus)}">${estatusLabel(S.estatus)||'—'}</div>
-<h3>Conclusión y recomendaciones</h3>
-<div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.7;white-space:pre-wrap">${S.conclusion||'Sin conclusión registrada.'}</div>
+${S.conclusion ? '<h3>Conclusión y recomendaciones</h3><div style="background:#f8f9fa;border:1.5px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+escHTML(S.conclusion)+'</div>' : ''}
 </div>
 
 <h2>6. Firmas de responsabilidad y conformidad</h2>
