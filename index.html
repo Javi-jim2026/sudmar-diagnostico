@@ -1619,6 +1619,96 @@ function estatusLabel(e) {
   return {operativo:'Operativo', operativo_obs:'Operativo con observaciones', requiere_servicio:'Requiere servicio', fuera_servicio:'Fuera de servicio'}[e]||e;
 }
 
+function generarSeccionPruebas() {
+  const esGen = S.tipoEquipo==='gen'||S.tipoEquipo==='ambos';
+  const esTTA = S.tipoEquipo==='tta'||S.tipoEquipo==='ambos';
+  const DG = '<div class="datos-grid">';
+  const dato = (l,v) => '<div class="dato"><span class="dato-label">'+l+'</span><span class="dato-val">'+(v||'—')+'</span></div>';
+  const nota = (estado, motivo) => {
+    const cfg = {
+      pv_noaut:{c:'#5b21b6',bg:'#ede9fe',b:'#7c3aed',t:'🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'},
+      pv_no:{c:'#b85a10',bg:'#ffe4d0',b:'#e87a2a',t:'❌ NO SE REALIZARON'},
+      pv_nocond:{c:'#92400e',bg:'#fef3c7',b:'#f59e0b',t:'⚠️ NO REALIZADAS — NO FUE POSIBLE'},
+      pc_noaut:{c:'#5b21b6',bg:'#ede9fe',b:'#7c3aed',t:'🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'},
+      pc_no:{c:'#b85a10',bg:'#ffe4d0',b:'#e87a2a',t:'❌ NO SE REALIZARON'},
+      pc_nocond:{c:'#92400e',bg:'#fef3c7',b:'#f59e0b',t:'⚠️ NO REALIZADAS — NO FUE POSIBLE'},
+    };
+    const x = cfg[estado]||{c:'#374151',bg:'#f3f4f6',b:'#e5e7eb',t:'— No realizadas'};
+    return '<div style="background:'+x.bg+';border:2px solid '+x.b+';border-radius:8px;padding:12px 16px;margin:0 32px 12px"><div style="font-size:13px;font-weight:700;color:'+x.c+'">'+x.t+'</div>'+(motivo?'<div style="font-size:12px;color:#374151;margin-top:4px">'+motivo+'</div>':'')+'</div>';
+  };
+  let out = '';
+
+  if (esGen) {
+    out += '<div style="font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px">⚡ Generador</div>';
+
+    // Pruebas en vacío
+    out += '<h3>Pruebas en vacío</h3>';
+    if (!S.pvEstado || S.pvEstado==='pv_si') {
+      out += DG + dato('V L1-L2',(S.pv_l1l2||'—')+' V') + dato('V L2-L3',(S.pv_l2l3||'—')+' V') + dato('V L1-L3',(S.pv_l1l3||'—')+' V') + dato('Frecuencia',(S.pv_freq||'—')+' Hz') + dato('RPM',S.pv_rpm||'—') + dato('V batería',(S.pv_bat||'—')+' VCC') + dato('Temperatura',(S.pv_temp||'—')+' °C') + dato('Presión aceite',(S.pv_aceite||'—')+' Bar') + '</div>';
+    } else {
+      out += nota(S.pvEstado, S.pvMotivo);
+    }
+
+    // Pruebas con carga
+    out += '<h3>Pruebas con carga</h3>';
+    if (!S.pcEstado || S.pcEstado==='pc_si') {
+      out += DG + dato('V L1-L2',(S.pc_l1l2||'—')+' V') + dato('V L2-L3',(S.pc_l2l3||'—')+' V') + dato('V L1-L3',(S.pc_l1l3||'—')+' V') + dato('A L1',(S.pc_a1||'—')+' A') + dato('A L2',(S.pc_a2||'—')+' A') + dato('A L3',(S.pc_a3||'—')+' A') + dato('V batería',(S.pc_bat||'—')+' VCC') + dato('Temperatura',(S.pc_temp||'—')+' °C') + dato('Presión aceite',(S.pc_aceite||'—')+' Bar') + '</div>';
+    } else {
+      out += nota(S.pcEstado, S.pcMotivo);
+    }
+
+    // Batería (avanzado)
+    if (S.estadoBateria || S.batSOC || S.batLife || S.batVoltage) {
+      out += '<h3>Prueba de baterías</h3>';
+      out += DG + dato('SOC',(S.batSOC||'—')+'%') + dato('Life / Vida útil',(S.batLife||'—')+'%') + dato('Voltage',(S.batVoltage||'—')+' V') + dato('Resultado',S.estadoBateria||'—') + '</div>';
+    }
+
+    // Fasímetro (avanzado)
+    if (S.fasimetroGen) {
+      out += '<h3>Fasímetro</h3>';
+      out += DG + dato('Secuencia de fases',S.fasimetroGen) + '</div>';
+    }
+  }
+
+  if (esTTA) {
+    out += '<div style="font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px">🔌 Tablero de Transferencia Automática</div>';
+
+    // Mediciones eléctricas TTA
+    out += '<h3>Mediciones eléctricas</h3>';
+    if (!S.pvEstado || S.pvEstado==='pv_si') {
+      out += DG + dato('V L1-L2 (red normal)',(S.pv_l1l2||'—')+' V') + dato('V L2-L3',(S.pv_l2l3||'—')+' V') + dato('V L1-L3',(S.pv_l1l3||'—')+' V') + dato('Frecuencia',(S.pv_freq||'—')+' Hz') + dato('A L1',(S.tta_a1||'—')+' A') + dato('A L2',(S.tta_a2||'—')+' A') + dato('A L3',(S.tta_a3||'—')+' A') + (S.pv_bat?dato('V batería control',S.pv_bat+' VCC'):'') + '</div>';
+      if (S.fasimetroNormal) out += DG + dato('Fasímetro red normal',S.fasimetroNormal) + dato('Fasímetro red emergencia',S.fasimetroEmergencia||'—') + '</div>';
+    } else {
+      out += nota(S.pvEstado, S.pvMotivo);
+    }
+
+    // Prueba de transferencia
+    const tf={tf_si:'✅ Sí',tf_no:'❌ No',tf_parcial:'⚠️ Parcial'};
+    const rt={rt_si:'✅ Sí',rt_no:'❌ No',rt_parcial:'⚠️ Parcial'};
+    const sq={seq_ok:'✅ Correcta',seq_mal:'❌ Incorrecta'};
+    if (S.ttaTransfiere || S.ttaRetransfiere || S.ttaSecuencia) {
+      out += '<h3>Prueba de transferencia</h3>';
+      out += DG + dato('Transfiere N→E',tf[S.ttaTransfiere]||'—') + dato('Retransfiere E→N',rt[S.ttaRetransfiere]||'—') + dato('Secuencia de conmutación',sq[S.ttaSecuencia]||'—') + '</div>';
+      if (S.ttaTiempoNE || S.ttaTiempoEN) {
+        out += DG + dato('Tiempo N→E',(S.ttaTiempoNE||'—')+' seg') + dato('Tiempo E→N',(S.ttaTiempoEN||'—')+' seg') + (S.ttaCalor?dato('Calentamiento contactores',S.ttaCalor==='cal_si'?'⚠️ Anormal':'✅ Normal'):'') + '</div>';
+      }
+      if (S.ttaObsTransf) out += '<div style="margin:0 32px 10px;background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;font-size:12px">'+S.ttaObsTransf+'</div>';
+    }
+
+    // Módulo de control
+    if (S.ttaModuloControl === true) {
+      const mc={mc_ok:'✅ Activa',mc_fail:'❌ Sin comunicación'};
+      const dp={disp_ok:'✅ Sí',disp_fail:'❌ No'};
+      out += '<h3>Módulo de control</h3>';
+      out += DG + dato('Comunicación',mc[S.ttaMcComm]||'—') + dato('Alarmas activas',S.ttaAlarmas||'Ninguna') + dato('Display y botones',dp[S.ttaDisplay]||'—') + '</div>';
+    } else if (S.ttaModuloControl === false) {
+      out += '<div style="margin:0 32px 8px;font-size:12px;color:#6b7280;font-style:italic">Sin módulo de control integrado</div>';
+    }
+  }
+
+  return out || '<div style="margin:0 32px;color:#9ca3af;font-size:13px;font-style:italic">Sin pruebas registradas</div>';
+}
+
 function generarReporte(tipo, destino) {
   const secs = getSecs();
   const tipoLabel = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'}[S.tipoEquipo]||'';
@@ -1791,39 +1881,7 @@ ${S.probGarantia?'<h3>Problema reportado por el cliente</h3><div style="backgrou
 </div>`:``}
 
 <h2>4. Pruebas técnicas</h2>
-${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')?`
-<h3>Pruebas en vacío</h3>
-<div class="datos-grid">
-  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
-  <div class="dato"><span class="dato-label">RPM</span><span class="dato-val">${S.pv_rpm||'—'}</span></div>
-  <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pv_bat||'—'} VCC</span></div>
-  <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pv_temp||'—'} °C</span></div>
-  <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pv_aceite||'—'} Bar</span></div>
-</div>
-<h3>Pruebas con carga</h3>
-<div class="datos-grid">
-  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pc_l1l2||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pc_l2l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pc_l1l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">A L1</span><span class="dato-val">${S.pc_a1||'—'} A</span></div>
-  <div class="dato"><span class="dato-label">A L2</span><span class="dato-val">${S.pc_a2||'—'} A</span></div>
-  <div class="dato"><span class="dato-label">A L3</span><span class="dato-val">${S.pc_a3||'—'} A</span></div>
-  <div class="dato"><span class="dato-label">V batería</span><span class="dato-val">${S.pc_bat||'—'} VCC</span></div>
-  <div class="dato"><span class="dato-label">Temperatura</span><span class="dato-val">${S.pc_temp||'—'} °C</span></div>
-  <div class="dato"><span class="dato-label">Presión aceite</span><span class="dato-val">${S.pc_aceite||'—'} Bar</span></div>
-</div>`:``}
-${S.tipoEquipo==='tta'?`
-<h3>Mediciones eléctricas</h3>
-<div class="datos-grid">
-  <div class="dato"><span class="dato-label">V L1-L2</span><span class="dato-val">${S.pv_l1l2||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L2-L3</span><span class="dato-val">${S.pv_l2l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">V L1-L3</span><span class="dato-val">${S.pv_l1l3||'—'} V</span></div>
-  <div class="dato"><span class="dato-label">Frecuencia</span><span class="dato-val">${S.pv_freq||'—'} Hz</span></div>
-  ${S.pv_bat?`<div class="dato"><span class="dato-label">V batería control</span><span class="dato-val">${S.pv_bat} VCC</span></div>`:''}
-</div>`:``}
+${generarSeccionPruebas()}
 
 <h2>5. Hallazgos y conclusión</h2>
 <div class="sb">
