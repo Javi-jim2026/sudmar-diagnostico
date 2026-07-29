@@ -690,7 +690,7 @@ const STEPS = {
             <div class="photo-gen-sub">Placa de datos del grupo electrógeno</div>
           </div>
         </div>
-        ${S.fotoPlacaGen ? `<button onclick="S.fotoPlacaGen=null;S.fG['placaGen']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
+        <button onclick="openGallery('placaGen','gen')" style="background:#1a5fa8;color:#fff;border:none;padding:0 12px;border-radius:0;font-size:16px;cursor:pointer">📁</button>${S.fotoPlacaGen ? `<button onclick="S.fotoPlacaGen=null;S.fG['placaGen']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
       </div>
       <div class="field" style="position:relative">
         <label class="label">Modelo del equipo (generador)</label>
@@ -733,7 +733,7 @@ const STEPS = {
             <div class="photo-gen-sub">Placa de datos del motor</div>
           </div>
         </div>
-        ${S.fotoPlacaMotor ? `<button onclick="S.fotoPlacaMotor=null;S.fG['placaMotor']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
+        <button onclick="openGallery('placaMotor','gen')" style="background:#1a5fa8;color:#fff;border:none;padding:0 12px;border-radius:0;font-size:16px;cursor:pointer">📁</button>${S.fotoPlacaMotor ? `<button onclick="S.fotoPlacaMotor=null;S.fG['placaMotor']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
       </div>
       <div class="field" style="position:relative">
         <label class="label">Marca de motor</label>
@@ -761,7 +761,7 @@ const STEPS = {
             <div class="photo-gen-sub">Placa de datos del alternador</div>
           </div>
         </div>
-        ${S.fotoPlacaAlt ? `<button onclick="S.fotoPlacaAlt=null;S.fG['placaAlt']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
+        <button onclick="openGallery('placaAlt','gen')" style="background:#1a5fa8;color:#fff;border:none;padding:0 12px;border-radius:0;font-size:16px;cursor:pointer">📁</button>${S.fotoPlacaAlt ? `<button onclick="S.fotoPlacaAlt=null;S.fG['placaAlt']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
       </div>
       <div class="field" style="position:relative">
         <label class="label">Marca de alternador</label>
