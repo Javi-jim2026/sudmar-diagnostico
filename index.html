@@ -322,68 +322,43 @@ const EQ = [
   {id:'ambos', icon:'ti-layers-intersect', name:'Ambos', desc:'Generador + TTA', full:true}
 ];
 
-// ─── Lógica de fotos ─────────────────────────────────────────────
+// ─── Lógica de fotos robusta ─────────────────────────────────────
 let pendingPhotoKey = null;
-let pendingPhotoType = null; // 'gen' | 'falla'
+let pendingPhotoType = null;
+let photoSaveTimer = null;
+const PHOTO_DB_NAME = 'sudmar_reportes_db';
+const PHOTO_STORE = 'drafts';
 
-document.getElementById('gal-input').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file || !pendingPhotoKey) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    const b64 = ev.target.result;
-    if (pendingPhotoType === 'gen') {
-      if (!S.fG[pendingPhotoKey]) S.fG[pendingPhotoKey] = [];
-      S.fG[pendingPhotoKey].push(b64);
-    } else {
-      if (!S.fF[pendingPhotoKey]) S.fF[pendingPhotoKey] = [];
-      S.fF[pendingPhotoKey].push(b64);
-    }
-    updateFotoPlacas();
-    render();
-  };
-  reader.readAsDataURL(file);
-  this.value = '';
-});
-
-document.getElementById('cam-input').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file || !pendingPhotoKey) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    const b64 = ev.target.result;
-    if (pendingPhotoType === 'gen') {
-      if (!S.fG[pendingPhotoKey]) S.fG[pendingPhotoKey] = [];
-      S.fG[pendingPhotoKey].push(b64);
-    } else {
-      if (!S.fF[pendingPhotoKey]) S.fF[pendingPhotoKey] = [];
-      S.fF[pendingPhotoKey].push(b64);
-    }
-    render();
-  };
-  reader.readAsDataURL(file);
-  this.value = '';
-});
-
-function openGallery(key, type) {
-  pendingPhotoKey = key;
-  pendingPhotoType = type;
-  document.getElementById('gal-input').click();
+function openPhotoDB(){
+  return new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window))return reject(new Error('IndexedDB no disponible'));
+    const req=indexedDB.open(PHOTO_DB_NAME,1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(PHOTO_STORE))db.createObjectStore(PHOTO_STORE,{keyPath:'id'});};
+    req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+  });
 }
-
-function openCamera(key, type) {
-  pendingPhotoKey = key;
-  pendingPhotoType = type;
-  document.getElementById('cam-input').click();
+async function guardarFotosIDB(){
+  try{const db=await openPhotoDB();await new Promise((resolve,reject)=>{const tx=db.transaction(PHOTO_STORE,'readwrite');tx.objectStore(PHOTO_STORE).put({id:'actual',fG:S.fG||{},fF:S.fF||{},updatedAt:Date.now()});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});const el=document.getElementById('save-status');if(el)el.textContent='✓ Datos y fotografías guardados en este dispositivo';}catch(e){console.warn('No se pudieron guardar fotos',e);}
 }
-
-// Track fotos de placas como booleanos
-function updateFotoPlacas() {
-  S.fotoPlacaGen = S.fG['placaGen'] && S.fG['placaGen'].length > 0;
-  S.fotoPlacaMotor = S.fG['placaMotor'] && S.fG['placaMotor'].length > 0;
-  S.fotoPlacaAlt = S.fG['placaAlt'] && S.fG['placaAlt'].length > 0;
+async function cargarFotosIDB(){
+  try{const db=await openPhotoDB();const data=await new Promise((resolve,reject)=>{const tx=db.transaction(PHOTO_STORE,'readonly');const req=tx.objectStore(PHOTO_STORE).get('actual');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});if(data){S.fG=data.fG||{};S.fF=data.fF||{};updateFotoPlacas();}}catch(e){console.warn('No se pudieron recuperar fotos',e);}
 }
-
+async function clearPhotoDB(){try{const db=await openPhotoDB();await new Promise((resolve,reject)=>{const tx=db.transaction(PHOTO_STORE,'readwrite');tx.objectStore(PHOTO_STORE).delete('actual');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch(e){}}
+function programarGuardadoFotos(){clearTimeout(photoSaveTimer);const el=document.getElementById('save-status');if(el)el.textContent='Guardando fotografías…';photoSaveTimer=setTimeout(guardarFotosIDB,250);}
+function leerArchivoDataURL(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=e=>resolve(e.target.result);r.onerror=()=>reject(r.error);r.readAsDataURL(file);});}
+async function procesarImagen(file){
+  const original=await leerArchivoDataURL(file);
+  try{const img=await new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=original;});const maxDim=2000;let w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;const scale=Math.min(1,maxDim/Math.max(w,h));w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);return canvas.toDataURL('image/jpeg',0.88);}catch(e){return original;}
+}
+async function agregarFotoDesdeArchivo(file){
+  if(!file||!pendingPhotoKey)return;
+  try{const b64=await procesarImagen(file);if(pendingPhotoType==='gen'){if(!S.fG)S.fG={};if(!S.fG[pendingPhotoKey])S.fG[pendingPhotoKey]=[];S.fG[pendingPhotoKey].push(b64);}else{if(!S.fF)S.fF={};if(!S.fF[pendingPhotoKey])S.fF[pendingPhotoKey]=[];S.fF[pendingPhotoKey].push(b64);}updateFotoPlacas();programarGuardadoFotos();render();}catch(e){showAlert('⚠️ No fue posible procesar la fotografía. Intenta nuevamente.');}
+}
+document.getElementById('gal-input').addEventListener('change',async function(e){await agregarFotoDesdeArchivo(e.target.files[0]);this.value='';});
+document.getElementById('cam-input').addEventListener('change',async function(e){await agregarFotoDesdeArchivo(e.target.files[0]);this.value='';});
+function openGallery(key,type){pendingPhotoKey=key;pendingPhotoType=type;document.getElementById('gal-input').click();}
+function openCamera(key,type){pendingPhotoKey=key;pendingPhotoType=type;document.getElementById('cam-input').click();}
+function updateFotoPlacas(){if(!S.fG)S.fG={};S.fotoPlacaGen=!!(S.fG.placaGen&&S.fG.placaGen.length);S.fotoPlacaMotor=!!(S.fG.placaMotor&&S.fG.placaMotor.length);S.fotoPlacaAlt=!!(S.fG.placaAlt&&S.fG.placaAlt.length);}
 // ─── Renderizado de checklist ─────────────────────────────────────
 function getSecs() {
   const t = S.tipoEquipo, s = [];
@@ -556,7 +531,7 @@ const STEPS = {
   1: () => `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
       <div class="section-title" style="margin-bottom:0">Datos generales</div>
-      <button onclick="if(confirm('¿Iniciar un nuevo reporte? Se borrarán todos los datos actuales.')){Object.keys(S).forEach(k=>{if(typeof S[k]==='string')S[k]='';else if(typeof S[k]==='boolean')S[k]=false;else S[k]=null});S.checks={};S.fG={};S.fF={};S.tecnicosArr=[];S.fecha=new Date().toISOString().slice(0,10);try{localStorage.removeItem('sudmar_reporte')}catch(e){};render()}" 
+      <button onclick="if(confirm('¿Iniciar un nuevo reporte? Se borrarán todos los datos actuales.')){Object.keys(S).forEach(k=>{if(typeof S[k]==='string')S[k]='';else if(typeof S[k]==='boolean')S[k]=false;else S[k]=null});S.checks={};S.fG={};S.fF={};S.tecnicosArr=[];S.fecha=new Date().toISOString().slice(0,10);try{localStorage.removeItem('sudmar_reporte')}catch(e){};clearPhotoDB();render()}" 
         style="background:#fff;border:1.5px solid #e5e7eb;color:#6b7280;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px">
         🗑️ Nuevo reporte
       </button>
@@ -1489,6 +1464,7 @@ function cargarEstado() {
 
 // Cargar estado al iniciar
 cargarEstado();
+cargarFotosIDB().then(()=>{updateFotoPlacas();render();}).catch(()=>{});
 
 function render() {
   guardarEstado();
