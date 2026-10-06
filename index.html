@@ -154,6 +154,10 @@ input[type=file]{display:none}
 .mini-action{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer}
 .save-pill{font-size:11px;color:#1f6b43;background:#eefbf4;border:1px solid #b9e8cd;border-radius:7px;padding:6px 9px;margin:4px 0 12px}
 @media(max-width:360px){.check-items{grid-template-columns:1fr}}
+.capture-measure-group{background:#f8fafc;border:1px solid #dbe2ea;border-radius:9px;padding:9px 10px;margin-bottom:9px}
+.capture-measure-title{font-size:11px;font-weight:800;color:#0a2240;text-transform:uppercase;letter-spacing:.35px;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.capture-measure-group .field{margin-bottom:0}
+.capture-measure-group .input-row,.capture-measure-group .input-row3{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -1101,19 +1105,28 @@ const STEPS = {
           </div>
         </div>
         ${S.pvEstado==='pv_si' ? `
-        <div class="input-row3">
-          <div class="field"><label class="label">V L1-L2</label><input class="input" placeholder="V" value="${S.pv_l1l2}" oninput="S.pv_l1l2=this.value"></div>
-          <div class="field"><label class="label">V L2-L3</label><input class="input" placeholder="V" value="${S.pv_l2l3}" oninput="S.pv_l2l3=this.value"></div>
-          <div class="field"><label class="label">V L1-L3</label><input class="input" placeholder="V" value="${S.pv_l1l3}" oninput="S.pv_l1l3=this.value"></div>
+        <div class="capture-measure-group">
+          <div class="capture-measure-title">⚡ Voltajes</div>
+          <div class="input-row3">
+            <div class="field"><label class="label">L1-L2</label><input class="input" placeholder="V" value="${S.pv_l1l2}" oninput="S.pv_l1l2=this.value"></div>
+            <div class="field"><label class="label">L2-L3</label><input class="input" placeholder="V" value="${S.pv_l2l3}" oninput="S.pv_l2l3=this.value"></div>
+            <div class="field"><label class="label">L1-L3</label><input class="input" placeholder="V" value="${S.pv_l1l3}" oninput="S.pv_l1l3=this.value"></div>
+          </div>
         </div>
-        <div class="input-row3">
-          <div class="field"><label class="label">Frecuencia (Hz)</label><input class="input" placeholder="Hz" value="${S.pv_freq}" oninput="S.pv_freq=this.value"></div>
-          <div class="field"><label class="label">RPM</label><input class="input" placeholder="RPM" value="${S.pv_rpm}" oninput="S.pv_rpm=this.value"></div>
-          <div class="field"><label class="label">V batería</label><input class="input" placeholder="VCC" value="${S.pv_bat}" oninput="S.pv_bat=this.value"></div>
+        <div class="capture-measure-group">
+          <div class="capture-measure-title">⚙️ Operación</div>
+          <div class="input-row3">
+            <div class="field"><label class="label">Frecuencia</label><input class="input" placeholder="Hz" value="${S.pv_freq}" oninput="S.pv_freq=this.value"></div>
+            <div class="field"><label class="label">Velocidad</label><input class="input" placeholder="RPM" value="${S.pv_rpm}" oninput="S.pv_rpm=this.value"></div>
+            <div class="field"><label class="label">Batería</label><input class="input" placeholder="VCC" value="${S.pv_bat}" oninput="S.pv_bat=this.value"></div>
+          </div>
         </div>
-        <div class="input-row">
-          <div class="field"><label class="label">Temperatura (°C)</label><input class="input" placeholder="°C" value="${S.pv_temp}" oninput="S.pv_temp=this.value"></div>
-          <div class="field"><label class="label">Presión aceite (Bar)</label><input class="input" placeholder="Bar" value="${S.pv_aceite}" oninput="S.pv_aceite=this.value"></div>
+        <div class="capture-measure-group">
+          <div class="capture-measure-title">🌡️ Motor</div>
+          <div class="input-row">
+            <div class="field"><label class="label">Temperatura</label><input class="input" placeholder="°C" value="${S.pv_temp}" oninput="S.pv_temp=this.value"></div>
+            <div class="field"><label class="label">Presión de aceite</label><input class="input" placeholder="Bar" value="${S.pv_aceite}" oninput="S.pv_aceite=this.value"></div>
+          </div>
         </div>
         ${ma ? `
         <!-- AVANZADO: fasímetro y baterías -->
@@ -1158,20 +1171,29 @@ const STEPS = {
           </div>
         </div>
         ${S.pcEstado==='pc_si' ? `
-        <div class="input-row3">
-          <div class="field"><label class="label">V L1-L2</label><input class="input" placeholder="V" value="${S.pc_l1l2}" oninput="S.pc_l1l2=this.value"></div>
-          <div class="field"><label class="label">V L2-L3</label><input class="input" placeholder="V" value="${S.pc_l2l3}" oninput="S.pc_l2l3=this.value"></div>
-          <div class="field"><label class="label">V L1-L3</label><input class="input" placeholder="V" value="${S.pc_l1l3}" oninput="S.pc_l1l3=this.value"></div>
+        <div class="capture-measure-group">
+          <div class="capture-measure-title">⚡ Voltajes</div>
+          <div class="input-row3">
+            <div class="field"><label class="label">L1-L2</label><input class="input" placeholder="V" value="${S.pc_l1l2}" oninput="S.pc_l1l2=this.value"></div>
+            <div class="field"><label class="label">L2-L3</label><input class="input" placeholder="V" value="${S.pc_l2l3}" oninput="S.pc_l2l3=this.value"></div>
+            <div class="field"><label class="label">L1-L3</label><input class="input" placeholder="V" value="${S.pc_l1l3}" oninput="S.pc_l1l3=this.value"></div>
+          </div>
         </div>
-        <div class="input-row3">
-          <div class="field"><label class="label">A L1</label><input class="input" placeholder="A" value="${S.pc_a1}" oninput="S.pc_a1=this.value"></div>
-          <div class="field"><label class="label">A L2</label><input class="input" placeholder="A" value="${S.pc_a2}" oninput="S.pc_a2=this.value"></div>
-          <div class="field"><label class="label">A L3</label><input class="input" placeholder="A" value="${S.pc_a3}" oninput="S.pc_a3=this.value"></div>
+        <div class="capture-measure-group">
+          <div class="capture-measure-title">🔌 Corrientes</div>
+          <div class="input-row3">
+            <div class="field"><label class="label">L1</label><input class="input" placeholder="A" value="${S.pc_a1}" oninput="S.pc_a1=this.value"></div>
+            <div class="field"><label class="label">L2</label><input class="input" placeholder="A" value="${S.pc_a2}" oninput="S.pc_a2=this.value"></div>
+            <div class="field"><label class="label">L3</label><input class="input" placeholder="A" value="${S.pc_a3}" oninput="S.pc_a3=this.value"></div>
+          </div>
         </div>
-        <div class="input-row3">
-          <div class="field"><label class="label">V batería</label><input class="input" placeholder="VCC" value="${S.pc_bat}" oninput="S.pc_bat=this.value"></div>
-          <div class="field"><label class="label">Temperatura (°C)</label><input class="input" placeholder="°C" value="${S.pc_temp}" oninput="S.pc_temp=this.value"></div>
-          <div class="field"><label class="label">Presión aceite (Bar)</label><input class="input" placeholder="Bar" value="${S.pc_aceite}" oninput="S.pc_aceite=this.value"></div>
+        <div class="capture-measure-group">
+          <div class="capture-measure-title">⚙️ Operación</div>
+          <div class="input-row3">
+            <div class="field"><label class="label">Batería</label><input class="input" placeholder="VCC" value="${S.pc_bat}" oninput="S.pc_bat=this.value"></div>
+            <div class="field"><label class="label">Temperatura</label><input class="input" placeholder="°C" value="${S.pc_temp}" oninput="S.pc_temp=this.value"></div>
+            <div class="field"><label class="label">Presión aceite</label><input class="input" placeholder="Bar" value="${S.pc_aceite}" oninput="S.pc_aceite=this.value"></div>
+          </div>
         </div>` : ''}
         ${(S.pcEstado==='pc_noaut'||S.pcEstado==='pc_nocond'||S.pcEstado==='pc_no') ? `
         <div style="background:${S.pcEstado==='pc_noaut'?'#ede9fe':S.pcEstado==='pc_nocond'?'#fef3c7':'#ffe4d0'};border:2px solid ${S.pcEstado==='pc_noaut'?'#7c3aed':S.pcEstado==='pc_nocond'?'#f59e0b':'#e87a2a'};border-radius:8px;padding:10px 13px">
@@ -1208,20 +1230,25 @@ const STEPS = {
           </div>
         </div>
         ${S.pvEstado==='pv_si' ? `
-        <!-- Voltajes red normal -->
-        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;margin:8px 0 4px">Red normal</div>
-        <div class="input-row3">
-          <div class="field"><label class="label">V L1-L2</label><input class="input" placeholder="V" value="${S.pv_l1l2}" oninput="S.pv_l1l2=this.value"></div>
-          <div class="field"><label class="label">V L2-L3</label><input class="input" placeholder="V" value="${S.pv_l2l3}" oninput="S.pv_l2l3=this.value"></div>
-          <div class="field"><label class="label">V L1-L3</label><input class="input" placeholder="V" value="${S.pv_l1l3}" oninput="S.pv_l1l3=this.value"></div>
+        <div class="capture-measure-group">
+          <div class="capture-measure-title">⚡ Voltajes — red normal</div>
+          <div class="input-row3">
+            <div class="field"><label class="label">L1-L2</label><input class="input" placeholder="V" value="${S.pv_l1l2}" oninput="S.pv_l1l2=this.value"></div>
+            <div class="field"><label class="label">L2-L3</label><input class="input" placeholder="V" value="${S.pv_l2l3}" oninput="S.pv_l2l3=this.value"></div>
+            <div class="field"><label class="label">L1-L3</label><input class="input" placeholder="V" value="${S.pv_l1l3}" oninput="S.pv_l1l3=this.value"></div>
+          </div>
         </div>
-        <div class="input-row">
-          <div class="field"><label class="label">Frecuencia (Hz)</label><input class="input" placeholder="Hz" value="${S.pv_freq}" oninput="S.pv_freq=this.value"></div>
-          <div class="field"><label class="label">A L1</label><input class="input" placeholder="A" value="${S.tta_a1||''}" oninput="S.tta_a1=this.value"></div>
+        <div class="capture-measure-group">
+          <div class="capture-measure-title">🔌 Corrientes — red normal</div>
+          <div class="input-row3">
+            <div class="field"><label class="label">L1</label><input class="input" placeholder="A" value="${S.tta_a1||''}" oninput="S.tta_a1=this.value"></div>
+            <div class="field"><label class="label">L2</label><input class="input" placeholder="A" value="${S.tta_a2||''}" oninput="S.tta_a2=this.value"></div>
+            <div class="field"><label class="label">L3</label><input class="input" placeholder="A" value="${S.tta_a3||''}" oninput="S.tta_a3=this.value"></div>
+          </div>
         </div>
-        <div class="input-row">
-          <div class="field"><label class="label">A L2</label><input class="input" placeholder="A" value="${S.tta_a2||''}" oninput="S.tta_a2=this.value"></div>
-          <div class="field"><label class="label">A L3</label><input class="input" placeholder="A" value="${S.tta_a3||''}" oninput="S.tta_a3=this.value"></div>
+        <div class="capture-measure-group">
+          <div class="capture-measure-title">〰️ Frecuencia</div>
+          <div class="field"><label class="label">Frecuencia de red</label><input class="input" placeholder="Hz" value="${S.pv_freq}" oninput="S.pv_freq=this.value"></div>
         </div>
         ${ma ? `
         <!-- AVANZADO TTA -->
