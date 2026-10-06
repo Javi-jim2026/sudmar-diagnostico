@@ -1009,7 +1009,7 @@ const STEPS = {
           </div>`).join('')}
       </div>
       <div class="field" style="margin-top:16px"><label class="label">Justificación del dictamen</label>
-        <textarea class="input" rows="4" placeholder="Describe los motivos del dictamen de garantía..." oninput="S.justDictamen=this.value">${S.justDictamen||''}</textarea>
+        <textarea class="input" rows="4" placeholder="Describe los motivos del dictamen de garantía..." oninput="S.justDictamen=this.value">${S.justDictamen||''}</textarea><div class="ai-tools"><button type="button" class="ai-btn" onclick="abrirAsistente(&quot;justDictamen&quot;,&quot;clarity&quot;)">✨ Mejorar redacción</button><button type="button" class="ai-btn suggest" onclick="abrirAsistente(&quot;justDictamen&quot;,&quot;technical&quot;)">💡 Sugerencia de redacción</button></div>
       </div>`;
 
     const secs = getSecs();
@@ -1309,7 +1309,7 @@ const STEPS = {
           </div>
         </div>` : ''}
         <div class="field" style="margin-top:8px"><label class="label">Observaciones de la prueba de transferencia</label>
-          <textarea class="input" rows="3" placeholder="Describe cualquier anomalía durante la transferencia..." oninput="S.ttaObsTransf=this.value">${S.ttaObsTransf||''}</textarea>
+          <textarea class="input" rows="3" placeholder="Describe cualquier anomalía durante la transferencia..." oninput="S.ttaObsTransf=this.value">${S.ttaObsTransf||''}</textarea><div class="ai-tools"><button type="button" class="ai-btn" onclick="abrirAsistente(&quot;ttaObsTransf&quot;,&quot;clarity&quot;)">✨ Mejorar redacción</button><button type="button" class="ai-btn suggest" onclick="abrirAsistente(&quot;ttaObsTransf&quot;,&quot;technical&quot;)">💡 Sugerencia de redacción</button></div>
         </div>
       </div>
     </div>
