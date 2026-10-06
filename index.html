@@ -567,33 +567,37 @@ const STEPS = {
       <div class="field"><label class="label">Fecha</label><input class="input" type="date" value="${S.fecha}" oninput="S.fecha=this.value"></div>
     </div>
     <div class="field"><label class="label">Cliente / Solicitante</label><input class="input" placeholder="Nombre" value="${S.cliente}" oninput="S.cliente=this.value"></div>
-    <div class="field" style="position:relative">
+        <div class="field" style="position:relative">
       <label class="label">Empresa / Cliente</label>
       <div style="position:relative">
-        <input class="input" id="empresa-input"
-          placeholder="Buscar empresa..." 
+        <input class="input" id="empresa-input" placeholder="Buscar o escribir empresa..."
           value="${S.empresa==='otro'?S.empresaOtra:S.empresa}"
-          oninput="filtrarEmpresas(this.value)"
-          onfocus="filtrarEmpresas(this.value)"
-          autocomplete="off"
-          style="padding-right:36px">
+          oninput="capturarEmpresaLibre(this.value);filtrarEmpresas(this.value)"
+          onfocus="filtrarEmpresas(this.value)" autocomplete="off" style="padding-right:36px">
         <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">🏢</span>
       </div>
       <div id="empresa-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:240px;overflow-y:auto"></div>
+      <div class="location-actions">
+        <button type="button" class="mini-action" onclick="guardarEmpresaNueva()">＋ Guardar nueva empresa</button>
+        <span id="empresa-estado" style="font-size:11px;color:#6b7280;align-self:center">${S.empresa==='otro'&&S.empresaOtra?'Nueva empresa: '+S.empresaOtra:''}</span>
+      </div>
     </div>
-    
     <div class="field" style="position:relative">
-      <label class="label">Ubicación</label>
+      <label class="label">Nombre del sitio / localidad</label>
+      <input class="input" id="sitio-input" placeholder="Ej. Amazon DCU4, Planta Foxconn, Cadereyta..." value="${S.sitio||''}" oninput="S.sitio=this.value;buscarSitio(this.value)" autocomplete="off">
+      <div id="sitio-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-radius:0 0 10px 10px;z-index:110;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:220px;overflow-y:auto"></div>
+    </div>
+    <div class="field" style="position:relative">
+      <label class="label">Ubicación / dirección</label>
       <div style="position:relative">
-        <input class="input" id="ubicacion-input" placeholder="Escribe la dirección o lugar..." 
-          value="${S.ubicacion}" 
-          oninput="S.ubicacion=this.value;buscarUbicacion(this.value)"
-          autocomplete="off"
-          style="padding-right:36px">
+        <input class="input" id="ubicacion-input" placeholder="Escribe la dirección o usa tu ubicación actual..." value="${S.ubicacion||''}" oninput="S.ubicacion=this.value;buscarUbicacion(this.value)" autocomplete="off" style="padding-right:36px">
         <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">📍</span>
       </div>
       <div id="ubicacion-sugs" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1.5px solid #1a5fa8;border-top:none;border-radius:0 0 10px 10px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:220px;overflow-y:auto"></div>
-      <div style="font-size:11px;color:#9ca3af;margin-top:4px">💡 Escribe para buscar dirección — requiere internet</div>
+      <div class="location-actions">
+        <button type="button" class="mini-action" onclick="obtenerUbicacionActual()">📍 Usar mi ubicación actual</button>
+        <span style="font-size:11px;color:#64748b;align-self:center">${S.lat&&S.lon?'GPS capturado ✓':'Puedes editar la dirección después'}</span>
+      </div>
     </div>
     <div class="field">
       <label class="label">Responsable del diagnóstico</label>
@@ -2132,13 +2136,19 @@ document.addEventListener('click', function(e) {
 // ─── Buscador de empresas ────────────────────────────────────────
 const CLIENTES_LIST = ["ACSA", "ADNR MAQUINARIA", "ADRIAN SANDOVAL", "ALCO", "ALMACEN", "AMEXDER", "ANA GABRIELA LOPEZ MONTIEL", "ANA LILIA", "ANTONIO L", "ATLAS POWER RENT", "AVICOLA 4 HERMANOS", "BIMBO MUSEO", "BRESEC IT", "BULMATICK", "C LOGISTIC", "CAJA INMACULADA", "CARGO EM", "CARLOS MERAZ", "CASINO", "CENTRO DE ESTUDIOS FELIPE VILLANUEVA", "COMPA\u00d1IA MINERA ZILAR MENDI", "COMPRESORES Y MAQUINARIA", "CORAL GROUP", "DAVID ROMERO", "DESARROLLO INMOBILIARIO EWOK", "EDER", "EEBSA", "EEBSA BACKUP POWER", "ENERGIA ADAPTABLE", "ENERGIA FARI", "EPBS", "ESTRELLA MORA", "FIIX", "FISCALIA GENERAL DE QUERETARO", "FLAVIO LIZARDO", "FRANCISCO ORDAZ", "G Y E CONSTRUCTORA E INSTALACIONES ELECTROMECANICAS", "GASOLINERO", "GENERA OIL & GAS", "GENERAC", "GH POWER", "GIKSA", "GILBERTO", "GIMESA", "GMAQ", "GRUPO BELLEI", "GRUPO TORRESA", "GUILLERMO CHINCHILLAS", "GYP", "HUMBERTO / JASSCA", "ICMAQ", "INDUSTRIAL ALDAKE", "ITISA", "JAGUAR", "JASSCA", "JESUS GARCIA", "JORGE REA", "JOSE LUIS ARIAS", "JOSE MANUEL HUERTA", "JUAN JOSE", "KAESER", "KARENTAL", "LA ENERGY", "LA TEXTILERA", "LIZARDO", "LUMA EQUIPOS INDUSTRIALES", "MARTE PRODUCCIONES", "MIGUEL", "ML", "NUCITEC", "NW ENERGY RENT", "OFICINAS", "PAS APPLIANCE", "PASTES KIKOS", "PINOTECNIA", "PINTROTECHOS", "PLANTI RENT", "PLAZA MIRAVAL", "PMA", "PODER EN RENTA", "PRETTL", "RABI", "RANCHO LA JOAQUINA", "RELESUR", "RENTA DE PLANTAS", "RENTA MAQ RIVAS", "SALON DE ELEANOR", "SAUL ARELLANO", "SAUL GONZALEZ", "SOCCCMA", "TEXTILERA", "TIGESA", "TOKYO", "TORRESA", "UNISER", "VEGETALES ATLIXCO", "VILALPE", "VLADIMIR VILLAGOMEZ", "VOLTAX", "YELLOW EQUIPMENT", "YOSAFAT JOEL JUAREZ LOZANO"];
 
+let CLIENTES_CUSTOM=[];
+try{CLIENTES_CUSTOM=JSON.parse(localStorage.getItem('sudmar_empresas_custom_v1')||'[]');if(!Array.isArray(CLIENTES_CUSTOM))CLIENTES_CUSTOM=[];}catch(e){CLIENTES_CUSTOM=[];}
+function catalogoEmpresas(){return [...new Set([...CLIENTES_LIST,...CLIENTES_CUSTOM])].sort((a,b)=>a.localeCompare(b,'es'));}
+function capturarEmpresaLibre(val){const limpio=String(val||'').trim();const exact=catalogoEmpresas().find(c=>c.toUpperCase()===limpio.toUpperCase());if(exact){S.empresa=exact;S.empresaOtra='';}else{S.empresa=limpio?'otro':'';S.empresaOtra=limpio;}}
+function guardarEmpresaNueva(){const inp=document.getElementById('empresa-input');const val=String((inp&&inp.value)||S.empresaOtra||'').trim();if(!val)return showAlert('⚠️ Escribe el nombre de la empresa antes de guardarla');const exact=catalogoEmpresas().find(c=>c.toUpperCase()===val.toUpperCase());if(!exact){CLIENTES_CUSTOM.push(val);CLIENTES_CUSTOM=[...new Set(CLIENTES_CUSTOM)];localStorage.setItem('sudmar_empresas_custom_v1',JSON.stringify(CLIENTES_CUSTOM));S.empresa='otro';S.empresaOtra=val;}else{S.empresa=exact;S.empresaOtra='';}const st=document.getElementById('empresa-estado');if(st)st.textContent='✓ Empresa guardada en este dispositivo';guardarEstado();const sug=document.getElementById('empresa-sugs');if(sug)sug.style.display='none';}
 function filtrarEmpresas(query) {
   const sug = document.getElementById('empresa-sugs');
   if (!sug) return;
   const q = query.trim().toUpperCase();
+  const catalogo=catalogoEmpresas();
   let resultados = q.length === 0 
-    ? CLIENTES_LIST 
-    : CLIENTES_LIST.filter(c => c.includes(q));
+    ? catalogo 
+    : catalogo.filter(c => c.toUpperCase().includes(q));
   
   if (!resultados.length && q.length > 0) {
     sug.innerHTML = `<div style="padding:10px 14px;font-size:13px;color:#6b7280">No encontrado — 
@@ -2177,50 +2187,16 @@ document.addEventListener('click', function(e) {
 
 render();
 
-// ─── Autocompletado de ubicación (OpenStreetMap Nominatim) ──────
-let ubicTimer = null;
-
-function buscarUbicacion(query) {
-  const sug = document.getElementById('ubicacion-sugs');
-  if (!sug) return;
-  if (!query || query.length < 4) { sug.style.display='none'; return; }
-  clearTimeout(ubicTimer);
-  ubicTimer = setTimeout(async () => {
-    try {
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&countrycodes=mx&addressdetails=1`;
-      const res = await fetch(url, {headers:{'Accept-Language':'es'}});
-      const data = await res.json();
-      if (!data.length) { sug.style.display='none'; return; }
-      sug.innerHTML = data.map((r,i) => {
-        const nombre = r.display_name;
-        return `<div onclick="selUbicacion('${nombre.replace(/'/g,"\'")}','ubicacion-input')" 
-          style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6;font-size:13px;color:#1a1a1a;transition:background .1s"
-          onmouseover="this.style.background='#f0f5ff'" onmouseout="this.style.background=''"
-          ><span style="margin-right:6px">📍</span>${nombre}</div>`;
-      }).join('');
-      sug.style.display = 'block';
-    } catch(e) {
-      sug.style.display = 'none';
-    }
-  }, 400);
-}
-
-function selUbicacion(val, inputId) {
-  S.ubicacion = val;
-  const inp = document.getElementById(inputId);
-  if (inp) inp.value = val;
-  const sug = document.getElementById('ubicacion-sugs');
-  if (sug) sug.style.display = 'none';
-}
-
-// Cerrar sugerencias al tocar fuera
-document.addEventListener('click', function(e) {
-  const sug = document.getElementById('ubicacion-sugs');
-  if (sug && !sug.contains(e.target) && e.target.id !== 'ubicacion-input') {
-    sug.style.display = 'none';
-  }
-});
-
+// ─── Ubicación real: GPS + sugerencias de lugares ────────────────
+let ubicTimer=null,sitioTimer=null;
+function geoBias(){if(!S.lat||!S.lon)return '';const lat=Number(S.lat),lon=Number(S.lon),d=.65;return '&viewbox='+[lon-d,lat+d,lon+d,lat-d].join(',')+'&bounded=0';}
+async function nominatimSearch(query,limit){const url='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(query)+'&format=json&limit='+(limit||6)+'&countrycodes=mx&addressdetails=1'+geoBias();const res=await fetch(url,{headers:{'Accept-Language':'es'}});if(!res.ok)throw new Error('Ubicación no disponible');return res.json();}
+async function buscarUbicacion(query){const sug=document.getElementById('ubicacion-sugs');if(!sug)return;if(!query||query.trim().length<3){sug.style.display='none';return;}clearTimeout(ubicTimer);ubicTimer=setTimeout(async()=>{try{const data=await nominatimSearch(query,7);if(!data.length){sug.style.display='none';return;}sug.innerHTML=data.map(r=>{const n=encodeURIComponent(r.display_name);return '<div data-u="'+n+'" data-lat="'+r.lat+'" data-lon="'+r.lon+'" class="geo-sug" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6;font-size:12px"><span style="margin-right:6px">📍</span>'+r.display_name+'</div>';}).join('');sug.querySelectorAll('.geo-sug').forEach(el=>el.onclick=()=>selUbicacion(decodeURIComponent(el.dataset.u),el.dataset.lat,el.dataset.lon));sug.style.display='block';}catch(e){sug.style.display='none';}},350);}
+async function buscarSitio(query){const sug=document.getElementById('sitio-sugs');if(!sug)return;if(!query||query.trim().length<3){sug.style.display='none';return;}clearTimeout(sitioTimer);sitioTimer=setTimeout(async()=>{try{const data=await nominatimSearch(query,6);if(!data.length){sug.style.display='none';return;}sug.innerHTML=data.map(r=>{const short=(r.name||r.display_name.split(',')[0]).trim();return '<div data-s="'+encodeURIComponent(short)+'" data-u="'+encodeURIComponent(r.display_name)+'" data-lat="'+r.lat+'" data-lon="'+r.lon+'" class="site-sug" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6;font-size:12px"><b>'+short+'</b><div style="font-size:10px;color:#64748b;margin-top:2px">'+r.display_name+'</div></div>';}).join('');sug.querySelectorAll('.site-sug').forEach(el=>el.onclick=()=>selSitio(decodeURIComponent(el.dataset.s),decodeURIComponent(el.dataset.u),el.dataset.lat,el.dataset.lon));sug.style.display='block';}catch(e){sug.style.display='none';}},350);}
+function selUbicacion(val,lat,lon){S.ubicacion=val;S.lat=Number(lat)||S.lat;S.lon=Number(lon)||S.lon;const inp=document.getElementById('ubicacion-input');if(inp)inp.value=val;const sug=document.getElementById('ubicacion-sugs');if(sug)sug.style.display='none';guardarEstado();}
+function selSitio(nombre,direccion,lat,lon){S.sitio=nombre;S.lat=Number(lat)||S.lat;S.lon=Number(lon)||S.lon;if(!S.ubicacion)S.ubicacion=direccion;const si=document.getElementById('sitio-input');if(si)si.value=nombre;const ui=document.getElementById('ubicacion-input');if(ui&&!ui.value)ui.value=direccion;const sug=document.getElementById('sitio-sugs');if(sug)sug.style.display='none';guardarEstado();}
+function obtenerUbicacionActual(){if(!navigator.geolocation)return showAlert('⚠️ Este dispositivo no permite obtener ubicación GPS');const btn=document.querySelector('[onclick="obtenerUbicacionActual()"]');if(btn){btn.disabled=true;btn.textContent='Obteniendo ubicación…';}navigator.geolocation.getCurrentPosition(async pos=>{try{S.lat=pos.coords.latitude;S.lon=pos.coords.longitude;const url='https://nominatim.openstreetmap.org/reverse?lat='+S.lat+'&lon='+S.lon+'&format=json&addressdetails=1&zoom=18';const res=await fetch(url,{headers:{'Accept-Language':'es'}});const data=await res.json();if(data&&data.display_name){S.ubicacion=data.display_name;const a=data.address||{};if(!S.sitio)S.sitio=a.industrial||a.commercial||a.building||a.suburb||a.city_district||a.city||a.town||a.village||a.municipality||'';}guardarEstado();render();}catch(e){guardarEstado();render();}},err=>{if(btn){btn.disabled=false;btn.textContent='📍 Usar mi ubicación actual';}showAlert('⚠️ No fue posible obtener la ubicación. Revisa el permiso de ubicación del navegador.');},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});}
+document.addEventListener('click',function(e){for(const id of ['ubicacion-sugs','sitio-sugs']){const sug=document.getElementById(id);if(sug&&!sug.contains(e.target)&&!['ubicacion-input','sitio-input'].includes(e.target.id))sug.style.display='none';}});
 // ─── Inyectar logos en header
 (function setLogos(){
   const el = (id, src) => { const e = document.getElementById(id); if(e) e.src = src; };
