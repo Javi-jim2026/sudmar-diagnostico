@@ -384,6 +384,7 @@ function ci(sid, item, idx) {
   const k = sid+'_'+idx, v = S.checks[k], np = v==='mal', arr = S.fF[k]||[];
   const hasFoto = arr.length > 0;
   return `
+    <div class="check-cell">
     <div class="check-item">
       <span class="cil">${item}</span>
       <div class="cbtns">
@@ -406,15 +407,19 @@ function ci(sid, item, idx) {
       ${hasFoto ? `<div class="falla-thumbs captured">${arr.map((b,i)=>`
         <div style="position:relative;display:inline-block">
           <img class="photo-thumb" src="${b}">
-          <button onclick="S.fF['${k}'].splice(${i},1);render()" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+          <button onclick="S.fF['${k}'].splice(${i},1);updateFotoPlacas();programarGuardadoFotos();render()" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
         </div>`).join('')}</div>` : ''}
-      <div style="padding:8px 12px;background:#fff9f4;border:2px dashed #f0a060;border-top:none">
-        <input class="input" placeholder="📝 Describe brevemente la falla observada..." 
-          value="${(S.fallaDesc&&S.fallaDesc[k])||''}" 
+      <div style="padding:8px 10px;background:#fff9f4;border:2px dashed #f0a060;border-top:none">
+        <textarea class="input" rows="2" placeholder="📝 Describe brevemente la falla observada..." 
           oninput="if(!S.fallaDesc)S.fallaDesc={};S.fallaDesc['${k}']=this.value"
-          style="border-color:#f0a060;background:#fff;font-size:13px">
+          style="border-color:#f0a060;background:#fff;font-size:12px">${(S.fallaDesc&&S.fallaDesc[k])||''}</textarea>
+        <div class="ai-tools">
+          <button type="button" class="ai-btn" onclick="abrirAsistente('fallaDesc|${k}','clarity')">✨ Mejorar</button>
+          <button type="button" class="ai-btn suggest" onclick="abrirAsistente('fallaDesc|${k}','technical')">💡 Sugerencia técnica</button>
+        </div>
       </div>
-    ` : ''}`;
+    ` : ''}
+    </div>`;
 }
 
 function rSec(sid) {
@@ -447,7 +452,7 @@ function rSec(sid) {
       ${hg ? `<div class="photo-thumbs">${arr.map((b,i)=>`
         <div style="position:relative;display:inline-block">
           <img class="photo-thumb" src="${b}">
-          <button onclick="S.fG['${sid}'].splice(${i},1);render()" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+          <button onclick="S.fG['${sid}'].splice(${i},1);updateFotoPlacas();programarGuardadoFotos();render()" style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
         </div>`).join('')}</div>` : ''}
       <div class="check-items">${items.map((it,i)=>ci(sid,it,i)).join('')}</div>
     </div>`;
@@ -536,7 +541,7 @@ const STEPS = {
         🗑️ Nuevo reporte
       </button>
     </div>
-    <div class="section-sub">Información del servicio y responsables</div>
+    <div class="section-sub">Información del servicio y responsables</div><div id="save-status" class="save-pill">✓ Autoguardado activo — texto y fotografías se conservan en este dispositivo</div>
 
     <div class="field">
       <label class="label">Tipo de servicio</label>
@@ -680,7 +685,7 @@ const STEPS = {
             <div class="photo-gen-sub">Placa de datos del grupo electrógeno</div>
           </div>
         </div>
-        <button onclick="openGallery('placaGen','gen')" style="background:#1a5fa8;color:#fff;border:none;padding:0 12px;border-radius:0;font-size:16px;cursor:pointer">📁</button>${S.fotoPlacaGen ? `<button onclick="S.fotoPlacaGen=null;S.fG['placaGen']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
+        <button onclick="openGallery('placaGen','gen')" style="background:#1a5fa8;color:#fff;border:none;padding:0 12px;border-radius:0;font-size:16px;cursor:pointer">📁</button>${S.fotoPlacaGen ? `<button onclick="S.fotoPlacaGen=null;S.fG['placaGen']=[];updateFotoPlacas();programarGuardadoFotos();render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
       </div>
       <div class="field" style="position:relative">
         <label class="label">Modelo del equipo (generador)</label>
@@ -723,7 +728,7 @@ const STEPS = {
             <div class="photo-gen-sub">Placa de datos del motor</div>
           </div>
         </div>
-        <button onclick="openGallery('placaMotor','gen')" style="background:#1a5fa8;color:#fff;border:none;padding:0 12px;border-radius:0;font-size:16px;cursor:pointer">📁</button>${S.fotoPlacaMotor ? `<button onclick="S.fotoPlacaMotor=null;S.fG['placaMotor']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
+        <button onclick="openGallery('placaMotor','gen')" style="background:#1a5fa8;color:#fff;border:none;padding:0 12px;border-radius:0;font-size:16px;cursor:pointer">📁</button>${S.fotoPlacaMotor ? `<button onclick="S.fotoPlacaMotor=null;S.fG['placaMotor']=[];updateFotoPlacas();programarGuardadoFotos();render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
       </div>
       <div class="field" style="position:relative">
         <label class="label">Marca de motor</label>
@@ -751,7 +756,7 @@ const STEPS = {
             <div class="photo-gen-sub">Placa de datos del alternador</div>
           </div>
         </div>
-        <button onclick="openGallery('placaAlt','gen')" style="background:#1a5fa8;color:#fff;border:none;padding:0 12px;border-radius:0;font-size:16px;cursor:pointer">📁</button>${S.fotoPlacaAlt ? `<button onclick="S.fotoPlacaAlt=null;S.fG['placaAlt']=[];render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
+        <button onclick="openGallery('placaAlt','gen')" style="background:#1a5fa8;color:#fff;border:none;padding:0 12px;border-radius:0;font-size:16px;cursor:pointer">📁</button>${S.fotoPlacaAlt ? `<button onclick="S.fotoPlacaAlt=null;S.fG['placaAlt']=[];updateFotoPlacas();programarGuardadoFotos();render()" style="background:#dc2626;color:#fff;border:none;padding:0 14px;border-radius:0 8px 8px 0;font-size:13px;cursor:pointer;font-weight:700">✕</button>` : ''}
       </div>
       <div class="field" style="position:relative">
         <label class="label">Marca de alternador</label>
