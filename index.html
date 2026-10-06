@@ -1039,7 +1039,7 @@ const STEPS = {
             </div>`).join('')}
         </div>
         <div class="field"><label class="label">Justificación del dictamen</label>
-          <textarea class="input" rows="3" placeholder="Describe los motivos del dictamen..." oninput="S.justDictamen=this.value">${S.justDictamen||''}</textarea>
+          <textarea class="input" rows="3" placeholder="Describe los motivos del dictamen..." oninput="S.justDictamen=this.value">${S.justDictamen||''}</textarea><div class="ai-tools"><button type="button" class="ai-btn" onclick="abrirAsistente(&quot;justDictamen&quot;,&quot;clarity&quot;)">✨ Mejorar redacción</button><button type="button" class="ai-btn suggest" onclick="abrirAsistente(&quot;justDictamen&quot;,&quot;technical&quot;)">💡 Sugerencia de redacción</button></div>
         </div>
       </div>` : ''}`;
   },
