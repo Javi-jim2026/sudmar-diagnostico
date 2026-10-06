@@ -1591,96 +1591,29 @@ function escHTML(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function generarSeccionPruebas() {
-  const esGen = S.tipoEquipo==='gen'||S.tipoEquipo==='ambos';
-  const esTTA = S.tipoEquipo==='tta'||S.tipoEquipo==='ambos';
-  const DG = '<div class="datos-grid">';
-  const dato = (l,v) => '<div class="dato"><span class="dato-label">'+l+'</span><span class="dato-val">'+(v||'—')+'</span></div>';
-  const nota = (estado, motivo) => {
-    const cfg = {
-      pv_noaut:{c:'#5b21b6',bg:'#ede9fe',b:'#7c3aed',t:'🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'},
-      pv_no:{c:'#b85a10',bg:'#ffe4d0',b:'#e87a2a',t:'❌ NO SE REALIZARON'},
-      pv_nocond:{c:'#92400e',bg:'#fef3c7',b:'#f59e0b',t:'⚠️ NO REALIZADAS — NO FUE POSIBLE'},
-      pc_noaut:{c:'#5b21b6',bg:'#ede9fe',b:'#7c3aed',t:'🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'},
-      pc_no:{c:'#b85a10',bg:'#ffe4d0',b:'#e87a2a',t:'❌ NO SE REALIZARON'},
-      pc_nocond:{c:'#92400e',bg:'#fef3c7',b:'#f59e0b',t:'⚠️ NO REALIZADAS — NO FUE POSIBLE'},
-    };
-    const x = cfg[estado]||{c:'#374151',bg:'#f3f4f6',b:'#e5e7eb',t:'— No realizadas'};
-    return '<div style="background:'+x.bg+';border:2px solid '+x.b+';border-radius:8px;padding:12px 16px;margin:0 32px 12px"><div style="font-size:13px;font-weight:700;color:'+x.c+'">'+x.t+'</div>'+(motivo?'<div style="font-size:12px;color:#374151;margin-top:4px">'+motivo+'</div>':'')+'</div>';
-  };
-  let out = '';
-
-  if (esGen) {
-    out += '<div style="font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px">⚡ Generador</div>';
-
-    // Pruebas en vacío
-    out += '<h3>Pruebas en vacío</h3>';
-    if (!S.pvEstado || S.pvEstado==='pv_si') {
-      out += DG + dato('V L1-L2',(S.pv_l1l2||'—')+' V') + dato('V L2-L3',(S.pv_l2l3||'—')+' V') + dato('V L1-L3',(S.pv_l1l3||'—')+' V') + dato('Frecuencia',(S.pv_freq||'—')+' Hz') + dato('RPM',S.pv_rpm||'—') + dato('V batería',(S.pv_bat||'—')+' VCC') + dato('Temperatura',(S.pv_temp||'—')+' °C') + dato('Presión aceite',(S.pv_aceite||'—')+' Bar') + '</div>';
-    } else {
-      out += nota(S.pvEstado, S.pvMotivo);
-    }
-
-    // Pruebas con carga
-    out += '<h3>Pruebas con carga</h3>';
-    if (!S.pcEstado || S.pcEstado==='pc_si') {
-      out += DG + dato('V L1-L2',(S.pc_l1l2||'—')+' V') + dato('V L2-L3',(S.pc_l2l3||'—')+' V') + dato('V L1-L3',(S.pc_l1l3||'—')+' V') + dato('A L1',(S.pc_a1||'—')+' A') + dato('A L2',(S.pc_a2||'—')+' A') + dato('A L3',(S.pc_a3||'—')+' A') + dato('V batería',(S.pc_bat||'—')+' VCC') + dato('Temperatura',(S.pc_temp||'—')+' °C') + dato('Presión aceite',(S.pc_aceite||'—')+' Bar') + '</div>';
-    } else {
-      out += nota(S.pcEstado, S.pcMotivo);
-    }
-
-    // Batería (avanzado)
-    if (S.estadoBateria || S.batSOC || S.batLife || S.batVoltage) {
-      out += '<h3>Prueba de baterías</h3>';
-      out += DG + dato('SOC',(S.batSOC||'—')+'%') + dato('Life / Vida útil',(S.batLife||'—')+'%') + dato('Voltage',(S.batVoltage||'—')+' V') + dato('Resultado',S.estadoBateria||'—') + '</div>';
-    }
-
-    // Fasímetro (avanzado)
-    if (S.fasimetroGen) {
-      out += '<h3>Fasímetro</h3>';
-      out += DG + dato('Secuencia de fases',S.fasimetroGen) + '</div>';
-    }
+function generarSeccionPruebas(){
+  const esGen=S.tipoEquipo==='gen'||S.tipoEquipo==='ambos',esTTA=S.tipoEquipo==='tta'||S.tipoEquipo==='ambos';
+  const valor=(v,u='')=>(v||'—')+(v&&u?' '+u:'');
+  const grupo=(titulo,items)=>'<div class="measure-group"><div class="measure-title">'+titulo+'</div><div class="measure-values">'+items.map(([l,v])=>'<div class="measure"><span>'+l+'</span><b>'+v+'</b></div>').join('')+'</div></div>';
+  const nota=(estado,motivo)=>{const cfg={pv_noaut:['#5b21b6','#ede9fe','#7c3aed','🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'],pv_no:['#b85a10','#ffe4d0','#e87a2a','❌ NO SE REALIZARON'],pv_nocond:['#92400e','#fef3c7','#f59e0b','⚠️ NO REALIZADAS — NO FUE POSIBLE'],pc_noaut:['#5b21b6','#ede9fe','#7c3aed','🚫 NO REALIZADAS — CLIENTE NO AUTORIZÓ'],pc_no:['#b85a10','#ffe4d0','#e87a2a','❌ NO SE REALIZARON'],pc_nocond:['#92400e','#fef3c7','#f59e0b','⚠️ NO REALIZADAS — NO FUE POSIBLE']};const x=cfg[estado]||['#374151','#f3f4f6','#e5e7eb','— No realizadas'];return '<div style="background:'+x[1]+';border:2px solid '+x[2]+';border-radius:8px;padding:12px 16px;margin:0 32px 12px"><b style="color:'+x[0]+'">'+x[3]+'</b>'+(motivo?'<div style="font-size:12px;margin-top:4px">'+escHTML(motivo)+'</div>':'')+'</div>';};
+  let out='';
+  if(esGen){
+    out+='<div class="test-equipment-title">⚡ Generador</div><h3>Pruebas en vacío</h3>';
+    if(!S.pvEstado||S.pvEstado==='pv_si'){out+='<div class="measure-wrap">'+grupo('Voltajes',[['L1-L2',valor(S.pv_l1l2,'V')],['L2-L3',valor(S.pv_l2l3,'V')],['L1-L3',valor(S.pv_l1l3,'V')]])+grupo('Operación',[['Frecuencia',valor(S.pv_freq,'Hz')],['Velocidad',valor(S.pv_rpm,'RPM')],['Batería',valor(S.pv_bat,'VCC')]])+grupo('Motor',[['Temperatura',valor(S.pv_temp,'°C')],['Presión aceite',valor(S.pv_aceite,'bar')]])+'</div>';}else out+=nota(S.pvEstado,S.pvMotivo);
+    out+='<h3>Pruebas con carga</h3>';
+    if(!S.pcEstado||S.pcEstado==='pc_si'){out+='<div class="measure-wrap">'+grupo('Voltajes',[['L1-L2',valor(S.pc_l1l2,'V')],['L2-L3',valor(S.pc_l2l3,'V')],['L1-L3',valor(S.pc_l1l3,'V')]])+grupo('Corrientes',[['L1',valor(S.pc_a1,'A')],['L2',valor(S.pc_a2,'A')],['L3',valor(S.pc_a3,'A')]])+grupo('Operación',[['Batería',valor(S.pc_bat,'VCC')],['Temperatura',valor(S.pc_temp,'°C')],['Presión aceite',valor(S.pc_aceite,'bar')]])+'</div>';}else out+=nota(S.pcEstado,S.pcMotivo);
+    if(S.estadoBateria||S.batSOC||S.batLife||S.batVoltage){out+='<h3>Prueba de baterías</h3><div class="measure-wrap">'+grupo('Estado de batería',[['SOC',valor(S.batSOC,'%')],['Vida útil',valor(S.batLife,'%')],['Voltaje',valor(S.batVoltage,'V')],['Resultado',S.estadoBateria||'—']])+'</div>';}
+    if(S.fasimetroGen)out+='<h3>Fasímetro</h3><div class="measure-wrap">'+grupo('Secuencia',[['Generador',S.fasimetroGen]])+'</div>';
   }
-
-  if (esTTA) {
-    out += '<div style="font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px">🔌 Tablero de Transferencia Automática</div>';
-
-    // Mediciones eléctricas TTA
-    out += '<h3>Mediciones eléctricas</h3>';
-    if (!S.pvEstado || S.pvEstado==='pv_si') {
-      out += DG + dato('V L1-L2 (red normal)',(S.pv_l1l2||'—')+' V') + dato('V L2-L3',(S.pv_l2l3||'—')+' V') + dato('V L1-L3',(S.pv_l1l3||'—')+' V') + dato('Frecuencia',(S.pv_freq||'—')+' Hz') + dato('A L1',(S.tta_a1||'—')+' A') + dato('A L2',(S.tta_a2||'—')+' A') + dato('A L3',(S.tta_a3||'—')+' A') + (S.pv_bat?dato('V batería control',S.pv_bat+' VCC'):'') + '</div>';
-      if (S.fasimetroNormal) out += DG + dato('Fasímetro red normal',S.fasimetroNormal) + dato('Fasímetro red emergencia',S.fasimetroEmergencia||'—') + '</div>';
-    } else {
-      out += nota(S.pvEstado, S.pvMotivo);
-    }
-
-    // Prueba de transferencia
-    const tf={tf_si:'✅ Sí',tf_no:'❌ No',tf_parcial:'⚠️ Parcial'};
-    const rt={rt_si:'✅ Sí',rt_no:'❌ No',rt_parcial:'⚠️ Parcial'};
-    const sq={seq_ok:'✅ Correcta',seq_mal:'❌ Incorrecta'};
-    if (S.ttaTransfiere || S.ttaRetransfiere || S.ttaSecuencia) {
-      out += '<h3>Prueba de transferencia</h3>';
-      out += DG + dato('Transfiere N→E',tf[S.ttaTransfiere]||'—') + dato('Retransfiere E→N',rt[S.ttaRetransfiere]||'—') + dato('Secuencia de conmutación',sq[S.ttaSecuencia]||'—') + '</div>';
-      if (S.ttaTiempoNE || S.ttaTiempoEN) {
-        out += DG + dato('Tiempo N→E',(S.ttaTiempoNE||'—')+' seg') + dato('Tiempo E→N',(S.ttaTiempoEN||'—')+' seg') + (S.ttaCalor?dato('Calentamiento contactores',S.ttaCalor==='cal_si'?'⚠️ Anormal':'✅ Normal'):'') + '</div>';
-      }
-      if (S.ttaObsTransf) out += '<div style="margin:0 32px 10px;background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;font-size:12px">'+S.ttaObsTransf+'</div>';
-    }
-
-    // Módulo de control
-    if (S.ttaModuloControl === true) {
-      const mc={mc_ok:'✅ Activa',mc_fail:'❌ Sin comunicación'};
-      const dp={disp_ok:'✅ Sí',disp_fail:'❌ No'};
-      out += '<h3>Módulo de control</h3>';
-      out += DG + dato('Comunicación',mc[S.ttaMcComm]||'—') + dato('Alarmas activas',S.ttaAlarmas||'Ninguna') + dato('Display y botones',dp[S.ttaDisplay]||'—') + '</div>';
-    } else if (S.ttaModuloControl === false) {
-      out += '<div style="margin:0 32px 8px;font-size:12px;color:#6b7280;font-style:italic">Sin módulo de control integrado</div>';
-    }
+  if(esTTA){
+    out+='<div class="test-equipment-title">🔌 Tablero de Transferencia Automática</div><h3>Mediciones eléctricas</h3>';
+    if(!S.pvEstado||S.pvEstado==='pv_si'){out+='<div class="measure-wrap">'+grupo('Voltajes',[['L1-L2',valor(S.pv_l1l2,'V')],['L2-L3',valor(S.pv_l2l3,'V')],['L1-L3',valor(S.pv_l1l3,'V')]])+grupo('Corrientes',[['L1',valor(S.tta_a1,'A')],['L2',valor(S.tta_a2,'A')],['L3',valor(S.tta_a3,'A')]])+grupo('Control',[['Frecuencia',valor(S.pv_freq,'Hz')],['Batería',valor(S.pv_bat,'VCC')]])+'</div>';if(S.fasimetroNormal)out+='<div class="measure-wrap">'+grupo('Secuencia de fases',[['Red normal',S.fasimetroNormal],['Red emergencia',S.fasimetroEmergencia||'—']])+'</div>';}else out+=nota(S.pvEstado,S.pvMotivo);
+    const tf={tf_si:'✅ Sí',tf_no:'❌ No',tf_parcial:'⚠️ Parcial'},rt={rt_si:'✅ Sí',rt_no:'❌ No',rt_parcial:'⚠️ Parcial'},sq={seq_ok:'✅ Correcta',seq_mal:'❌ Incorrecta'};
+    if(S.ttaTransfiere||S.ttaRetransfiere||S.ttaSecuencia){out+='<h3>Prueba de transferencia</h3><div class="measure-wrap">'+grupo('Conmutación',[['N→E',tf[S.ttaTransfiere]||'—'],['E→N',rt[S.ttaRetransfiere]||'—'],['Secuencia',sq[S.ttaSecuencia]||'—']])+grupo('Tiempos',[['N→E',valor(S.ttaTiempoNE,'s')],['E→N',valor(S.ttaTiempoEN,'s')],['Calentamiento',S.ttaCalor?(S.ttaCalor==='cal_si'?'⚠️ Anormal':'✅ Normal'):'—']])+'</div>'+(S.ttaObsTransf?'<div class="test-note">'+escHTML(S.ttaObsTransf)+'</div>':'');}
+    if(S.ttaModuloControl===true){const mc={mc_ok:'✅ Activa',mc_fail:'❌ Sin comunicación'},dp={disp_ok:'✅ Sí',disp_fail:'❌ No'};out+='<h3>Módulo de control</h3><div class="measure-wrap">'+grupo('Control',[['Comunicación',mc[S.ttaMcComm]||'—'],['Alarmas',S.ttaAlarmas||'Ninguna'],['Display/botones',dp[S.ttaDisplay]||'—']])+'</div>';}else if(S.ttaModuloControl===false)out+='<div class="test-note">Sin módulo de control integrado</div>';
   }
-
-  return out || '<div style="margin:0 32px;color:#9ca3af;font-size:13px;font-style:italic">Sin pruebas registradas</div>';
+  return out||'<div style="margin:0 32px;color:#9ca3af;font-size:13px;font-style:italic">Sin pruebas registradas</div>';
 }
-
 function generarReporte(tipo, destino) {
   const secs = getSecs();
   const tipoLabel = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'}[S.tipoEquipo]||'';
@@ -1720,6 +1653,14 @@ h3{font-size:13px;font-weight:700;color:#1a5fa8;margin:14px 32px 6px}
 .photo-large{width:100%;max-height:330px;object-fit:contain;background:#f8fafc;border:1px solid #dbe2ea;border-radius:7px}
 .failure-evidence{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .evidence-missing{font-size:11px;color:#b45309;font-style:italic}
+.measure-wrap{margin:0 32px 12px;display:flex;flex-direction:column;gap:8px}
+.measure-group{border:1px solid #dbe2ea;border-radius:8px;overflow:hidden;background:#fff;break-inside:avoid}
+.measure-title{background:#f0f5ff;color:#0a2240;font-size:11px;font-weight:800;padding:6px 9px;text-transform:uppercase;letter-spacing:.3px}
+.measure-values{display:flex;flex-wrap:wrap}
+.measure{flex:1 1 130px;display:flex;justify-content:space-between;gap:8px;padding:8px 9px;border-right:1px solid #eef2f6;font-size:11px}
+.measure span{color:#64748b}.measure b{color:#111827}
+.test-equipment-title{font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px}
+.test-note{margin:0 32px 10px;background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;font-size:12px}
 .report-block,.evidence-card{break-inside:avoid;page-break-inside:avoid}
 @media print{.no-print{display:none!important}h2,h3{break-after:avoid}.photo-large{max-height:310px}.page{max-width:none}}
 </style>
