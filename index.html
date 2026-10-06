@@ -200,10 +200,10 @@ input[type=file]{display:none}
 
 <script>
 // ─── Logos
-const LOGO_SUDMAR = "./assets/logo-sudmar.png";
-const LOGO_PRETTL = "./assets/logo-prettl.png";
-const LOGO_ENDRESS = "./assets/logo-endress.png";
-const LOGO_COMAP = "./assets/logo-comap.png";
+const LOGO_SUDMAR = "https://javi-jim2026.github.io/sudmar-diagnostico/assets/logo-sudmar.png";
+const LOGO_PRETTL = "https://javi-jim2026.github.io/sudmar-diagnostico/assets/logo-prettl.png";
+const LOGO_ENDRESS = "https://javi-jim2026.github.io/sudmar-diagnostico/assets/logo-endress.png";
+const LOGO_COMAP = "https://javi-jim2026.github.io/sudmar-diagnostico/assets/logo-comap.png";
 
 // ─── Estado global ───────────────────────────────────────────────
 let step = 1;
@@ -1692,8 +1692,8 @@ h3{font-size:13px;font-weight:700;color:#1a5fa8;margin:14px 32px 6px}
 .evidence-gallery,.evidence-card{margin-top:10px;border:1px solid #dbe2ea;border-radius:8px;padding:10px;background:#fff}
 .evidence-title{font-size:12px;font-weight:800;color:#0a2240;margin-bottom:7px}
 .evidence-desc{font-size:12px;color:#374151;background:#fff7ed;border-left:3px solid #f59e0b;padding:7px 9px;margin-bottom:8px}
-.photo-large-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.photo-large{width:100%;max-height:330px;object-fit:contain;background:#f8fafc;border:1px solid #dbe2ea;border-radius:7px}
+.photo-large-grid{display:grid;grid-template-columns:1fr;gap:12px;justify-items:center}
+.photo-large{width:100%;max-width:720px;max-height:460px;object-fit:contain;background:#f8fafc;border:1px solid #dbe2ea;border-radius:7px;margin:0 auto}
 .failure-evidence{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .evidence-missing{font-size:11px;color:#b45309;font-style:italic}
 .measure-wrap{margin:0 32px 12px;display:flex;flex-direction:column;gap:8px}
@@ -1705,7 +1705,7 @@ h3{font-size:13px;font-weight:700;color:#1a5fa8;margin:14px 32px 6px}
 .test-equipment-title{font-size:13px;font-weight:700;color:#0a2240;margin:10px 32px 8px;padding:8px 12px;background:#e8f0fb;border-radius:8px}
 .test-note{margin:0 32px 10px;background:#f8f9fa;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;font-size:12px}
 .report-block,.evidence-card{break-inside:avoid;page-break-inside:avoid}
-@media print{.no-print{display:none!important}h2,h3{break-after:avoid}.photo-large{max-height:310px}.page{max-width:none}}
+@media print{.no-print{display:none!important}h2,h3{break-after:avoid}.photo-large{max-height:430px}.page{max-width:none}}
 </style>
 </head>
 <body>
