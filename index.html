@@ -1641,7 +1641,23 @@ function generarSeccionPruebas(){
   }
   return out||'<div style="margin:0 32px;color:#9ca3af;font-size:13px;font-style:italic">Sin pruebas registradas</div>';
 }
+function validarReporteFinal(){
+  const pendientes=[];
+  if(!S.tipoServicio)pendientes.push('Tipo de servicio');
+  if(!S.cliente)pendientes.push('Cliente / solicitante');
+  if(!S.empresa)pendientes.push('Empresa / cliente');
+  if(!S.responsable)pendientes.push('Responsable del diagnóstico');
+  if(!S.tipoEquipo)pendientes.push('Tipo de equipo');
+  const malSinFoto=Object.entries(S.checks||{}).filter(([k,v])=>v==='mal'&&!(S.fF&&S.fF[k]&&S.fF[k].length));
+  const malSinDesc=Object.entries(S.checks||{}).filter(([k,v])=>v==='mal'&&!(S.fallaDesc&&String(S.fallaDesc[k]||'').trim()));
+  if(malSinFoto.length)pendientes.push(malSinFoto.length+' punto(s) con falla sin fotografía');
+  if(malSinDesc.length)pendientes.push(malSinDesc.length+' punto(s) con falla sin descripción');
+  if((S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')&&!(S.fG&&S.fG.placaGen&&S.fG.placaGen.length))pendientes.push('Foto de placa del generador');
+  return pendientes;
+}
 function generarReporte(tipo, destino) {
+  const pendientes=validarReporteFinal();
+  if(pendientes.length&&!confirm('El reporte tiene pendientes:\n\n• '+pendientes.join('\n• ')+'\n\n¿Deseas generar el reporte de todos modos?'))return;
   const secs = getSecs();
   const tipoLabel = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'}[S.tipoEquipo]||'';
   const tsLabel = {diagnostico:'Diagnóstico',mantenimiento:'Mantenimiento preventivo',reparacion:'Reparación',garantia:'Atención a garantía',cierre:'Cierre de conexiones',solar:'Instalación solar'}[S.tipoServicio]||'Servicio';
@@ -2155,54 +2171,10 @@ document.addEventListener('click',function(e){for(const id of ['ubicacion-sugs',
 })();
 </script>
 <script>
-// ─── Registrar Service Worker inline ────────────────────────────
 if ('serviceWorker' in navigator) {
-  const swCode = `const CACHE = 'sudmar-v23';
-const URLS = ['./'];
-
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(URLS)));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks =>
-    Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))
-  ));
-  self.clients.claim();
-});
-
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    fetch(e.request).then(r => {
-      if (r && r.status === 200) {
-        const clone = r.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-      }
-      return r;
-    }).catch(() => caches.match(e.request).then(r => r || caches.match('./')))
-  );
-});`;
-  const swBlob = new Blob([swCode], {type: 'application/javascript'});
-  const swURL = URL.createObjectURL(swBlob);
-  
-  navigator.serviceWorker.register(swURL, {scope: './'})
-    .then(reg => {
-      console.log('SW registrado OK');
-      reg.addEventListener('updatefound', () => {
-        const nw = reg.installing;
-        nw.addEventListener('statechange', () => {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-            const b = document.createElement('div');
-            b.style.cssText = 'position:fixed;bottom:80px;left:16px;right:16px;background:#0a2240;color:#fff;padding:12px 16px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;z-index:9999;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
-            b.innerHTML = '<span>📲 Nueva versión disponible</span><button onclick="window.location.reload()" style="background:#1a5fa8;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer">Actualizar</button>';
-            document.body.appendChild(b);
-          }
-        });
-      });
-    })
-    .catch(e => console.log('SW no disponible:', e));
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW no disponible:',e));
+  });
 }
 </script>
 <script src="./ai-assistant.js"></script>
