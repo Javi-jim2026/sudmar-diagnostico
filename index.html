@@ -1418,7 +1418,7 @@ const STEPS = {
         <div class="out-card" onclick="generarReporte('escrito')">
           <i class="ti ti-clipboard-check" style="color:#e87a2a"></i>
           <div class="out-card-name">Reporte escrito</div>
-          <div class="out-card-desc">Checklist + miniaturas<br>Con firma del cliente</div>
+          <div class="out-card-desc">Checklist compacto + evidencia grande<br>Con firma del cliente</div>
         </div>
       </div>
       <div id="drive-status" class="drive-status"></div>
@@ -1560,58 +1560,25 @@ function footerHtml() {
   </div>`;
 }
 
-function seccionChecklist(sid) {
-  let items, label;
-  if (sid.startsWith('ctrl_')) {
-    const c = CE[sid.replace('ctrl_','')];
-    items=c.items; label=c.label;
-  } else {
-    const s = CK[sid];
-    items=s.items; label=s.label;
-  }
-  const mal = Object.entries(S.checks).filter(([k,v])=>k.startsWith(sid+'_')&&v==='mal').length;
-  const ok  = Object.entries(S.checks).filter(([k,v])=>k.startsWith(sid+'_')&&v==='ok').length;
-  const na  = Object.entries(S.checks).filter(([k,v])=>k.startsWith(sid+'_')&&v==='na').length;
-
-  let rows = items.map((item,i) => {
-    const k = sid+'_'+i, v = S.checks[k]||'';
-    const color = v==='ok'?'#dcf5e4':v==='mal'?'#ffe4d0':v==='na'?'#f3f4f6':'#fff';
-    const badge = v==='ok'?'<span style="color:#1a7a3a;font-weight:700">✓ Bien</span>':v==='mal'?'<span style="color:#b85a10;font-weight:700">✗ Mal</span>':v==='na'?'<span style="color:#6b7280">— N/A</span>':'<span style="color:#9ca3af">—</span>';
-    const desc = (S.fallaDesc&&S.fallaDesc[k]) ? `<div style="font-size:11px;color:#b85a10;margin-top:3px;font-style:italic">↳ ${S.fallaDesc[k]}</div>` : '';
-    // Fotos de falla
-    const fArr = S.fF[k]||[];
-    const fotosTd = fArr.length ? `<td style="padding:6px 8px;background:${color}">${fArr.map(b=>`<img src="${b}" style="width:48px;height:48px;object-fit:cover;border-radius:5px;border:1px solid #ddd;margin-right:3px">`).join('')}</td>` : `<td style="background:${color}"></td>`;
-    return `<tr style="border-bottom:1px solid #f3f4f6">
-      <td style="padding:7px 10px;font-size:12px;background:${color}">${item}${desc}</td>
-      <td style="padding:7px 10px;text-align:center;font-size:12px;background:${color}">${badge}</td>
-      ${fotosTd}
-    </tr>`;
-  }).join('');
-
-  // Fotos generales de sección
-  const gArr = S.fG[sid]||[];
-  const fotosGen = gArr.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px">
-    ${gArr.map(b=>`<img src="${b}" style="height:90px;object-fit:cover;border-radius:7px;border:1.5px solid #e5e7eb">`).join('')}
-  </div>` : '';
-
-  return `
-  <div style="margin-bottom:20px">
-    <div style="background:#0a2240;color:#fff;padding:8px 14px;font-size:13px;font-weight:700;border-radius:6px 6px 0 0;display:flex;justify-content:space-between;align-items:center">
-      <span>${label}</span>
-      <span style="font-size:11px;opacity:.8">${ok} bien · ${mal} mal · ${na} N/A</span>
-    </div>
-    ${fotosGen}
-    <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-top:none">
-      <thead><tr style="background:#f0f4f8">
-        <th style="padding:7px 10px;text-align:left;font-size:11px;color:#374151;font-weight:700;width:60%">Punto de revisión</th>
-        <th style="padding:7px 10px;text-align:center;font-size:11px;color:#374151;font-weight:700;width:15%">Estado</th>
-        <th style="padding:7px 10px;font-size:11px;color:#374151;font-weight:700;width:25%">Evidencia</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </div>`;
+function seccionChecklist(sid){
+  let items,label;
+  if(sid.startsWith('ctrl_')){const c=CE[sid.replace('ctrl_','')];items=c.items;label=c.label;}else{const sec=CK[sid];items=sec.items;label=sec.label;}
+  const entries=items.map((item,i)=>{const k=sid+'_'+i,v=S.checks[k]||'',desc=(S.fallaDesc&&S.fallaDesc[k])||'',fotos=(S.fF&&S.fF[k])||[];return {item,v,desc,fotos};});
+  const ok=entries.filter(x=>x.v==='ok').length,mal=entries.filter(x=>x.v==='mal').length,na=entries.filter(x=>x.v==='na').length;
+  const badge=v=>v==='ok'?'<span style="color:#1a7a3a;font-weight:800">✓ Bien</span>':v==='mal'?'<span style="color:#b45309;font-weight:800">✗ Mal</span>':v==='na'?'<span style="color:#64748b">— N/A</span>':'<span style="color:#94a3b8">Pendiente</span>';
+  const grid='<div class="check-report-grid">'+entries.map((x,i)=>'<div class="check-report-item '+(x.v==='mal'?'is-fail':'')+'"><span style="font-size:10px;color:#94a3b8;margin-right:5px">'+(i+1)+'.</span><span style="flex:1">'+escHTML(x.item)+'</span><span>'+badge(x.v)+'</span></div>').join('')+'</div>';
+  const generales=((S.fG&&S.fG[sid])||[]);
+  const fotosGen=generales.length?'<div class="evidence-gallery"><div class="evidence-title">Evidencia general — '+escHTML(label)+'</div><div class="photo-large-grid">'+generales.map(src=>'<img class="photo-large" src="'+src+'">').join('')+'</div></div>':'';
+  const fallas=entries.filter(x=>x.v==='mal');
+  const evidencias=fallas.length?'<div class="failure-evidence">'+fallas.map(x=>'<div class="evidence-card"><div class="evidence-title">⚠ '+escHTML(x.item)+'</div>'+(x.desc?'<div class="evidence-desc">'+escHTML(x.desc)+'</div>':'')+(x.fotos.length?'<div class="photo-large-grid">'+x.fotos.map(src=>'<img class="photo-large" src="'+src+'">').join('')+'</div>':'<div class="evidence-missing">Sin fotografía registrada</div>')+'</div>').join('')+'</div>':'';
+  return '<div class="report-block" style="margin-bottom:22px"><div style="background:#0a2240;color:#fff;padding:8px 12px;font-size:13px;font-weight:700;border-radius:7px 7px 0 0;display:flex;justify-content:space-between"><span>'+escHTML(label)+'</span><span style="font-size:10px;opacity:.85">'+ok+' bien · '+mal+' mal · '+na+' N/A</span></div>'+grid+fotosGen+evidencias+'</div>';
 }
 
+function fotosPlacasReporte(){
+  const defs=[['placaGen','Placa del generador'],['placaMotor','Placa del motor'],['placaAlt','Placa del alternador']];
+  const bloques=defs.map(([k,label])=>{const arr=(S.fG&&S.fG[k])||[];if(!arr.length)return '';return '<div class="evidence-card"><div class="evidence-title">'+label+'</div><div class="photo-large-grid">'+arr.map(src=>'<img class="photo-large" src="'+src+'">').join('')+'</div></div>';}).filter(Boolean);
+  return bloques.length?'<h3 style="margin-left:0">Evidencia de placas</h3><div class="failure-evidence">'+bloques.join('')+'</div>':'';
+}
 function estatusColor(e) {
   return {operativo:'#dcf5e4', operativo_obs:'#fff8dc', requiere_servicio:'#ffe4d0', fuera_servicio:'#fde8e8'}[e]||'#f3f4f6';
 }
@@ -1725,7 +1692,7 @@ function generarReporte(tipo, destino) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reporte ${tsLabel} — ${S.ticket||''} — ${S.empresa||''}</title>
+<title>Reporte ${tsLabel} — ${S.ticket||''} — ${S.empresa==='otro'?S.empresaOtra:(S.empresa||'')}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#1a1a1a;font-size:13px}
@@ -1743,7 +1710,18 @@ h3{font-size:13px;font-weight:700;color:#1a5fa8;margin:14px 32px 6px}
 .no-print{background:#0a2240;padding:12px 16px;display:flex;gap:10px;position:sticky;top:0;z-index:10}
 .btn-pdf{background:#1a5fa8;color:#fff;border:none;border-radius:8px;padding:11px 0;font-size:14px;font-weight:700;cursor:pointer;flex:1}
 .btn-cerrar{background:#fff;color:#0a2240;border:none;border-radius:8px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer}
-@media print{.no-print{display:none!important}}
+.check-report-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px;border:1px solid #dbe2ea;border-top:none;background:#f8fafc}
+.check-report-item{display:flex;align-items:flex-start;gap:5px;padding:7px 8px;background:#fff;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;line-height:1.25}
+.check-report-item.is-fail{background:#fff7ed;border-color:#fdba74}
+.evidence-gallery,.evidence-card{margin-top:10px;border:1px solid #dbe2ea;border-radius:8px;padding:10px;background:#fff}
+.evidence-title{font-size:12px;font-weight:800;color:#0a2240;margin-bottom:7px}
+.evidence-desc{font-size:12px;color:#374151;background:#fff7ed;border-left:3px solid #f59e0b;padding:7px 9px;margin-bottom:8px}
+.photo-large-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.photo-large{width:100%;max-height:330px;object-fit:contain;background:#f8fafc;border:1px solid #dbe2ea;border-radius:7px}
+.failure-evidence{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.evidence-missing{font-size:11px;color:#b45309;font-style:italic}
+.report-block,.evidence-card{break-inside:avoid;page-break-inside:avoid}
+@media print{.no-print{display:none!important}h2,h3{break-after:avoid}.photo-large{max-height:310px}.page{max-width:none}}
 </style>
 </head>
 <body>
@@ -1760,8 +1738,9 @@ ${headerHtml()}
   <div class="dato"><span class="dato-label">Ticket</span><span class="dato-val">#${S.ticket||'—'}</span></div>
   <div class="dato"><span class="dato-label">Fecha</span><span class="dato-val">${S.fecha||'—'}</span></div>
   <div class="dato"><span class="dato-label">Cliente</span><span class="dato-val">${S.cliente||'—'}</span></div>
-  <div class="dato"><span class="dato-label">Empresa</span><span class="dato-val">${S.empresa==='otra'?S.empresaOtra:S.empresa||'—'}</span></div>
+  <div class="dato"><span class="dato-label">Empresa</span><span class="dato-val">${S.empresa==='otro'?S.empresaOtra:S.empresa||'—'}</span></div>
   <div class="dato"><span class="dato-label">Ubicación</span><span class="dato-val">${S.ubicacion||'—'}</span></div>
+  ${S.sitio?`<div class="dato"><span class="dato-label">Sitio / localidad</span><span class="dato-val">${S.sitio}</span></div>`:''}
   <div class="dato"><span class="dato-label">Responsable</span><span class="dato-val">${S.responsable||'—'}</span></div>
   <div class="dato"><span class="dato-label">Técnico(s)</span><span class="dato-val">${S.tecnicos||'—'}</span></div>
   <div class="dato"><span class="dato-label">Tipo de servicio</span><span class="dato-val">${tsLabel}</span></div>
@@ -1793,6 +1772,7 @@ ${S.tipoEquipo==='tta' ? `
   <div class="dato"><span class="dato-label">Corriente nominal</span><span class="dato-val">${S.corrienteTta||'—'} A</span></div>
 </div>` : ''}
 
+<div class="sb">${fotosPlacasReporte()}</div>
 <h2>3. Inspección y análisis</h2>
 <div class="sb">${secs.map(s=>seccionChecklist(s)).join('')}</div>
 
