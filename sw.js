@@ -1,8 +1,13 @@
-const CACHE_NAME = 'sudmar-v23';
+const CACHE_NAME = 'sudmar-v24';
 const ASSETS = [
   '/sudmar-diagnostico/',
   '/sudmar-diagnostico/index.html',
   '/sudmar-diagnostico/manifest.json',
+  '/sudmar-diagnostico/ai-assistant.js',
+  '/sudmar-diagnostico/assets/logo-sudmar.png',
+  '/sudmar-diagnostico/assets/logo-prettl.png',
+  '/sudmar-diagnostico/assets/logo-endress.png',
+  '/sudmar-diagnostico/assets/logo-comap.png',
   'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css',
   'https://accounts.google.com/gsi/client'
 ];
@@ -14,7 +19,12 @@ self.addEventListener('install', event => {
       return cache.addAll([
         '/sudmar-diagnostico/',
         '/sudmar-diagnostico/index.html',
-        '/sudmar-diagnostico/manifest.json'
+        '/sudmar-diagnostico/manifest.json',
+        '/sudmar-diagnostico/ai-assistant.js',
+        '/sudmar-diagnostico/assets/logo-sudmar.png',
+        '/sudmar-diagnostico/assets/logo-prettl.png',
+        '/sudmar-diagnostico/assets/logo-endress.png',
+        '/sudmar-diagnostico/assets/logo-comap.png'
       ]);
     })
   );
