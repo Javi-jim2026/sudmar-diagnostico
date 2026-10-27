@@ -4,6 +4,7 @@ on:
     branches:
       - feature/levantamientos-partes-fotos-20261027
       - feature/levantamiento-instalacion-electrica-20261027
+      - feature/alternativas-conductores-canalizaciones-20261027
   pull_request:
     branches:
       - main
@@ -18,6 +19,8 @@ jobs:
         run: |
           node --check componentes-registro.js
           node --check levantamiento-instalacion.js
+          node --check alternativas-instalacion.js
+          node --test tests/alternativas.test.cjs
           node --test tests/instalacion.test.cjs
           node --check ai-assistant.js
           node --test tests/partes.test.cjs
