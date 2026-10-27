@@ -838,7 +838,7 @@ const STEPS = {
         </div>
       </div>
 
-      <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
+      <details style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px"><summary style="cursor:pointer;font-weight:700;color:#1a3a6a">Mostrar registro anterior de filtros (opcional)</summary>
         <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px">🔩 Filtros y refacciones (captura anterior; para fotos usa el apartado nuevo)</div>
         <table style="width:100%;border-collapse:collapse">
           <thead>
@@ -868,7 +868,7 @@ const STEPS = {
             </tr>`).join('')}
           </tbody>
         </table>
-      </div>` : ''}
+      </details>` : ''}
 
       ${esTTA ? `
       <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
@@ -1530,7 +1530,7 @@ cargarFotosIDB().then(()=>{updateFotoPlacas();render();}).catch(()=>{});
 
 function render() {
   guardarEstado();
-  document.getElementById('content').innerHTML = STEPS[step]() + (step===3 && ['levantamiento','mantenimiento','diagnostico','reparacion','garantia'].includes(S.tipoServicio) ? partesSeccion() : '');
+  document.getElementById('content').innerHTML = (step===3 && ['levantamiento','mantenimiento','diagnostico','reparacion','garantia'].includes(S.tipoServicio) ? partesSeccion() : '') + STEPS[step]();
   document.getElementById('prog').style.width = (step/TOTAL_STEPS*100)+'%';
   for (let i=1;i<=TOTAL_STEPS;i++) {
     const el = document.getElementById('sl'+i);
