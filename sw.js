@@ -1,9 +1,10 @@
-const CACHE_NAME = 'sudmar-v24';
+const CACHE_NAME = 'sudmar-v25-levantamientos';
 const ASSETS = [
   '/sudmar-diagnostico/',
   '/sudmar-diagnostico/index.html',
   '/sudmar-diagnostico/manifest.json',
   '/sudmar-diagnostico/ai-assistant.js',
+  '/sudmar-diagnostico/componentes-registro.js',
   '/sudmar-diagnostico/assets/logo-sudmar.png',
   '/sudmar-diagnostico/assets/logo-prettl.png',
   '/sudmar-diagnostico/assets/logo-endress.png',
