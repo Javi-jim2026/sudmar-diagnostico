@@ -75,3 +75,21 @@ test('el reporte automatizado incluye las tres rutas, material y aviso de ingeni
  assert.match(html,/310-10/);
  assert.doesNotMatch(html,/no aprobado por OpenAI/);
 });
+
+test('resistencia de referencia convertida correctamente: 8 AWG ≈ 2.66 Ω/km a 75 °C',()=>{
+ const c=make();
+ const r=vm.runInContext('AC_CABLES[0][4]',c);
+ const x=vm.runInContext('AC_CABLES[0][5]',c);
+ assert.ok(Math.abs(r-0.81*3.280839895)<.002);
+ assert.ok(Math.abs(x-0.052*3.280839895)<.002);
+ const drop=vm.runInContext('acVoltageDrop(AC_CABLES[0],50,100,1,true,.8,220)',c);
+ assert.ok(drop>8 && drop<9.5,'100 m, 8 AWG, 50 A da una caída alta, no ~4%: '+drop);
+});
+test('con tramo largo se aumenta calibre por impedancia AC correctamente convertida',()=>{
+ const c=make();
+ const short=evalOpts(c,50,5);
+ const long=evalOpts(c,50,100);
+ assert.equal(short.options.find(o=>o.sets===1).calibre,'6 AWG');
+ assert.notEqual(long.options.find(o=>o.sets===1).calibre,'6 AWG');
+ assert.ok(long.options.find(o=>o.sets===1).drop<=3);
+});

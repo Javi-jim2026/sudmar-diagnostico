@@ -1,18 +1,19 @@
 // Alternativas de conductores y canalizaciones: PRE-DIMENSIONAMIENTO, no ingeniería ejecutiva.
 // Referencias: NOM-001-SEDE-2012 310-10(h), 310-15(b)(3)(a), Cap.10 tabla 1, 376-22, 392-22.
 // Diámetros y R/X: Southwire SIMpull Cu THHN/THWN-2 (referencia de fabricante); LFMC: Electri-Flex LA.
+// Southwire especifica R/X en Ω/1000 ft; el catálogo interno utiliza Ω/km (factor 3.280839895).
 // No se calculan costos sin cotizaciones, ni se certifica instalación; confirmar material exacto y terminales.
 const AC_CABLES=[
   // Calibre, ampacidad Cu 75C, Cu 90C, diámetro exterior mm, resistencia AC ohm/km, reactancia ohm/km, índice relativo Cu (mm²)
-  ['8 AWG',50,55,5.51,1.17,.08,8.37],['6 AWG',65,75,6.43,.74,.08,13.3],
-  ['4 AWG',85,95,8.18,.46,.07,21.2],['3 AWG',100,115,8.89,.37,.07,26.7],
-  ['2 AWG',115,130,9.75,.29,.07,33.6],['1 AWG',130,145,11.20,.23,.07,42.4],
-  ['1/0 AWG',150,170,12.19,.18,.07,53.5],['2/0 AWG',175,195,13.31,.14,.06,67.4],
-  ['3/0 AWG',200,225,14.58,.12,.06,85.0],['4/0 AWG',230,260,15.93,.09,.06,107.2],
-  ['250 kcmil',255,290,17.37,.08,.06,127],['300 kcmil',285,320,19.13,.07,.06,152],
-  ['350 kcmil',310,350,20.40,.06,.06,177],['400 kcmil',335,380,21.54,.05,.06,203],
-  ['500 kcmil',380,430,23.65,.04,.06,253],['600 kcmil',420,475,26.16,.04,.06,304],
-  ['750 kcmil',475,535,28.75,.03,.06,380],['1000 kcmil',545,615,32.54,.03,.06,507]
+  ['8 AWG',50,55,5.51,2.6575,0.1706,8.37],['6 AWG',65,75,6.43,1.6732,0.1673,13.3],
+  ['4 AWG',85,95,8.18,1.0499,0.1575,21.2],['3 AWG',100,115,8.89,0.8333,0.1542,26.7],
+  ['2 AWG',115,130,9.75,0.6594,0.1476,33.6],['1 AWG',130,145,11.20,0.5217,0.1509,42.4],
+  ['1/0 AWG',150,170,12.19,0.4167,0.1444,53.5],['2/0 AWG',175,195,13.31,0.3346,0.1411,67.4],
+  ['3/0 AWG',200,225,14.58,0.2592,0.1378,85.0],['4/0 AWG',230,260,15.93,0.2067,0.1345,107.2],
+  ['250 kcmil',255,290,17.37,0.1739,0.1345,127],['300 kcmil',285,320,19.13,0.1476,0.1345,152],
+  ['350 kcmil',310,350,20.40,0.1280,0.1312,177],['400 kcmil',335,380,21.54,0.1148,0.1312,203],
+  ['500 kcmil',380,430,23.65,0.0886,0.1280,253],['600 kcmil',420,475,26.16,0.0787,0.1280,304],
+  ['750 kcmil',475,535,28.75,0.0623,0.1247,380],['1000 kcmil',545,615,32.54,0.0525,0.1214,507]
 ];
 const AC_EMT=[['½″',15.8],['¾″',20.9],['1″',26.6],['1¼″',35.1],['1½″',40.9],['2″',52.5],['2½″',69.4],['3″',85.2],['3½″',97.4],['4″',110.1]];
 const AC_LFMC=[['½″',15.8],['¾″',20.8],['1″',26.4],['1¼″',35.1],['1½″',40],['2″',51.3],['2½″',63],['3″',78],['3½″',88.9],['4″',101.6]];
@@ -38,7 +39,7 @@ function acTray(diameters,eligible){
 function acVoltageDrop(cable,amp,length,sets,phase,fp,voltage){
  if(!(Number.isFinite(length)&&length>=0&&voltage>0))return NaN;
  const cos=fp>0&&fp<=1?fp:.8,sin=Math.sqrt(1-cos*cos);
- const r=cable[4]/sets,x=cable[5]/sets;
+ const r=cable[4]/sets,x=cable[5]/sets; // Valores R/X en Ω/km, no Ω/1000 pies.
  // R/X de fabricante; disposición paralela y circuito final se confirman en ingeniería.
  return (phase?Math.sqrt(3):2)*amp*(r*cos+x*sin)*(length/1000)/voltage*100;
 }
