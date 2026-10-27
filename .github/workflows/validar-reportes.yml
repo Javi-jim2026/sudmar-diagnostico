@@ -18,3 +18,8 @@ jobs:
           node --check componentes-registro.js
           node --check ai-assistant.js
           node --test tests/partes.test.cjs
+      - name: Probar captura de filtros en navegador móvil
+        run: |
+          npm install --no-save --package-lock=false playwright@1.62.1
+          npx playwright install --with-deps chromium
+          node tests/partes.e2e.cjs
