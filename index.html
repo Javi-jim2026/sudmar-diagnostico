@@ -382,6 +382,8 @@ function updateFotoPlacas(){if(!S.fG)S.fG={};S.fotoPlacaGen=!!(S.fG.placaGen&&S.
 // ─── Renderizado de checklist ─────────────────────────────────────
 function getSecs() {
   const t = S.tipoEquipo, s = [];
+  // El levantamiento es documental; no obliga a un diagnóstico completo.
+  if (S.tipoServicio === 'levantamiento') return [];
   // Garantía sin diagnóstico: no muestra checklist
   if (S.tipoServicio === 'garantia' && S.garantiaConDiag !== true) return [];
   if (t==='gen'||t==='ambos') {
@@ -837,7 +839,7 @@ const STEPS = {
       </div>
 
       <div style="background:#f0f5ff;border:1.5px solid #c0d0f0;border-radius:10px;padding:14px;margin-bottom:14px">
-        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px">🔩 Filtros y refacciones</div>
+        <div style="font-size:12px;font-weight:700;color:#1a3a6a;margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px">🔩 Filtros y refacciones (captura anterior; para fotos usa el apartado nuevo)</div>
         <table style="width:100%;border-collapse:collapse">
           <thead>
             <tr style="background:#e8f0fb">
@@ -1015,6 +1017,7 @@ const STEPS = {
   6: () => STEPS.REAL5(),
 
   REAL_PASO3: () => {
+    if (S.tipoServicio === 'levantamiento') return `<div class="section-title">Inspección para levantamiento</div><div class="section-sub">Las referencias de filtros ya quedaron registradas en el paso anterior. La inspección detallada es opcional para este tipo de reporte.</div><div class="field"><label class="label">Comentarios de inspección (opcional)</label><textarea class="input" rows="4" oninput="S.observacionLevantamiento=this.value;guardarEstado()" placeholder="Estado de componentes, acceso o necesidades de mantenimiento...">${S.observacionLevantamiento||''}</textarea></div>`;
     // Garantía solo dictamen — sin checklist
     if (S.tipoServicio === 'garantia' && S.garantiaConDiag === false) return `
       <div class="section-title">Dictamen de garantía</div>
@@ -1067,6 +1070,7 @@ const STEPS = {
   },
 
   REAL4: () => {
+    if (S.tipoServicio === 'levantamiento') return `<div class="section-title">Datos de levantamiento</div><div class="section-sub">No se requieren pruebas de carga para identificar filtros. Puedes documentar observaciones antes de generar el reporte.</div><div class="field"><label class="label">Observaciones adicionales (opcional)</label><textarea class="input" rows="4" oninput="S.obsPruebasLev=this.value;guardarEstado()" placeholder="Accesibilidad, disponibilidad de refacciones, indicaciones para mantenimiento...">${S.obsPruebasLev||''}</textarea></div>`;
     const esGen = S.tipoEquipo==='gen' || S.tipoEquipo==='ambos';
     const esTTA = S.tipoEquipo==='tta' || S.tipoEquipo==='ambos';
     const mb = S.modoPrueba === 'basico';
@@ -1674,7 +1678,7 @@ function validarReporteFinal(){
   const malSinDesc=Object.entries(S.checks||{}).filter(([k,v])=>v==='mal'&&!(S.fallaDesc&&String(S.fallaDesc[k]||'').trim()));
   if(malSinFoto.length)pendientes.push(malSinFoto.length+' punto(s) con falla sin fotografía');
   if(malSinDesc.length)pendientes.push(malSinDesc.length+' punto(s) con falla sin descripción');
-  if((S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')&&!(S.fG&&S.fG.placaGen&&S.fG.placaGen.length))pendientes.push('Foto de placa del generador');
+  if(S.tipoServicio!=='levantamiento'&&(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')&&!(S.fG&&S.fG.placaGen&&S.fG.placaGen.length))pendientes.push('Foto de placa del generador');
   return pendientes;
 }
 function generarReporte(tipo, destino) {
@@ -1682,7 +1686,7 @@ function generarReporte(tipo, destino) {
   if(pendientes.length&&!confirm('El reporte tiene pendientes:\n\n• '+pendientes.join('\n• ')+'\n\n¿Deseas generar el reporte de todos modos?'))return;
   const secs = getSecs();
   const tipoLabel = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'}[S.tipoEquipo]||'';
-  const tsLabel = {diagnostico:'Diagnóstico',mantenimiento:'Mantenimiento preventivo',reparacion:'Reparación',garantia:'Atención a garantía',cierre:'Cierre de conexiones',solar:'Instalación solar'}[S.tipoServicio]||'Servicio';
+  const tsLabel = {diagnostico:'Diagnóstico',mantenimiento:'Mantenimiento preventivo',reparacion:'Reparación',garantia:'Atención a garantía',cierre:'Cierre de conexiones',solar:'Instalación solar',levantamiento:'Levantamiento técnico'}[S.tipoServicio]||'Servicio';
 
   // Construir HTML completo del reporte
   const reporteHTML = `<!DOCTYPE html>
@@ -1783,7 +1787,7 @@ ${S.tipoEquipo==='tta' ? `
 <div class="sb">${secs.map(s=>seccionChecklist(s)).join('')}</div>
 
 ${S.tipoServicio==='mantenimiento' ? `
-<h2>3b. Lista de materiales utilizados</h2>
+<h2>3b. Lista de materiales utilizados (captura anterior)</h2>
 <div class="sb">
 ${(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') ? `
   ${(S.ins_aceite_lt||S.ins_anti_lt) ? `
