@@ -42,6 +42,8 @@ const server=createServer(async(req,res)=>{
   await page.locator('#li-redAts').fill('60');
   await page.locator('#li-atsCarga').fill('25');
   assert.match(await page.locator('#li-vista-calculo').innerText(),/kW/);
+  assert.match(await page.locator('#li-vista-calculo').innerText(),/Alternativas automáticas por tramo/);
+  assert.match(await page.locator('#li-vista-calculo').innerText(),/Liquidtight/);
   assert.match(await page.locator('#li-vista-calculo').innerText(),/60 kW/);
   await page.evaluate(()=>nav(1));
   assert.equal(await page.locator('#li-inst-local').count(),0);
@@ -56,6 +58,7 @@ const server=createServer(async(req,res)=>{
   assert.equal(await page.locator('#canvasTec').count(),0);
   const report=await page.evaluate(()=>liReporteInstalacionHtml());
   assert.match(report,/Ing. Daniel Hernández/);
+  assert.match(report,/Alternativas automáticas por tramo/);
   assert.match(report,/45/);
   assert.match(report,/data:image/);
   assert.doesNotMatch(report,/Firmas de responsabilidad/);
