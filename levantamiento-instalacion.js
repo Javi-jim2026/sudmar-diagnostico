@@ -163,7 +163,7 @@ function liCalcular(){
   const drop=Number.isFinite(longitud)?(fase?Math.sqrt(3):2)*amp*pos[2]*1.22*(longitud/1000)/v*100:NaN;
   return {nombre,metros:longitud,corriente:amp,calibre:pos[0],drop,reason:'Cu/75 °C, ampacidad y caída resistiva estimadas'};
  });
- return {ok:true,kwBase:kw,kvaBase:kva,kwDem,kvaDem,iDem,kwPro,kvaPro,iGen,ats,escalon,hilos,tramos,avisos,correccionConfirmada,pf,voltage:v};
+ return {ok:true,kwBase:kw,kvaBase:kva,kwDem,kvaDem,iDem,kwPro,kvaPro,iGen,ats,escalon,hilos,tramos,avisos,correccionConfirmada,pf:fp,voltage:v};
 }
 function liResultados(){
  const c=liCalcular();
