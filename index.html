@@ -395,7 +395,7 @@ async function procesarImagen(file){
 }
 async function agregarFotoDesdeArchivo(file){
   if(!file||!pendingPhotoKey)return;
-  try{const b64=await procesarImagen(file);if(pendingPhotoType==='gen'){if(!S.fG)S.fG={};if(!S.fG[pendingPhotoKey])S.fG[pendingPhotoKey]=[];S.fG[pendingPhotoKey].push(b64);}else{if(!S.fF)S.fF={};if(!S.fF[pendingPhotoKey])S.fF[pendingPhotoKey]=[];S.fF[pendingPhotoKey].push(b64);}updateFotoPlacas();programarGuardadoFotos();render();}catch(e){showAlert('⚠️ No fue posible procesar la fotografía. Intenta nuevamente.');}
+  try{const b64=await procesarImagen(file);if(pendingPhotoType==='gen'){if(!S.fG)S.fG={};if(!S.fG[pendingPhotoKey])S.fG[pendingPhotoKey]=[];S.fG[pendingPhotoKey].push(b64);}else{if(!S.fF)S.fF={};if(!S.fF[pendingPhotoKey])S.fF[pendingPhotoKey]=[];S.fF[pendingPhotoKey].push(b64);}updateFotoPlacas();await guardarFotosIDB();render();}catch(e){showAlert('⚠️ No fue posible procesar la fotografía. Intenta nuevamente.');}
 }
 document.getElementById('gal-input').addEventListener('change',async function(e){await agregarFotoDesdeArchivo(e.target.files[0]);this.value='';});
 document.getElementById('cam-input').addEventListener('change',async function(e){await agregarFotoDesdeArchivo(e.target.files[0]);this.value='';});
