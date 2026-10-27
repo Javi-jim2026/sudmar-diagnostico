@@ -75,7 +75,7 @@ function renderInstalacionPaso3(){
  liSelect('material','Material de conductor',[['cobre','Cobre'],['aluminio','Aluminio (sin calibre automático)']])+
  liText('tipoCanalizacion','Canalización y ruta','Charola, conduit, tubería subterránea, número de circuitos y ocupación.')+
  liSelect('instalacion','Método de instalación',[['','Pendiente'],['tuberia','Canalización cerrada'],['charola','Charola ventilada'],['enterrada','Subterránea'],['aire','Al aire / aparente']])+
- liRow([liField('tempFactor','Factor correctivo por temperatura (si calculado)','','Ej. 0.91','number'),liField('agrupFactor','Factor correctivo por agrupamiento (si calculado)','','Ej. 0.80','number'),liField('caidaMax','Caída de tensión objetivo por tramo','%','3','number')])+
+ liRow([liField('tempFactor','Factor correctivo por temperatura (si calculado)','','Ej. 0.91','number'),liField('agrupFactor','Factor adicional por agrupamiento (si aplica)','','Ej. 0.80','number'),liField('caidaMax','Caída de tensión objetivo por tramo','%','3','number')])+
  liField('cortocircuito','Corriente de cortocircuito disponible','kA','','number'))+
  '<div id="li-vista-calculo">'+liResultados()+'</div>';
 }
@@ -172,7 +172,7 @@ function liResultados(){
  const tramos='<div class="li-tablewrap"><table><thead><tr><th>Tramo</th><th>Longitud</th><th>Corriente</th><th>Calibre tentativo</th><th>Caída resistiva</th></tr></thead><tbody>'+c.tramos.map(t=>'<tr><td>'+liEsc(t.nombre)+'</td><td>'+liFmt(t.metros)+' m</td><td>'+liFmt(t.corriente)+' A</td><td>'+liEsc(t.calibre)+'</td><td>'+liFmt(t.drop,2)+' %</td></tr>').join('')+'</tbody></table></div>';
  return '<div class="li-result"><strong>Propuesta preliminar de ingeniería (NO apta para compra ni instalación directa)</strong>'+big+
  '<p>Escalón comercial orientativo: <b>'+(c.escalon||'Fuera de lista')+' kW</b> · Corriente nominal estimada del generador: <b>'+liFmt(c.iGen)+' A</b> · Red de conductores: <b>'+liEsc(c.hilos)+'</b>.</p>'+
- tramos+'<p class="li-note">Cálculo resistivo simplificado Cu/75 °C, sin reactancia; la selección requiere confirmación por caída de tensión total, ampacidad corregida, protección, cortocircuito, neutral y PE, condiciones reales y NOM-001-SEDE.</p>'+
+ liOpcionesAutomaticas()+'<p class="li-note">Comparación por rutas y arreglos bajo hipótesis del catálogo Cu THHN/THWN-2; aun requiere liberación por ingeniería: ampacidad real, caída total, terminales, protección, cortocircuito, neutro, PE y condiciones de obra.</p>'+
  '<ul>'+c.avisos.map(a=>'<li>'+liEsc(a)+'</li>').join('')+'</ul></div>';
 }
 function renderInstalacionPaso5(){
