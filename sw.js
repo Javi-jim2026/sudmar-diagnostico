@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sudmar-v26-instalacion';
+const CACHE_NAME = 'sudmar-v27-alternativas-conduit';
 const ASSETS = [
   '/sudmar-diagnostico/',
   '/sudmar-diagnostico/index.html',
@@ -6,6 +6,7 @@ const ASSETS = [
   '/sudmar-diagnostico/ai-assistant.js',
   '/sudmar-diagnostico/componentes-registro.js',
   '/sudmar-diagnostico/levantamiento-instalacion.js',
+  '/sudmar-diagnostico/alternativas-instalacion.js',
   '/sudmar-diagnostico/assets/logo-sudmar.png',
   '/sudmar-diagnostico/assets/logo-prettl.png',
   '/sudmar-diagnostico/assets/logo-endress.png',
@@ -25,6 +26,7 @@ self.addEventListener('install', event => {
         '/sudmar-diagnostico/ai-assistant.js',
         '/sudmar-diagnostico/componentes-registro.js',
         '/sudmar-diagnostico/levantamiento-instalacion.js',
+        '/sudmar-diagnostico/alternativas-instalacion.js',
         '/sudmar-diagnostico/assets/logo-sudmar.png',
         '/sudmar-diagnostico/assets/logo-prettl.png',
         '/sudmar-diagnostico/assets/logo-endress.png',
