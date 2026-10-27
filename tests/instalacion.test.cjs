@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const src=fs.readFileSync('levantamiento-instalacion.js','utf8');
 const html=fs.readFileSync('index.html','utf8');
-function ctx(){const c=vm.createContext({});vm.runInContext("const S={instalacion:{},tipoServicio:'levantamiento_instalacion',responsable:'Ing. Ejemplo',cliente:'Contacto',empresa:'Cliente',fecha:'2026-10-27',fG:{},ticket:'2800'};function guardarEstado(){};function render(){};function headerHtml(){return '<header>SUDMAR</header>'};function footerHtml(){return '<footer>SUDMAR</footer>'}",c);vm.runInContext(src,c);return c;}
+function ctx(){const c=vm.createContext({});vm.runInContext("const S={instalacion:{},tipoServicio:'levantamiento_instalacion',responsable:'Ing. Ejemplo',cliente:'Contacto',empresa:'Cliente',fecha:'2026-10-27',fG:{},ticket:'2800'};function guardarEstado(){};function render(){};function headerHtml(){return '<header>SUDMAR</header>'};function footerHtml(){return '<footer>SUDMAR</footer>'}",c);vm.runInContext(src,c);vm.runInContext(fs.readFileSync('alternativas-instalacion.js','utf8'),c);return c;}
 function data(c,values){vm.runInContext('Object.assign(S.instalacion,'+JSON.stringify(values)+')',c);return vm.runInContext('liCalcular()',c);}
 test('principal calcula kW 3F, kVA, factor de demanda, crecimiento, disponibilidad y ATS',()=>{
  const c=ctx();let v=data(c,{sistema:'3f4h',voltaje:'220',corrienteL1:'120',corrienteL2:'115',corrienteL3:'118'});
