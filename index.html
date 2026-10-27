@@ -172,6 +172,28 @@ input[type=file]{display:none}
 .parte-foto img{width:100%;height:160px;object-fit:contain;border:1px solid #dbe3ea;border-radius:8px}
 .parte-foto button{position:absolute;right:5px;top:5px}
 @media(max-width:380px){.registro-partes .input-row{grid-template-columns:1fr}}
+
+.li-section{border:1.5px solid #dbe3ef;border-radius:12px;padding:14px;margin:12px 0;background:#fff}
+.li-section h3{font-size:14px;color:#0a2240;margin:0 0 12px}
+.li-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.li-field{min-width:0}
+.li-field .input{width:100%}
+.li-result{background:#eef5ff;border:1.5px solid #aec7df;border-radius:12px;padding:14px;margin:14px 0;font-size:12px;line-height:1.55}
+.li-result>strong{font-size:13px;color:#0a2240}
+.li-result p{margin:10px 0}
+.li-result ul{padding-left:19px;margin:10px 0;color:#55411f}
+.li-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.li-kpis div{border:1px solid #cfdfef;background:white;border-radius:7px;padding:9px;min-width:0}
+.li-kpis span{font-size:10px;color:#567183;display:block}
+.li-kpis strong{font-size:17px;color:#0a2240}
+.li-tablewrap{overflow-x:auto}
+.li-tablewrap table{border-collapse:collapse;min-width:540px;width:100%;font-size:11px}
+.li-tablewrap th,.li-tablewrap td{padding:7px;border:1px solid #d5e2ea;text-align:left}
+.li-tablewrap th{background:#0a2240;color:white}
+.li-note{font-size:11px;color:#8c4b13}
+.li-photo{border-top:1px solid #e3e9ed;margin:9px 0;padding-top:11px}
+.li-photo>strong{display:block;margin-bottom:9px}
+@media(max-width:430px){.li-row{grid-template-columns:1fr}.li-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -214,6 +236,7 @@ input[type=file]{display:none}
 <input type="file" id="gal-input" accept="image/*">
 
 <script src="./componentes-registro.js"></script>
+<script src="./levantamiento-instalacion.js"></script>
 <script>
 // ─── Logos
 const LOGO_SUDMAR = "https://javi-jim2026.github.io/sudmar-diagnostico/assets/logo-sudmar.png";
@@ -233,7 +256,7 @@ const S = {
   modoPrueba: null, // 'basico' | 'avanzado'
   ttaModuloControl: null, // true | false
   tipoEquipo: null, tipoControl: null,
-  checks:{}, fG:{}, fF:{}, partesRegistro:[],   // fotos de placas, evidencias y componentes
+  checks:{}, fG:{}, fF:{}, partesRegistro:[], instalacion:{},   // fotos de placas, evidencias y componentes
   // pruebas vacío
   pv_l1l2:'', pv_l2l3:'', pv_l1l3:'', pv_freq:'', pv_rpm:'', pv_bat:'', pv_temp:'', pv_aceite:'',
   // pruebas con carga
@@ -575,7 +598,8 @@ const STEPS = {
           {id:'garantia', icon:'🛡️', name:'Garantía'},
           {id:'cierre', icon:'🔌', name:'Cierre de conexiones'},
           {id:'solar', icon:'☀️', name:'Instalación solar'},
-          {id:'levantamiento', icon:'📋', name:'Levantamiento'}
+          {id:'levantamiento', icon:'📋', name:'Levantamiento de filtros'},
+          {id:'levantamiento_instalacion', icon:'⚡', name:'Levantamiento para instalación de planta'}
         ].map(t => `
           <div onclick="S.tipoServicio='${t.id}';render()" style="border:2px solid ${S.tipoServicio===t.id?'#1a5fa8':'#e5e7eb'};border-radius:10px;padding:10px 12px;cursor:pointer;background:${S.tipoServicio===t.id?'#eaf1fb':'#fff'};display:flex;align-items:center;gap:8px;transition:all .15s">
             <span style="font-size:18px">${t.icon}</span>
@@ -623,7 +647,7 @@ const STEPS = {
       </div>
     </div>
     <div class="field">
-      <label class="label">Responsable del diagnóstico</label>
+      <label class="label">${S.tipoServicio==='levantamiento_instalacion'?'Responsable del levantamiento':'Responsable del diagnóstico'}</label>
       <select class="input select" onchange="S.responsable=this.value">
         <option value="">Seleccionar responsable...</option>
         <option value="Ing. Javier Jiménez">Ing. Javier Jiménez</option>
@@ -634,8 +658,9 @@ const STEPS = {
 <option value="Ing. Rodolfo Martínez">Ing. Rodolfo Martínez</option>
       </select>
     </div>
+    ${S.tipoServicio==='levantamiento_instalacion' ? liField('acompanantes','Acompañantes de la visita','','Nombres del personal que asistió') : '' }
     <div class="field">
-      <label class="label">Técnico(s) que realizó el servicio</label>
+      <label class="label">${S.tipoServicio==='levantamiento_instalacion'?'Personal técnico que acompañó la visita':'Técnico(s) que realizó el servicio'}</label>
       <div style="border:1.5px solid #e5e7eb;border-radius:9px;overflow:hidden;background:#fff">
                 <label style="display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid #f3f4f6;cursor:pointer">
           <input type="checkbox" ${(S.tecnicosArr||[]).includes("Ing. Javier Jiménez")?'checked':''} 
@@ -680,7 +705,7 @@ const STEPS = {
       </div>
     </div>`,
 
-  2: () => `
+  2: () => S.tipoServicio==='levantamiento_instalacion' ? renderInstalacionPaso2() : `
     <div class="section-title">Tipo de equipo</div>
     <div class="section-sub">Selecciona qué se va a diagnosticar</div>
     <div class="eq-cards">${EQ.map(e=>`
@@ -815,6 +840,7 @@ const STEPS = {
     </div>` : ''}`,
 
   3: () => {
+    if(S.tipoServicio==='levantamiento_instalacion')return renderInstalacionPaso3();
     const ts = S.tipoServicio;
 
     // MANTENIMIENTO — insumos
@@ -1017,6 +1043,7 @@ const STEPS = {
   6: () => STEPS.REAL5(),
 
   REAL_PASO3: () => {
+    if(S.tipoServicio==='levantamiento_instalacion')return renderInstalacionPaso4();
     if (S.tipoServicio === 'levantamiento') return `<div class="section-title">Inspección para levantamiento</div><div class="section-sub">Las referencias de filtros ya quedaron registradas en el paso anterior. La inspección detallada es opcional para este tipo de reporte.</div><div class="field"><label class="label">Comentarios de inspección (opcional)</label><textarea class="input" rows="4" oninput="S.observacionLevantamiento=this.value;guardarEstado()" placeholder="Estado de componentes, acceso o necesidades de mantenimiento...">${S.observacionLevantamiento||''}</textarea></div>`;
     // Garantía solo dictamen — sin checklist
     if (S.tipoServicio === 'garantia' && S.garantiaConDiag === false) return `
@@ -1070,6 +1097,7 @@ const STEPS = {
   },
 
   REAL4: () => {
+    if(S.tipoServicio==='levantamiento_instalacion')return renderInstalacionPaso5();
     if (S.tipoServicio === 'levantamiento') return `<div class="section-title">Datos de levantamiento</div><div class="section-sub">No se requieren pruebas de carga para identificar filtros. Puedes documentar observaciones antes de generar el reporte.</div><div class="field"><label class="label">Observaciones adicionales (opcional)</label><textarea class="input" rows="4" oninput="S.obsPruebasLev=this.value;guardarEstado()" placeholder="Accesibilidad, disponibilidad de refacciones, indicaciones para mantenimiento...">${S.obsPruebasLev||''}</textarea></div>`;
     const esGen = S.tipoEquipo==='gen' || S.tipoEquipo==='ambos';
     const esTTA = S.tipoEquipo==='tta' || S.tipoEquipo==='ambos';
@@ -1382,7 +1410,7 @@ const STEPS = {
     </div>`;
   },
 
-    REAL5: () => `
+    REAL5: () => S.tipoServicio==='levantamiento_instalacion' ? renderInstalacionFinal() : `
     <div class="section-title">Firmas de conformidad</div>
     <div class="section-sub">Revisa el resumen antes de firmar</div>
 
@@ -1495,7 +1523,7 @@ function uH() {
   const ts = {
     diagnostico:'Diagnóstico', mantenimiento:'Mantenimiento',
     reparacion:'Reparación', garantia:'Garantía',
-    cierre:'Cierre de conexiones', solar:'Instalación solar', levantamiento:'Levantamiento técnico'
+    cierre:'Cierre de conexiones', solar:'Instalación solar', levantamiento:'Levantamiento técnico', levantamiento_instalacion:'Levantamiento de instalación de planta'
   };
   document.getElementById('hdr-tipo').textContent = S.tipoEquipo ? te[S.tipoEquipo] : '—';
   const titulo = document.getElementById('hdr-titulo');
@@ -1539,7 +1567,7 @@ function render() {
   document.getElementById('btn-back').style.display = step>1?'flex':'none';
   document.getElementById('btn-next').textContent = step===TOTAL_STEPS?'Finalizar ✓':'Continuar →';
   uH();
-  if (step===6) {
+  if (step===6 && S.tipoServicio!=='levantamiento_instalacion') {
     setTimeout(()=>{
       initCanvas('canvasTec','sigTec');
       initCanvas('canvasCli','sigCli');
@@ -1554,13 +1582,13 @@ function nav(d) {
       if (!S.tipoServicio) return showAlert('⚠️ Selecciona el tipo de servicio para continuar');
       if (!S.cliente) return showAlert('⚠️ El nombre del cliente es obligatorio');
       if (!S.empresa) return showAlert('⚠️ El nombre de la empresa es obligatorio');
-      if (!S.responsable) return showAlert('⚠️ Indica el responsable del diagnóstico');
+      if (!S.responsable) return showAlert('⚠️ Indica el responsable de la visita');
     }
-    if (step===2) {
+    if (step===2 && S.tipoServicio!=='levantamiento_instalacion') {
       if (!S.tipoEquipo) return showAlert('⚠️ Selecciona el tipo de equipo');
       if ((S.tipoEquipo==='gen'||S.tipoEquipo==='ambos') && !S.tipoControl) return showAlert('⚠️ Selecciona el tipo de control del motor');
     }
-    if (step===4) {
+    if (step===4 && S.tipoServicio!=='levantamiento_instalacion') {
       const secs = getSecs();
       const malSinFoto = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fF[k]&&S.fF[k].length));
       const malSinDesc = Object.entries(S.checks).filter(([k,v])=>v==='mal'&&!(S.fallaDesc&&S.fallaDesc[k]));
@@ -1682,6 +1710,7 @@ function validarReporteFinal(){
   return pendientes;
 }
 function generarReporte(tipo, destino) {
+  if(S.tipoServicio==='levantamiento_instalacion')return generarReporteInstalacion(tipo,destino);
   const pendientes=validarReporteFinal();
   if(pendientes.length&&!confirm('El reporte tiene pendientes:\n\n• '+pendientes.join('\n• ')+'\n\n¿Deseas generar el reporte de todos modos?'))return;
   const secs = getSecs();
