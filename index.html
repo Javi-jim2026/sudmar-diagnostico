@@ -1719,7 +1719,7 @@ function validarReporteFinal(){
   if(S.tipoServicio!=='levantamiento'&&(S.tipoEquipo==='gen'||S.tipoEquipo==='ambos')&&!(S.fG&&S.fG.placaGen&&S.fG.placaGen.length))pendientes.push('Foto de placa del generador');
   return pendientes;
 }
-function generarReporte(tipo, destino) {
+async function generarReporte(tipo, destino) {
   if(S.tipoServicio==='levantamiento_instalacion')return generarReporteInstalacion(tipo,destino);
   const pendientes=validarReporteFinal();
   if(pendientes.length&&!confirm('El reporte tiene pendientes:\n\n• '+pendientes.join('\n• ')+'\n\n¿Deseas generar el reporte de todos modos?'))return;
