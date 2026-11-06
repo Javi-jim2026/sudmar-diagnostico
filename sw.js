@@ -1,4 +1,4 @@
-const VERSION='sudmar-offline-v29';
+const VERSION='sudmar-offline-v30';
 const ROOT='/sudmar-diagnostico/';
 const CORE=[ROOT,ROOT+'index.html',ROOT+'evaluacion-fabricantes.html',ROOT+'bom-conversion-equipos.html',ROOT+'manifest.json',ROOT+'ai-assistant.js',ROOT+'componentes-registro.js',ROOT+'levantamiento-instalacion.js',ROOT+'alternativas-instalacion.js',...['logo-sudmar.png','logo-prettl.png','logo-endress.png','logo-comap.png'].map(x=>ROOT+'assets/'+x)];
 const OPTIONAL=['https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css'];
