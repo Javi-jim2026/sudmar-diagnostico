@@ -1629,14 +1629,14 @@ function showAlert(msg) {
 
 
 // ─── Generación de reporte ────────────────────────────────────────
-function headerHtml() {
+function headerHtml(embeddedLogos = null) {
   return `
   <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 32px 14px;border-bottom:3px solid #0a2240;background:#fff">
-    <img src="${LOGO_SUDMAR}" style="height:40px;object-fit:contain" alt="Sudmar Energy">
+    <img src="${embeddedLogos?.sudmar || LOGO_SUDMAR}" style="height:40px;object-fit:contain" alt="Sudmar Energy">
     <div style="display:flex;align-items:center;gap:18px">
-      <img src="${LOGO_PRETTL}" style="height:24px;object-fit:contain" alt="Prettl">
-      <img src="${LOGO_ENDRESS}" style="height:24px;object-fit:contain" alt="Endress">
-      <img src="${LOGO_COMAP}" style="height:24px;object-fit:contain" alt="ComAp">
+      <img src="${embeddedLogos?.prettl || LOGO_PRETTL}" style="height:24px;object-fit:contain" alt="Prettl">
+      <img src="${embeddedLogos?.endress || LOGO_ENDRESS}" style="height:24px;object-fit:contain" alt="Endress">
+      <img src="${embeddedLogos?.comap || LOGO_COMAP}" style="height:24px;object-fit:contain" alt="ComAp">
     </div>
   </div>
   <div style="height:4px;background:linear-gradient(90deg,#1a5fa8,#0a2240)"></div>`;
@@ -1727,6 +1727,18 @@ function generarReporte(tipo, destino) {
   const tipoLabel = {gen:'Generador', tta:'TTA', ambos:'Generador + TTA'}[S.tipoEquipo]||'';
   const tsLabel = {diagnostico:'Diagnóstico',mantenimiento:'Mantenimiento preventivo',reparacion:'Reparación',garantia:'Atención a garantía',cierre:'Cierre de conexiones',solar:'Instalación solar',levantamiento:'Levantamiento técnico'}[S.tipoServicio]||'Servicio';
 
+  // Incrustar los logotipos dentro del HTML para que no dependan de la URL blob ni de internet al imprimir.
+  const logoDataUri = async (path, fallback) => {
+    try { const response = await fetch(path); if (!response.ok) throw new Error('Logo no disponible'); const blob = await response.blob(); return await new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=()=>resolve(reader.result); reader.onerror=reject; reader.readAsDataURL(blob); }); }
+    catch(error) { console.warn('No se pudo incrustar el logotipo:',path,error); return fallback; }
+  };
+  const embeddedLogos = {
+    sudmar: await logoDataUri('./assets/logo-sudmar.png',LOGO_SUDMAR),
+    prettl: await logoDataUri('./assets/logo-prettl.png',LOGO_PRETTL),
+    endress: await logoDataUri('./assets/logo-endress.png',LOGO_ENDRESS),
+    comap: await logoDataUri('./assets/logo-comap.png',LOGO_COMAP)
+  };
+
   // Construir HTML completo del reporte
   const reporteHTML = `<!DOCTYPE html>
 <html lang="es">
@@ -1780,7 +1792,7 @@ h3{font-size:13px;font-weight:700;color:#1a5fa8;margin:14px 32px 6px}
   <button class="btn-cerrar" onclick="window.close()">✕ Cerrar</button>
 </div>
 <div class="page">
-${headerHtml()}
+${headerHtml(embeddedLogos)}
 <div class="titulo">REPORTE DE ${tsLabel.toUpperCase()}</div>
 
 <h2>1. Datos generales</h2>
